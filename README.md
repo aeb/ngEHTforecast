@@ -15,8 +15,8 @@ Defines a base class, FisherForecast, containing an interface and helper functio
 2. Descend into the python directory:
 > $ cd python
 3. Makes some plots
-> $ python fisher_package.py
-> $ python ring_example.py
+> $ python fisher_package.py\\
+> $ python ring_example.py\\
 > $ python binary_example.py
 
 
