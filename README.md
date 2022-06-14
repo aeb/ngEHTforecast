@@ -14,7 +14,7 @@ Defines a base class, FisherForecast, containing an interface and helper functio
 > $ git clone https://github.com/aeb/FisherForecast.git
 2. Descend into the python directory:
 > $ cd python
-3. Makes some plots
+3. Make some plots (or just look at examples!):
 > $ python fisher_package.py
 
 > $ python ring_example.py
