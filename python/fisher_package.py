@@ -638,7 +638,7 @@ class FF_sum(FisherForecast) :
         V = 0.0j*u
         k = 0
         uas2rad = np.pi/180./3600e6        
-        for i,ff in enumerate(ff_list) :
+        for i,ff in enumerate(self.ff_list) :
             q = p[k:(k+ff.size)]
 
             if (i==0) :
@@ -793,6 +793,9 @@ def plot_triangle_forecast(ff,p,ilist,obslist,labels=None) :
 
             if (k==0) :
                 xlim_dict[j] = (-3.5*Sigm[jj],3.5*Sigm[jj])
+            else :
+                if (3.5*Sigm[jj]>xlim_dict[j][1]) :
+                    xlim_dict[j] = (-3.5*Sigm[jj],3.5*Sigm[jj])                    
                 
         for i in range(ni) :
             for j in range(ni-i-1) :
@@ -858,17 +861,11 @@ if __name__ == "__main__" :
     ff = FF_sum([ff1,ff2])
 
     # Read in some data
-    # obs = eh.obsdata.load_uvfits('Data/hops_3601_M87+avg.AA-FEED.uvfits')
-    # obs.add_scans()
-    # obs = obs.avg_coherent(0,scan_avg=True)
-    # obs = obs.add_fractional_noise(0.01)
-    #
     obs_ngeht = eh.obsdata.load_uvfits('../data/M87_230GHz_40uas.uvfits')
     obs_ngeht.add_scans()
     obs_ngeht = obs_ngeht.avg_coherent(0,scan_avg=True)
     obs_ngeht = obs_ngeht.add_fractional_noise(0.01)
-
-
+    #
     obs = obs_ngeht.flag_sites(['ALMA','APEX','JCMT','SMA','SMT','LMT','SPT','PV','PDB','KP'])
 
 
