@@ -67,7 +67,130 @@ class FisherForecast :
 
         return []
 
+    def generate_image(self,p,limits=None,shape=None,verbosity=0) :
 
+        # Fix image limits
+        if (limits is None) :
+            limits = [-100,100,-100,100]
+        elif (isinstance(limits,list)) :
+            limits = limits
+        else :
+            limits = [-limits, limits, -limits, limits]
+
+        # Set shape
+        if (shape is None) :
+            shape = [256, 256]
+        elif (isinstance(shape,list)) :
+            shape = shape
+        else :
+            shape = [shape, shape]
+            
+        if (verbosity>0) :
+            print("limits:",limits)
+            print("shape:",shape)
+
+        uas2rad = np.pi/180./3600e6            
+        umax = shape[0]/(uas2rad*(limits[1]-limits[0]))
+        vmax = shape[1]/(uas2rad*(limits[3]-limits[2]))
+
+        if (verbosity>0) :
+            print("Max (u,v) = ",(umax,vmax))
+
+        
+        u,v = np.mgrid[-umax:umax:(shape[0])*1j, -vmax:vmax:(shape[1])*1j]
+        V = self.visibilities(u,v,p,verbosity=verbosity)
+        
+        I = np.abs(np.fft.fftshift(np.fft.fft2(V)))
+        x1d = np.fft.fftshift(np.fft.fftfreq(I.shape[0],np.abs(u[1,1]-u[0,0])))
+        y1d = np.fft.fftshift(np.fft.fftfreq(I.shape[1],np.abs(v[1,1]-v[0,0])))
+
+        x,y = np.meshgrid(x1d,y1d)
+        x = x/uas2rad
+        y = y/uas2rad
+
+        I = I * np.abs(self.visibilities(np.array([0.0]),np.array([0.0]),p,verbosity=verbosity))/np.sum(I) / ((x[1,1]-x[0,0])*(y[1,1]-y[0,0]))
+
+        if (verbosity>0) :
+            print("V00:",self.visibilities(np.array([0.0]),np.array([0.0]),p))
+            print("Sum I:", np.sum(I) * ((x[1,1]-x[0,0])*(y[1,1]-y[0,0])) )
+        
+        return x,y,I
+        
+    def plot_image(self,p,limits=None,shape=None,verbosity=0,**kwargs) :
+
+        plt.figure(figsize=(6.5,5))
+        axs=plt.axes([0.15,0.15,0.8*5/6.5,0.8])
+
+        x,y,I = self.generate_image(p,limits=limits,shape=shape,verbosity=verbosity)
+
+        Imax = np.max(I)
+        if (Imax>1e-1) :
+            fu = r'$I~({\rm Jy}/\mu{\rm as}^2)$'
+        elif (Imax>1e-4) :
+            fu = r'$I~({\rm mJy}/\mu{\rm as}^2)$'
+            I = I*1e3
+        elif (Imax>1e-7) :
+            fu = r'$I~({\rm \mu Jy}/\mu{\rm as}^2)$'
+            I = I*1e6
+        elif (Imax>1e-10) :
+            fu = r'$I~({\rm nJy}/\mu{\rm as}^2)$'
+            I = I*1e9
+        elif (Imax>1e-13) :
+            fu = r'$I~({\rm pJy}/\mu{\rm as}^2)$'
+            I = I*1e12
+
+        plt.pcolormesh(x,y,I,cmap='afmhot',vmin=0)
+
+        plt.xlabel(r'$\Delta{\rm RA}~(\mu{\rm as})$')
+        plt.ylabel(r'$\Delta{\rm Dec}~(\mu{\rm as})$')
+
+        cbax = plt.axes([0.8*5/6.5+0.05+0.15,0.15,0.05,0.8])
+        plt.colorbar(cax=cbax)
+        cbax.set_ylabel(fu,rotation=-90,ha='center',va='bottom')
+
+        return plt.gcf(),axs,cbax
+        
+    
+        
+
+    def check_gradients(self,u,v,p,h=None,verbosity=0) :
+
+        if (h is None) :
+            h = np.array(len(p)*[1e-4])
+        elif (not isinstance(h,list)) :
+            h = np.array(len(p)*[h])
+
+        gradV_an = self.visibility_gradients(u,v,p,verbosity=verbosity)
+        gradV_fd = []
+        q = np.copy(p)
+        for i in range(self.size) :
+            q[i] = p[i]+h[i]
+            Vp = self.visibilities(u,v,q,verbosity=verbosity)
+            q[i] = p[i]-h[i]
+            Vm = self.visibilities(u,v,q,verbosity=verbosity)
+            q[i] = p[i]
+
+            gradV_fd.append((Vp-Vm)/(2.0*h[i]))
+        gradV_fd = np.array(gradV_fd).T
+
+        lbls = self.parameter_labels()
+        err = (gradV_fd-gradV_an)
+        print("Gradient Check Report:")
+        print("  Sample of errors by parameter")
+        print("  %30s %15s %15s %15s %15s %15s"%("Param.","u","v","anal. grad","fd. grad","err"))
+        for i in range(self.size) :
+            for j in range(min(len(u),10)) :
+                print("  %30s %15.8g %15.8g %15.8g %15.8g %15.8g"%(lbls[i],u[j],v[j],gradV_an[j][i],gradV_fd[j][i],err[j][i]))
+
+        mfe_arg = np.argmax(err)
+        mfe_i = mfe_arg%self.size
+        mfe_j = mfe_arg//self.size
+        max_err = np.max(err)
+        print("  Global Maximum error:",max_err)
+        print("  %30s %15.8g %15.8g %15.8g %15.8g %15.8g"%(lbls[mfe_i],u[mfe_j],v[mfe_j],gradV_an[mfe_j][mfe_i],gradV_fd[mfe_j][mfe_i],err[mfe_j][mfe_i]))
+        
+
+            
     def fisher_covar(self,u,v,sig,p,**kwargs) :
         # Get the fisher covariance 
         gradV = self.visibility_gradients(u,v,p,**kwargs)
@@ -448,8 +571,86 @@ class FF_symmetric_gaussian(FisherForecast) :
         
 
     def parameter_labels(self) :
-        return [r'$\delta F~({\rm Jy})$',r'$\delta \sigma~(\mu{\rm as})$']
+        return [r'$\delta F~({\rm Jy})$',r'$\delta FWHM~(\mu{\rm as})$']
 
+
+class FF_asymmetric_gaussian(FisherForecast) :
+
+    def __init__(self) :
+        super().__init__()
+        self.size = 4
+        
+    def visibilities(self,u,v,p,verbosity=0) :
+        # Takes:
+        #  p[0] ... flux in Jy
+        #  p[1] ... mean diameter in uas
+        #  p[2] ... asymmetry parameter 
+        #  p[3] ... position angle in radians
+        uas2rad = np.pi/180./3600e6
+        
+        F = p[0]
+        sig = p[1]*uas2rad / np.sqrt(8.0*np.log(2.0))
+        A = p[2]
+
+        cpa = np.cos(p[3])
+        spa = np.sin(p[3])
+        ur = cpa*u + spa*v
+        vr = -spa*u + cpa*v
+
+        sigmaj = sig / np.sqrt(1-A)
+        sigmin = sig / np.sqrt(1+A)
+
+        pimaj = 2.0*np.pi*ur
+        pimin = 2.0*np.pi*vr
+
+        ymaj = pimaj*sigmaj
+        ymin = pimin*sigmin
+
+        ey2 = np.exp(-0.5*(ymaj**2+ymin**2))
+
+        return F*ey2
+
+    
+    def visibility_gradients(self,u,v,p,verbosity=0) :
+        # Takes:
+        #  p[0] ... flux in Jy
+        #  p[1] ... mean diameter in uas
+        #  p[2] ... asymmetry parameter 
+        #  p[3] ... position angle in radians
+        uas2rad_fwhm2sig = np.pi/180./3600e6 / np.sqrt(8.0*np.log(2.0))
+        
+        F = p[0]
+        sig = p[1]
+        A = p[2]
+
+        cpa = np.cos(p[3])
+        spa = np.sin(p[3])
+        ur = cpa*u + spa*v
+        vr = -spa*u + cpa*v
+
+        sigmaj = sig / np.sqrt(1-A)
+        sigmin = sig / np.sqrt(1+A)
+
+        pimaj = 2.0*np.pi*ur * uas2rad_fwhm2sig 
+        pimin = 2.0*np.pi*vr * uas2rad_fwhm2sig 
+
+        ymaj = pimaj*sigmaj
+        ymin = pimin*sigmin
+
+        ey2 = np.exp(-0.5*(ymaj**2+ymin**2))
+
+        gradV = np.array([ ey2, # dV/dF
+                           -F*ey2*( pimaj**2*sig/(1-A) + pimin**2*sig/(1+A) ), # dV/dd
+                           -F*ey2*0.5*( (pimaj*sig/(1-A))**2 - (pimin*sig/(1+A))**2 ), # dV/dA
+                           -F*ey2* pimaj*pimin * ( sigmaj**2 - sigmin**2 ) ])
+        
+        
+        return gradV.T
+
+    def parameter_labels(self) :
+        return [r'$\delta F~({\rm Jy})$',r'$\delta FWHM~(\mu{\rm as})$',r'$\delta A$',r'$\delta {\rm PA}~({\rm rad})$']
+
+    
 
 class FF_splined_raster(FisherForecast) :
 
