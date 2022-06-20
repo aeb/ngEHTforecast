@@ -197,7 +197,7 @@ class FisherForecast :
         covar = np.zeros((self.size,self.size))
         for i in range(self.size) :
             for j in range(self.size) :
-                covar[i][j] = np.sum( np.conj(gradV[:,i])*gradV[:,j]/sig**2 )
+                covar[i][j] = 0.5*np.sum( np.conj(gradV[:,i])*gradV[:,j]/sig**2 + gradV[:,i]*np.conj(gradV[:,j])/sig**2)
             
         return covar
 
