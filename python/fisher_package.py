@@ -18,8 +18,7 @@ class FisherForecast :
         self.size = 0
         self.argument_hash = None
         
-        
-    def visibilities(self,u,v,p,verbosity=0) :
+    def visibilities(self,obs,p,verbosity=0) :
         """
         Generates visibilities associated with a given model image object.  Note 
         that this uses FFTs to create the visibilities and then interpolates.
@@ -31,16 +30,16 @@ class FisherForecast :
           verbosity (int): Verbosity level. 0 prints nothing. 1 prints various elements of the plotting process. Passed to :func:`model_image.generate_intensity_map`. Default: 0.
 
         Returns:
-          V (np.array): list of complex visibilities computed at u,v.
+          V (np.array): list of complex visibilities computed at observations.
         """
 
         raise(RuntimeError("visbilities function not implemented in base class!"))
         
         # Return something
-        return 0*u
+        return 0*obs.data['u']
 
             
-    def visibility_gradients(self,u,v,p,verbosity=0) :
+    def visibility_gradients(self,obs,p,verbosity=0) :
         """
         Generates visibilities associated with a given model image object.  Note 
         that this uses FFTs to create the visibilities and then interpolates.
@@ -52,13 +51,13 @@ class FisherForecast :
           verbosity (int): Verbosity level. 0 prints nothing. 1 prints various elements of the plotting process. Passed to :func:`model_image.generate_intensity_map`. Default: 0.
 
         Returns:
-          gradV (np.ndarray): list of complex visibilities gradients computed at u,v.
+          gradV (np.ndarray): list of complex visibilities gradients computed at observations.
         """
 
         raise(RuntimeError("visbility_gradients function not implemented in base class!"))
 
         # Return something    
-        return 0*u
+        return 0*obs.data['u']
 
 
     def parameter_labels(self) :
@@ -96,9 +95,18 @@ class FisherForecast :
         if (verbosity>0) :
             print("Max (u,v) = ",(umax,vmax))
 
+
+        # FIX
+        class obsempty :
+            data = {}
+
         
         u,v = np.mgrid[-umax:umax:(shape[0])*1j, -vmax:vmax:(shape[1])*1j]
-        V = self.visibilities(u,v,p,verbosity=verbosity)
+        obsgrid = obsempty()
+        obsgrid.data['u'] = u
+        obsgrid.data['v'] = v
+
+        V = self.visibilities(obsgrid,p,verbosity=verbosity)
         
         I = np.abs(np.fft.fftshift(np.fft.fft2(V)))
         x1d = np.fft.fftshift(np.fft.fftfreq(I.shape[0],np.abs(u[1,1]-u[0,0])))
@@ -108,10 +116,12 @@ class FisherForecast :
         x = x/uas2rad
         y = y/uas2rad
 
-        I = I * np.abs(self.visibilities(np.array([0.0]),np.array([0.0]),p,verbosity=verbosity))/np.sum(I) / ((x[1,1]-x[0,0])*(y[1,1]-y[0,0]))
+        obsgrid.data['u'] = 0.0
+        obsgrid.data['v'] = 0.0
+        I = I * np.abs(self.visibilities(obsgrid,p,verbosity=verbosity))/np.sum(I) / ((x[1,1]-x[0,0])*(y[1,1]-y[0,0]))
 
         if (verbosity>0) :
-            print("V00:",self.visibilities(np.array([0.0]),np.array([0.0]),p))
+            print("V00:",self.visibilities(obsgrid,p))
             print("Sum I:", np.sum(I) * ((x[1,1]-x[0,0])*(y[1,1]-y[0,0])) )
         
         return x,y,I
@@ -153,21 +163,21 @@ class FisherForecast :
     
         
 
-    def check_gradients(self,u,v,p,h=None,verbosity=0) :
+    def check_gradients(self,obs,p,h=None,verbosity=0) :
 
         if (h is None) :
             h = np.array(len(p)*[1e-4])
         elif (not isinstance(h,list)) :
             h = np.array(len(p)*[h])
 
-        gradV_an = self.visibility_gradients(u,v,p,verbosity=verbosity)
+        gradV_an = self.visibility_gradients(obs,p,verbosity=verbosity)
         gradV_fd = []
         q = np.copy(p)
         for i in range(self.size) :
             q[i] = p[i]+h[i]
-            Vp = self.visibilities(u,v,q,verbosity=verbosity)
+            Vp = self.visibilities(obs,q,verbosity=verbosity)
             q[i] = p[i]-h[i]
-            Vm = self.visibilities(u,v,q,verbosity=verbosity)
+            Vm = self.visibilities(obs,q,verbosity=verbosity)
             q[i] = p[i]
 
             gradV_fd.append((Vp-Vm)/(2.0*h[i]))
@@ -179,42 +189,46 @@ class FisherForecast :
         print("  Sample of errors by parameter")
         print("  %30s %15s %15s %15s %15s %15s"%("Param.","u","v","anal. grad","fd. grad","err"))
         for i in range(self.size) :
-            for j in range(min(len(u),10)) :
-                print("  %30s %15.8g %15.8g %15.8g %15.8g %15.8g"%(lbls[i],u[j],v[j],gradV_an[j][i],gradV_fd[j][i],err[j][i]))
+            for j in range(min(len(obs.data['u']),10)) :
+                print("  %30s %15.8g %15.8g %15.8g %15.8g %15.8g"%(lbls[i],obs.data['u'][j],obs.data['v'][j],gradV_an[j][i],gradV_fd[j][i],err[j][i]))
 
         mfe_arg = np.argmax(err)
         mfe_i = mfe_arg%self.size
         mfe_j = mfe_arg//self.size
         max_err = np.max(err)
         print("  Global Maximum error:",max_err)
-        print("  %30s %15.8g %15.8g %15.8g %15.8g %15.8g"%(lbls[mfe_i],u[mfe_j],v[mfe_j],gradV_an[mfe_j][mfe_i],gradV_fd[mfe_j][mfe_i],err[mfe_j][mfe_i]))
+        print("  %30s %15.8g %15.8g %15.8g %15.8g %15.8g"%(lbls[mfe_i],obs.data['u'][mfe_j],obs.data['v'][mfe_j],gradV_an[mfe_j][mfe_i],gradV_fd[mfe_j][mfe_i],err[mfe_j][mfe_i]))
         
 
             
-    def fisher_covar(self,u,v,sig,p,**kwargs) :
+    def fisher_covar(self,obs,p,**kwargs) :
         # Get the fisher covariance 
-        gradV = self.visibility_gradients(u,v,p,**kwargs)
-        covar = np.zeros((self.size,self.size))
-        for i in range(self.size) :
-            for j in range(self.size) :
-                covar[i][j] = 0.5*np.sum( np.conj(gradV[:,i])*gradV[:,j]/sig**2 + gradV[:,i]*np.conj(gradV[:,j])/sig**2)
-            
-        return covar
-
-    def fisher_covar_from_obs(self,obs,p,**kwargs) :
         new_argument_hash = hashlib.md5(bytes(str(obs)+str(p),'utf-8')).hexdigest()
         if ( new_argument_hash == self.argument_hash ) :
             return self.covar
         else :
-            self.argument_hash = new_argument_hash
-            u = obs.data['u']
-            v = obs.data['v']
-            sig = obs.data['sigma']
-            self.covar = self.fisher_covar(u,v,sig,p,**kwargs)
-        return self.covar
+            gradV = self.visibility_gradients(obs,p,**kwargs)
+            covar = np.zeros((self.size,self.size))
+            for i in range(self.size) :
+                for j in range(self.size) :
+                    covar[i][j] = 0.5*np.sum( np.conj(gradV[:,i])*gradV[:,j]/obs.data['sigma']**2 + gradV[:,i]*np.conj(gradV[:,j])/obs.data['sigma']**2)
+            
+        return covar
 
-    def uniparameter_uncertainties_from_obs(self,obs,p,**kwargs) :
-        C = 2.0*self.fisher_covar_from_obs(obs,p,**kwargs)
+    # def fisher_covar_from_obs(self,obs,p,**kwargs) :
+    #     new_argument_hash = hashlib.md5(bytes(str(obs)+str(p),'utf-8')).hexdigest()
+    #     if ( new_argument_hash == self.argument_hash ) :
+    #         return self.covar
+    #     else :
+    #         self.argument_hash = new_argument_hash
+    #         u = obs.data['u']
+    #         v = obs.data['v']
+    #         sig = obs.data['sigma']
+    #         self.covar = self.fisher_covar(u,v,sig,p,**kwargs)
+    #     return self.covar
+
+    def uniparameter_uncertainties(self,obs,p,**kwargs) :
+        C = 2.0*self.fisher_covar(obs,p,**kwargs)
         Sig_uni = np.zeros(self.size)
         ilist = np.arange(self.size)
         for i in ilist :
@@ -222,8 +236,8 @@ class FisherForecast :
             Sig_uni[i] = np.sqrt(2.0/N)
         return Sig_uni
 
-    def marginalized_uncertainties_from_obs(self,obs,p,**kwargs) :
-        C = 2.0*self.fisher_covar_from_obs(obs,p,**kwargs)
+    def marginalized_uncertainties(self,obs,p,**kwargs) :
+        C = 2.0*self.fisher_covar(obs,p,**kwargs)
         Sig_marg = np.zeros(self.size)
         M = np.zeros((self.size-1,self.size-1))
         v = np.zeros(self.size-1)
@@ -240,8 +254,8 @@ class FisherForecast :
             Sig_marg[i] = np.sqrt(2.0/mN)
         return Sig_marg
 
-    def uncertainties_from_obs(self,obs,p,**kwargs) :
-        C = 2.0*self.fisher_covar_from_obs(obs,p,**kwargs)
+    def uncertainties(self,obs,p,**kwargs) :
+        C = 2.0*self.fisher_covar(obs,p,**kwargs)
 
         # print("FOO:",C)
         
@@ -270,9 +284,66 @@ class FisherForecast :
 
         return Sig_uni,Sig_marg
 
+    # def uniparameter_uncertainties_from_obs(self,obs,p,**kwargs) :
+    #     C = 2.0*self.fisher_covar_from_obs(obs,p,**kwargs)
+    #     Sig_uni = np.zeros(self.size)
+    #     ilist = np.arange(self.size)
+    #     for i in ilist :
+    #         N = C[i][i]
+    #         Sig_uni[i] = np.sqrt(2.0/N)
+    #     return Sig_uni
+
+    # def marginalized_uncertainties_from_obs(self,obs,p,**kwargs) :
+    #     C = 2.0*self.fisher_covar_from_obs(obs,p,**kwargs)
+    #     Sig_marg = np.zeros(self.size)
+    #     M = np.zeros((self.size-1,self.size-1))
+    #     v = np.zeros(self.size-1)
+    #     ilist = np.arange(self.size)
+    #     for i in ilist :
+    #         ini = ilist[ilist!=i]
+    #         for j2,j in enumerate(ini) :
+    #             for k2,k in enumerate(ini) :
+    #                 M[j2,k2] = C[j][k]
+    #             v[j2] = C[i][j]
+    #         N = C[i][i]
+    #         Minv = np.linalg.inv(M)
+    #         mN = N - np.matmul(v,np.matmul(Minv,v))
+    #         Sig_marg[i] = np.sqrt(2.0/mN)
+    #     return Sig_marg
+
+    # def uncertainties_from_obs(self,obs,p,**kwargs) :
+    #     C = 2.0*self.fisher_covar_from_obs(obs,p,**kwargs)
+
+    #     # print("FOO:",C)
+        
+    #     Sig_uni = np.zeros(self.size)
+    #     Sig_marg = np.zeros(self.size)
+    #     M = np.zeros((self.size-1,self.size-1))
+    #     v = np.zeros(self.size-1)
+    #     ilist = np.arange(self.size)
+    #     for i in ilist :
+    #         ini = ilist[ilist!=i]
+    #         for j2,j in enumerate(ini) :
+    #             for k2,k in enumerate(ini) :
+    #                 M[j2,k2] = C[j][k]
+    #             v[j2] = C[i][j]
+    #         N = C[i][i]
+    #         Minv = np.linalg.inv(M)
+    #         mN = N - np.matmul(v,np.matmul(Minv,v))
+
+    #         # print("BAR: %5g %15.8g %15.8g"%(i,N,mN))
+
+
+    #         # mN = np.maximum(1e-6*N,mN)
+            
+    #         Sig_uni[i] = np.sqrt(2.0/N)
+    #         Sig_marg[i] = np.sqrt(2.0/mN)
+
+    #     return Sig_uni,Sig_marg
+    
 
     def joint_biparameter_chisq(self,obs,p,i1,i2,**kwargs) :
-        C = 2.0*self.fisher_covar_from_obs(obs,p,**kwargs)
+        C = 2.0*self.fisher_covar(obs,p,**kwargs)
         M = np.zeros((self.size-2,self.size-2))
         v1 = np.zeros(self.size-2)
         v2 = np.zeros(self.size-2)
@@ -367,14 +438,13 @@ class FF_model_image(FisherForecast) :
         self.img = img
         self.size = self.img.size
 
-    def visibilities(self,u,v,p,limits=None,shape=None,padding=4,verbosity=0) :
+    def visibilities(self,obs,p,limits=None,shape=None,padding=4,verbosity=0) :
         """
         Generates visibilities associated with a given model image object.  Note 
         that this uses FFTs to create the visibilities and then interpolates.
 
         Args:
-          u (np.array): list of u positions in units of :math:`\\lambda`.
-          v (np.array): list of v positions in units of :math:`\\lambda`.
+          obs (ehtim.Obsdata): ehtim data object
           p (np.array): list of parameters for the model image used to create object.
           limits (list): May be single number, list with four elements specifying in :math:`\\mu as` the symmetric limits or explicit limits in [xmin,xmax,ymin,ymax] order.  Default: 100.
           shape (list): May be single number or list with two elements indicating the number of pixels in the two directions.  Default: 256.
@@ -382,7 +452,7 @@ class FF_model_image(FisherForecast) :
           verbosity (int): Verbosity level. 0 prints nothing. 1 prints various elements of the plotting process. Passed to :func:`model_image.generate_intensity_map`. Default: 0.
 
         Returns:
-          V (np.array): list of complex visibilities computed at u,v.
+          V (np.array): list of complex visibilities computed at observations.
         """
 
         # Generate the image at current location
@@ -407,9 +477,6 @@ class FF_model_image(FisherForecast) :
         if (verbosity>0) :
             print("limits:",limits)
             print("shape:",shape)
-
-        if (len(u) != len(v)) :
-            raise RuntimeError("u and v must be same length!")
             
         # Generate a set of pixels
         x,y = np.mgrid[limits[0]:limits[1]:shape[0]*1j,limits[2]:limits[3]:shape[1]*1j]
@@ -440,18 +507,17 @@ class FF_model_image(FisherForecast) :
         
         V = 0.0j * u
         for i in range(len(u)) :
-            V[i] = (Vrinterp(u[i],v[i]) + 1.0j*Viinterp(u[i],v[i]))
+            V[i] = (Vrinterp(obs.data['u'][i],obs.data['v'][i]) + 1.0j*Viinterp(obs.data['u'][i],obs.data['v'][i]))
 
         return V
             
-    def visibility_gradients(self,u,v,p,h=1e-2,limits=None,shape=None,padding=4,verbosity=0) :
+    def visibility_gradients(self,obs,p,h=1e-2,limits=None,shape=None,padding=4,verbosity=0) :
         """
         Generates visibilities associated with a given model image object.  Note 
         that this uses FFTs to create the visibilities and then interpolates.
 
         Args:
-          u (np.array): list of u positions in units of :math:`\\lambda`.
-          v (np.array): list of v positions in units of :math:`\\lambda`.
+          obs (ehtim.Obsdata): ehtim data object
           p (np.array): list of parameters for the model image used to create object.
           h (float): fractional step for finite-difference gradient computation.  Default: 0.01.
           limits (list): May be single number, list with four elements specifying in :math:`\\mu as` the symmetric limits or explicit limits in [xmin,xmax,ymin,ymax] order.  Default: 100.
@@ -460,21 +526,21 @@ class FF_model_image(FisherForecast) :
           verbosity (int): Verbosity level. 0 prints nothing. 1 prints various elements of the plotting process. Passed to :func:`model_image.generate_intensity_map`. Default: 0.
 
         Returns:
-          gradV (np.ndarray): list of complex visibilities gradients computed at u,v.
+          gradV (np.ndarray): list of complex visibilities gradients computed at observation.
         """
 
         pp = np.copy(p)
         gradV = np.zeros((len(u),self.img.size))
-        
+
         for i in range(self.img.size) :
             if (np.abs(p[i])>0) :
                 hq = h*np.abs(p[i])
             else :
                 hq = h**2
             pp[i] = p[i] + hq
-            Vmp = np.copy(self.visibilities(u,v,pp,limits=limits,shape=shape,padding=padding,verbosity=verbosity))
+            Vmp = np.copy(self.visibilities(obs,pp,limits=limits,shape=shape,padding=padding,verbosity=verbosity))
             pp[i] = p[i] - hq
-            Vmm = np.copy(self.visibilities(u,v,pp,limits=limits,shape=shape,padding=padding,verbosity=verbosity))
+            Vmm = np.copy(self.visibilities(obs,pp,limits=limits,shape=shape,padding=padding,verbosity=verbosity))
             pp[i] = p[i]
             gradV[:,i] = (Vmp-Vmm)/(2.0*hq)
 
@@ -490,12 +556,15 @@ class FF_smoothed_delta_ring(FisherForecast) :
         super().__init__()
         self.size = 3
         
-    def visibilities(self,u,v,p,verbosity=0) :
+    def visibilities(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
         #  p[2] ... width in uas
 
+        u = obs.data['u']
+        v = obs.data['v']
+        
         d = p[1]
         w = p[2] 
         uas2rad = np.pi/180./3600e6
@@ -508,12 +577,15 @@ class FF_smoothed_delta_ring(FisherForecast) :
         V = p[0] * J0 * ey2
         return V
         
-    def visibility_gradients(self,u,v,p,verbosity=0) :
+    def visibility_gradients(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
         #  p[2] ... width in uas
 
+        u = obs.data['u']
+        v = obs.data['v']
+                
         d = p[1]
         w = p[2]
         uas2rad = np.pi/180./3600e6
@@ -541,10 +613,13 @@ class FF_symmetric_gaussian(FisherForecast) :
         super().__init__()
         self.size = 2
         
-    def visibilities(self,u,v,p,verbosity=0) :
+    def visibilities(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
+
+        u = obs.data['u']
+        v = obs.data['v']
 
         d = p[1]
         uas2rad = np.pi/180./3600e6
@@ -553,10 +628,13 @@ class FF_symmetric_gaussian(FisherForecast) :
         ey2 = np.exp(-0.5*y**2)
         return p[0]*ey2
         
-    def visibility_gradients(self,u,v,p,verbosity=0) :
+    def visibility_gradients(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
+
+        u = obs.data['u']
+        v = obs.data['v']
 
         d = p[1]
         uas2rad = np.pi/180./3600e6
@@ -580,12 +658,16 @@ class FF_asymmetric_gaussian(FisherForecast) :
         super().__init__()
         self.size = 4
         
-    def visibilities(self,u,v,p,verbosity=0) :
+    def visibilities(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... mean diameter in uas
         #  p[2] ... asymmetry parameter 
         #  p[3] ... position angle in radians
+
+        u = obs.data['u']
+        v = obs.data['v']
+
         uas2rad = np.pi/180./3600e6
         
         F = p[0]
@@ -611,12 +693,16 @@ class FF_asymmetric_gaussian(FisherForecast) :
         return F*ey2
 
     
-    def visibility_gradients(self,u,v,p,verbosity=0) :
+    def visibility_gradients(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... mean diameter in uas
         #  p[2] ... asymmetry parameter 
         #  p[3] ... position angle in radians
+
+        u = obs.data['u']
+        v = obs.data['v']
+
         uas2rad_fwhm2sig = np.pi/180./3600e6 / np.sqrt(8.0*np.log(2.0))
         
         F = p[0]
@@ -664,12 +750,15 @@ class FF_splined_raster(FisherForecast) :
 
         self.apx = (self.xcp[1,1]-self.xcp[0,0])*(self.ycp[1,1]-self.ycp[0,0])
 
-    def visibilities(self,u,v,p,verbosity=0) :
+    def visibilities(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... p[0,0]
         #  p[1] ... p[1,0]
         #  ...
         #  p[NxN-1] = p[N-1,N-1]
+
+        u = obs.data['u']
+        v = obs.data['v']
 
         V = 0.0j*u
         
@@ -680,12 +769,15 @@ class FF_splined_raster(FisherForecast) :
         
         return V
         
-    def visibility_gradients(self,u,v,p,verbosity=0) :
+    def visibility_gradients(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... p[0,0]
         #  p[1] ... p[1,0]
         #  ...
         #  p[NxN-1] = p[N-1,N-1]
+
+        u = obs.data['u']
+        v = obs.data['v']
 
         gradV = []
 
@@ -721,7 +813,7 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
 
         self.apx = (self.xcp[1,1]-self.xcp[0,0])*(self.ycp[1,1]-self.ycp[0,0])
 
-    def visibilities(self,u,v,p,verbosity=0) :
+    def visibilities(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... p[0,0]
         #  p[1] ... p[1,0]
@@ -730,6 +822,9 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
         #  p[NxN+0] ... ring flux in Jy
         #  p[NxN+1] ... ring diameter in uas
         #  p[NxN+2] ... ring width in uas
+
+        u = obs.data['u']
+        v = obs.data['v']
 
         V = 0.0j*u
 
@@ -757,7 +852,7 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
         
         return V
         
-    def visibility_gradients(self,u,v,p,verbosity=0) :
+    def visibility_gradients(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... p[0,0]
         #  p[1] ... p[1,0]
@@ -766,6 +861,9 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
         #  p[NxN+0] ... ring flux in Jy
         #  p[NxN+1] ... ring diameter in uas
         #  p[NxN+2] ... ring width in uas
+
+        u = obs.data['u']
+        v = obs.data['v']
 
         gradV = []
 
@@ -835,8 +933,8 @@ class FF_sum(FisherForecast) :
         else :
             self.size += ff.size+2
             
-    def visibilities(self,u,v,p,verbosity=0) :
-        V = 0.0j*u
+    def visibilities(self,obs,p,verbosity=0) :
+        V = 0.0j*obs.data['u']
         k = 0
         uas2rad = np.pi/180./3600e6        
         for i,ff in enumerate(self.ff_list) :
@@ -848,13 +946,17 @@ class FF_sum(FisherForecast) :
             else :
                 dx = p[k+ff.size]
                 dy = p[k+ff.size+1]
-                shift_factor = np.exp( 2.0j*np.pi*(u*dx+v*dy)*uas2rad )
+                shift_factor = np.exp( 2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
                 k += ff.size + 2
                 
-            V = V + ff.visibilities(u,v,q,verbosity=verbosity) * shift_factor
+            V = V + ff.visibilities(obs,q,verbosity=verbosity) * shift_factor
         return V
 
-    def visibility_gradients(self,u,v,p,verbosity=0) :
+    def visibility_gradients(self,obs,p,verbosity=0) :
+
+        u = obs.data['u']
+        v = obs.data['v']
+
         gradV = []
         k = 0
         uas2rad = np.pi/180./3600e6        
@@ -869,11 +971,11 @@ class FF_sum(FisherForecast) :
             else :
                 dx = p[k+ff.size]
                 dy = p[k+ff.size+1]
-                V = ff.visibilities(u,v,q,verbosity=verbosity)
+                V = ff.visibilities(obs,q,verbosity=verbosity)
                 shift_factor = np.exp( -2.0j*np.pi*(u*dx+v*dy)*uas2rad )
                 k += ff.size + 2
             
-            for gV in ff.visibility_gradients(u,v,q,verbosity=verbosity).T :
+            for gV in ff.visibility_gradients(obs,q,verbosity=verbosity).T :
                 gradV.append( gV*shift_factor )
 
             if (i>0) :
@@ -920,7 +1022,7 @@ def plot_1d_forecast(ff,p,i1,obslist,labels=None) :
     
     sigdict = {}
     for k,obs in enumerate(obslist) :
-        _,Sigm = ff.uncertainties_from_obs(obs,p)
+        _,Sigm = ff.uncertainties(obs,p)
 
         x = np.linspace(-5*Sigm[i1],5*Sigm[i1],n)
         y = np.exp(-x**2/(2.0*Sigm[i1]**2)) / np.sqrt(2.0*np.pi*Sigm[i1]**2)
@@ -983,7 +1085,7 @@ def plot_triangle_forecast(ff,p,ilist,obslist,labels=None) :
 
     xlim_dict = {}
     for k,obs in enumerate(obslist) :
-        _,Sigm = ff.uncertainties_from_obs(obs,p)
+        _,Sigm = ff.uncertainties(obs,p)
 
         for j in range(ni) :
             jj = ilist[j]

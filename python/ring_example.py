@@ -46,7 +46,7 @@ p = np.array(p)
 
 # Set systematic errors
 for o in obslist :
-    o.data['vis'] = ff.visibilities(o.data['u'],o.data['v'],p)
+    o.data['vis'] = ff.visibilities(o,p)
     o = o.add_fractional_noise(0.01)
 
 # 1D Diameter
@@ -73,7 +73,7 @@ q = np.copy(p)
 Sigdlist = 0.0*dlist
 for i,d in enumerate(dlist) :
     q[-4] = d
-    Sigu,Sigm = ff.uncertainties_from_obs(obs_ngeht,q)
+    Sigu,Sigm = ff.uncertainties(obs_ngeht,q)
     Sigudlist[i] = Sigu[-4]
     Sigmdlist[i] = Sigm[-4]
 plt.plot(dlist,Sigudlist,'-r',lw=0.5)
@@ -81,7 +81,7 @@ plt.plot(dlist[dlist>5],Sigmdlist[dlist>5],'-r',lw=2,label=labels[0])
 Sigdlist = 0.0*dlist
 for i,d in enumerate(dlist) :
     q[-4] = d
-    Sigu,Sigm = ff.uncertainties_from_obs(obs_ngeht2,q)
+    Sigu,Sigm = ff.uncertainties(obs_ngeht2,q)
     Sigudlist[i] = Sigu[-4]
     Sigmdlist[i] = Sigm[-4]
 plt.plot(dlist,Sigudlist,'-b',lw=0.5)
@@ -89,7 +89,7 @@ plt.plot(dlist[dlist>4.5],Sigmdlist[dlist>4.5],'-b',lw=2,label=labels[1])
 Sigdlist = 0.0*dlist
 for i,d in enumerate(dlist) :
     q[-4] = d
-    Sigu,Sigm = ff.uncertainties_from_obs(obs_ngeht_multifreq,q)
+    Sigu,Sigm = ff.uncertainties(obs_ngeht_multifreq,q)
     Sigudlist[i] = Sigu[-4]
     Sigmdlist[i] = Sigm[-4]
 plt.plot(dlist,Sigudlist,'-g',lw=0.5)

@@ -21,6 +21,11 @@ ff = fp.FF_sum([ff1,ff2])
 
 p = [0.1,20,0.05,20,10,15]
 
+# Set systematic errors
+for o in obslist :
+    o.data['vis'] = ff.visibilities(o,p)
+    o = o.add_fractional_noise(0.01)
+
 # Triangle
 plist = np.arange(len(p))
 fp.plot_triangle_forecast(ff,p,plist,obslist,labels=labels)
@@ -42,7 +47,7 @@ for j,ftot in enumerate([1e-3, 1e-2, 1e-1]) :
         f1 = ftot/(1+q)
         f2 = ftot*q/(1+q)
         p = [f1, 20, f2, 20, 0, 20]
-        _,Sigm = ff.uncertainties_from_obs(obs_ngeht,p)
+        _,Sigm = ff.uncertainties(obs_ngeht,p)
         Sigmlist[i] = max(Sigm[-2],Sigm[-1])
     plt.plot(qlist,Sigmlist,'b',ls=lslist[j],label='Full ngEHT '+lbllist[j])
 
@@ -55,7 +60,7 @@ for j,ftot in enumerate([1e-3, 1e-2, 1e-1]) :
         f1 = ftot/(1+q)
         f2 = ftot*q/(1+q)
         p = [f1, 20, f2, 20, 0, 20]
-        _,Sigm = ff.uncertainties_from_obs(obs,p)
+        _,Sigm = ff.uncertainties(obs,p)
         Sigmlist[i] = max(Sigm[-2],Sigm[-1])
     plt.plot(qlist,Sigmlist,'r',ls=lslist[j],label='ngEHT w/o EHT '+lbllist[j])
 
