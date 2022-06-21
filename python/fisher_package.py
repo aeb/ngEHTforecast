@@ -436,7 +436,31 @@ class FisherForecast :
         return p1,p2,csq,mcsq
 
 
+class FF_complex_gains(FisherForecast) :
+    """
+    
+    FisherForecast with complex gain reconstruction.
 
+    Args:
+      ff (FisherForecast): A FisherForecast object to which we wish to add gains.
+
+    Attributes:
+      ff (FisherForecast): The FisherForecast object before gain reconstruction.
+    """
+
+    def __init__(self,ff) :
+        self.ff = ff
+        self.scans = True
+
+    def set_gain_epochs(self,scans=False,bins=None) :
+        self.scans = True
+        self.bins = None
+        
+    def visiblities(self,obs,p,limits=None,shape=None,padding=4,verbosity=0) :
+        pass
+        
+
+    
 class FF_model_image(FisherForecast) :
     """
     
