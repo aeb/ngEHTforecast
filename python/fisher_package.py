@@ -984,12 +984,12 @@ class FF_thick_mring(FisherForecast) :
 
         # compute model visibilities
         u = obs.data['u']
-        v = obs.data['v']        
+        v = obs.data['v']
         vis = eh.model.sample_1model_uv(u,v,'thick_mring',params,pol='I')
 
         return vis
         
-    def visibility_gradients(self,u,v,p,verbosity=0):
+    def visibility_gradients(self,obs,p,verbosity=0):
         # Takes:
         # p[0] ... total flux of the ring (Jy), which is also beta_0.
         # p[1] ... ring diameter (radians)
@@ -1017,7 +1017,7 @@ class FF_thick_mring(FisherForecast) :
 
         # compute model gradients
         u = obs.data['u']
-        v = obs.data['v']        
+        v = obs.data['v']
         grad = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='I',fit_pol=True,fit_cpol=True)
 
         return grad.T
