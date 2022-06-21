@@ -855,7 +855,7 @@ class FF_thick_mring(FisherForecast) :
             params['beta_list_cpol'] = beta_list_cpol
         else:
             params['beta_list_cpol'] = np.zeros(0, dtype="complex")
-        
+
         return params
 
     def visibilities(self,u,v,p,verbosity=0):
@@ -924,6 +924,9 @@ class FF_thick_mring(FisherForecast) :
         labels = list()
         labels.append(r'$\delta F~({\rm Jy})$')
         labels.append(r'$\delta d~({\rm rad})$')
+        labels.append(r'$\delta \alpha~({\rm rad})$')
+        labels.append(r'$\delta x_0~({\rm rad})$')
+        labels.append(r'$\delta y_0~({\rm rad})$')
         
         for i in range(self.m):
             labels.append(r'$\delta {\rm Re}\beta_{m=' + str(i+1) + r'}$')
@@ -946,10 +949,6 @@ class FF_thick_mring(FisherForecast) :
             for i in range(self.mc):
                 labels.append(r'$\delta {\rm Re}\beta_{mc=' + str(i + 1) + r'}$')
                 labels.append(r'$\delta {\rm Im}\beta_{mc=' + str(i + 1) + r'}$')
-
-        labels.append(r'$\delta \alpha~({\rm rad})$')
-        labels.append(r'$\delta x_0~({\rm rad})$')
-        labels.append(r'$\delta y_0~({\rm rad})$')
 
         return labels
 
