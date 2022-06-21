@@ -452,12 +452,22 @@ class FF_complex_gains(FisherForecast) :
         self.ff = ff
         self.scans = True
 
-    def set_gain_epochs(self,scans=False,bins=None) :
+    def set_gain_epochs(self,scans=False,gain_epochs=None) :
         self.scans = True
-        self.bins = None
         
-    def visiblities(self,obs,p,limits=None,shape=None,padding=4,verbosity=0) :
-        pass
+    def visiblities(self,obs,p,verbosity=0,**kwargs) :
+
+        Vpregains = self.ff.visibilities(obs,ff,verbosity=verbosity,**kwargs)
+
+        
+        if (self.scans==True) :
+            obs.add_scans()
+            gain_epochs = obs.scans
+        elif (gain_epochs is None) :
+            tu = np.unique(obs.data['t'])
+            dt = tu[1:]-tu[:-1]
+            gain_epochs = np.zeros((2,len(tu)))
+        
         
 
     
