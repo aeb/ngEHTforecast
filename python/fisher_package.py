@@ -907,6 +907,153 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
 
         return pll
 
+class FF_thick_mring(FisherForecast) :
+
+    def __init__(self,m,mp,mc) :
+        super().__init__()
+        self.m = m
+        self.mp = mp
+        self.mc = mc
+        self.size = 5 + 2*m
+        if (self.mp > 0):
+            self.size += 2 + 4*self.mp
+        if (self.mc > 0):
+            self.size += 2 + 4*self.mc
+
+    def param_wrapper(self,p):
+        # convert unwrapped parameter list to ehtim-readable version
+
+        params = {}
+        params['F0'] = p[0]
+        params['d'] = p[1]
+        params['alpha'] = p[2]
+        params['x0'] = p[3]
+        params['y0'] = p[4]
+
+        beta_list = np.zeros(self.m, dtype="complex")
+        ind_start = 5
+        for i in range(self.m):
+            beta_list[i] = p[ind_start+(2*i)] + (1j)*p[ind_start+1+(2*i)]
+        params['beta_list'] = beta_list
+
+        if self.mp > 0:
+            beta_list_pol = np.zeros(1 + 2*self.mp, dtype="complex")
+            ind_start = 5 + 2*len(beta_list)
+            for i in range(1+2*self.mp):
+                beta_list_pol[i] = p[ind_start+(2*i)] + (1j)*p[ind_start+1+(2*i)]
+            params['beta_list_pol'] = beta_list_pol
+        else:
+            params['beta_list_pol'] = np.zeros(0, dtype="complex")
+
+        if self.mc > 0:
+            beta_list_cpol = np.zeros(1 + 2*self.mc, dtype="complex")
+            ind_start = 5 + 2*len(beta_list) + 2*len(beta_list_pol)
+            for i in range(1+2*self.mc):
+                beta_list_cpol[i] = p[ind_start+(2*i)] + (1j)*p[ind_start+1+(2*i)]
+            params['beta_list_cpol'] = beta_list_cpol
+        else:
+            params['beta_list_cpol'] = np.zeros(0, dtype="complex")
+
+        return params
+
+    def visibilities(self,u,v,p,verbosity=0):
+        # Takes:
+        # p[0] ... total flux of the ring (Jy), which is also beta_0.
+        # p[1] ... ring diameter (radians)
+        # p[2] ... ring thickness (FWHM of Gaussian convolution) (radians)
+        # p[3] ... x-coordinate (radians)
+        # p[4] ... y-coordinate (radians)
+        # p[5] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
+        #          Negative indices are determined by the condition beta_{-m} = beta_m*.
+        #          Indices are all scaled by F0 = beta_0, so they are dimensionless.
+        # p[6] ... beta list for linear polarization (if present)
+        #          list of complex Fourier coefficients, [beta_{-mp}, beta_{-mp+1}, ..., beta_{mp-1}, beta_{mp}]
+        # p[7] ... beta list for circular polarization (if present)
+        #          list of complex Fourier coefficients, [beta_{-mc}, beta_{-mc+1}, ..., beta_{mc-1}, beta_{mc}]
+
+        # set up parameter dictionary for ehtim
+        params = self.param_wrapper(p)
+
+        # # compute model visibilities
+        # vis_RR = eh.model.sample_1model_uv(u,v,'thick_mring',params,pol='RR')
+        # vis_LL = eh.model.sample_1model_uv(u,v,'thick_mring',params,pol='LL')
+        # vis_RL = eh.model.sample_1model_uv(u,v,'thick_mring',params,pol='RL')
+        # vis_LR = eh.model.sample_1model_uv(u,v,'thick_mring',params,pol='LR')
+
+        # return vis_RR, vis_LL, vis_RL, vis_LR
+
+        # compute model visibilities
+        vis = eh.model.sample_1model_uv(u,v,'thick_mring',params,pol='I')
+
+        return vis
+        
+    def visibility_gradients(self,u,v,p,verbosity=0):
+        # Takes:
+        # p[0] ... total flux of the ring (Jy), which is also beta_0.
+        # p[1] ... ring diameter (radians)
+        # p[2] ... ring thickness (FWHM of Gaussian convolution) (radians)
+        # p[3] ... x-coordinate (radians)
+        # p[4] ... y-coordinate (radians)
+        # p[5] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
+        #          Negative indices are determined by the condition beta_{-m} = beta_m*.
+        #          Indices are all scaled by F0 = beta_0, so they are dimensionless.
+        # p[6] ... beta list for linear polarization (if present)
+        #          list of complex Fourier coefficients, [beta_{-mp}, beta_{-mp+1}, ..., beta_{mp-1}, beta_{mp}]
+        # p[7] ... beta list for circular polarization (if present)
+        #          list of complex Fourier coefficients, [beta_{-mc}, beta_{-mc+1}, ..., beta_{mc-1}, beta_{mc}]
+
+        # set up parameter dictionary for ehtim
+        params = self.param_wrapper(p)
+
+        # # compute model gradients
+        # grad_RR = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='RR',fit_pol=True,fit_cpol=True)
+        # grad_LL = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='LL',fit_pol=True,fit_cpol=True)
+        # grad_RL = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='RL',fit_pol=True,fit_cpol=True)
+        # grad_LR = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='LR',fit_pol=True,fit_cpol=True)
+
+        # return grad_RR.T, grad_LL.T, grad_RL.T, grad_LR.T
+
+        # compute model gradients
+        grad = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='I',fit_pol=True,fit_cpol=True)
+
+        return grad.T
+
+    def parameter_labels(self):
+        labels = list()
+        labels.append(r'$\delta F~({\rm Jy})$')
+        labels.append(r'$\delta d~({\rm rad})$')
+        labels.append(r'$\delta \alpha~({\rm rad})$')
+        labels.append(r'$\delta x_0~({\rm rad})$')
+        labels.append(r'$\delta y_0~({\rm rad})$')
+        
+        for i in range(self.m):
+            labels.append(r'$\delta {\rm Re}\beta_{m=' + str(i+1) + r'}$')
+            labels.append(r'$\delta {\rm Im}\beta_{m=' + str(i+1) + r'}$')
+        if self.mp > 0:
+            for i in range(self.mp):
+                labels.append(r'$\delta {\rm Re}\beta_{mp=-' + str(self.mp - i) + r'}$')
+                labels.append(r'$\delta {\rm Im}\beta_{mp=-' + str(self.mp - i) + r'}$')
+            labels.append(r'$\delta {\rm Re}\beta_{mp=0}$')
+            labels.append(r'$\delta {\rm Im}\beta_{mp=0}$')
+            for i in range(self.mp):
+                labels.append(r'$\delta {\rm Re}\beta_{mp=' + str(i + 1) + r'}$')
+                labels.append(r'$\delta {\rm Im}\beta_{mp=' + str(i + 1) + r'}$')
+        if self.mc > 0:
+            for i in range(self.mc):
+                labels.append(r'$\delta {\rm Re}\beta_{mc=-' + str(self.mc - i) + r'}$')
+                labels.append(r'$\delta {\rm Im}\beta_{mc=-' + str(self.mc - i) + r'}$')
+            labels.append(r'$\delta {\rm Re}\beta_{mc=0}$')
+            labels.append(r'$\delta {\rm Im}\beta_{mc=0}$')
+            for i in range(self.mc):
+                labels.append(r'$\delta {\rm Re}\beta_{mc=' + str(i + 1) + r'}$')
+                labels.append(r'$\delta {\rm Im}\beta_{mc=' + str(i + 1) + r'}$')
+
+        return labels
+
+
+
+
+
 
 
     
@@ -1203,5 +1350,4 @@ if __name__ == "__main__" :
     plt.savefig('ring_forecast_tri.png',dpi=300)
     
     # plt.show()
-
 
