@@ -17,6 +17,7 @@ class FisherForecast :
     def __init__(self) :
         self.size = 0
         self.argument_hash = None
+        self.prior_sigma_list = []
         
     def visibilities(self,obs,p,verbosity=0) :
         """
@@ -65,6 +66,18 @@ class FisherForecast :
         raise(RuntimeError("parameter_labels function not implemented in base class!"))
 
         return []
+
+    def add_gaussian_prior(self,pindex,sigma) :
+        if (pindex>self.size) :
+            raise(RuntimeError("Parameter %i does not exist, expected in [0,%i]."%(pindex,self.size-1)))
+        if (len(self.prior_sigma_list)==0) :
+            self.prior_sigma_list = self.size*[None]
+        self.prior_sigma_list[pindex] = sigma
+        
+    def add_gaussian_prior_list(self,sigma_list) :
+        self.prior_sigma_list = copy.copy(sigma_list)
+        if (len(self.prior_sigma_list)!=self.size) :
+            raise(RuntimeError("Priors must be specified for all parameters if set by list.  If sigma is None, no prior will be applied."))
 
     def generate_image(self,p,limits=None,shape=None,verbosity=0) :
 
@@ -212,7 +225,12 @@ class FisherForecast :
             for i in range(self.size) :
                 for j in range(self.size) :
                     covar[i][j] = 0.5*np.sum( np.conj(gradV[:,i])*gradV[:,j]/obs.data['sigma']**2 + gradV[:,i]*np.conj(gradV[:,j])/obs.data['sigma']**2)
-            
+
+            if (len(self.prior_sigma_list)>0) :
+                for i in range(self.size) :
+                    if (not self.prior_sigma_list[i] is None) :
+                        covar[i][i] += 1.0/self.prior_sigma_list[i]**2
+                    
         return covar
 
     # def fisher_covar_from_obs(self,obs,p,**kwargs) :
@@ -1075,6 +1093,18 @@ class FF_sum(FisherForecast) :
             self.size = ff_list[0].size
             for ff in self.ff_list[1:] :
                 self.size += ff.size+2
+
+        self.prior_sigma_list = []
+        if (not ff_list is None) :
+            if (len(ff_list[0].prior_sigma_list)==0) :
+                self.prior_sigma_list.extend((ff_list[0].size)*[None])
+            else :
+                self.prior_sigma_list.extend(ff_list[0].prior_sigma_list)
+            for ff in self.ff_list[1:] :
+                if (len(ff.prior_sigma_list)==0) :
+                    self.prior_sigma_list.extend((ff.size+2)*[None])
+                else :
+                    self.prior_sigma_list.extend(ff.prior_sigma_list+[None,None])
                 
 
     def add(self,ff) :
@@ -1083,6 +1113,19 @@ class FF_sum(FisherForecast) :
             self.size += ff.size
         else :
             self.size += ff.size+2
+
+        if (len(ff.prior_sigma_list)==0) :
+            if (len(self.ff_list)==1) :
+                self.prior_sigma_list.extend(ff.size*[None])
+            else :
+                self.prior_sigma_list.extend((ff.size+2)*[None])
+        else :
+            if (len(self.ff_list)==1) :
+                self.prior_sigma_list.extend(ff.prior_sigma_list)
+            else :
+                self.prior_sigma_list.extend(ff.prior_sigma_list+[None,None])
+                
+            
             
     def visibilities(self,obs,p,verbosity=0) :
         V = 0.0j*obs.data['u']
