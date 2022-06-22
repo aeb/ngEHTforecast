@@ -35,13 +35,13 @@ class FisherForecast :
           V (np.array): list of complex visibilities computed at observations.
         """
 
-        raise(RuntimeError("visbilities function not implemented in base class!"))
+        raise(RuntimeError("visibilities function not implemented in base class!"))
         
         # Return something
         return 0*obs.data['u']
 
             
-    def visibility_gradients(self,obs,p,stokes='I',verbosity=0) :
+    def visibility_gradients(self,obs,p,stokes='I',verbosity=0,**kwargs) :
         """
         Generates visibilities associated with a given model image object.  Note 
         that this uses FFTs to create the visibilities and then interpolates.
@@ -57,7 +57,7 @@ class FisherForecast :
           gradV (np.ndarray): list of complex visibilities gradients computed at observations.
         """
 
-        raise(RuntimeError("visbility_gradients function not implemented in base class!"))
+        raise(RuntimeError("visibility_gradients function not implemented in base class!"))
 
         # Return something    
         return 0*obs.data['u']
@@ -478,26 +478,113 @@ class FF_complex_gains(FisherForecast) :
     """
 
     def __init__(self,ff) :
+        super().__init__()
         self.ff = ff
-        self.scans = True
-
+        self.scans = False
+        self.gain_epochs = None
+        self.plbls = self.ff.parameter_labels()
+        self.prior_sigma_list = self.ff.prior_sigma_list
+        self.gain_amplitude_priors = {}
+        
     def set_gain_epochs(self,scans=False,gain_epochs=None) :
-        self.scans = True
+        self.scans = scans
+        self.gain_epochs = gain_epochs
         
-    def visiblities(self,obs,p,verbosity=0,**kwargs) :
-
-        Vpregains = self.ff.visibilities(obs,ff,verbosity=verbosity,**kwargs)
-
-        
+    def generate_gain_epochs(self,obs) :
         if (self.scans==True) :
             obs.add_scans()
-            gain_epochs = obs.scans
-        elif (gain_epochs is None) :
-            tu = np.unique(obs.data['t'])
+            self.gain_epochs = obs.scans
+        elif (self.gain_epochs is None) :
+            tu = np.unique(obs.data['time'])
             dt = tu[1:]-tu[:-1]
-            gain_epochs = np.zeros((2,len(tu)))
+            dt = np.array([dt[0]]+list(dt)+[dt[-1]])
+            self.gain_epochs = np.zeros((len(tu),2))
+            self.gain_epochs[:,0] = tu - 0.5*dt[:-1]
+            self.gain_epochs[:,1] = tu + 0.5*dt[1:]
+
+        #     print("tu:",tu)
+        #     print("dt:",dt)
+            
+        # print(self.gain_epochs)
+
         
+    def visiblities(self,obs,p,stokes='I',verbosity=0,**kwargs) :
+        return self.ff.visibilities(obs,p,stokes=stokes,verbosity=verbosity,**kwargs)
+
+    def visibility_gradients(self,obs,p,stokes='I',verbosity=0,**kwargs) :
+        V_pg = self.ff.visibilities(obs,p,stokes=stokes,verbosity=verbosity,**kwargs)
+        gradV_pg = self.ff.visibility_gradients(obs,p,verbosity=verbosity,**kwargs)
         
+        # Start with model parameters
+        gradV = list(gradV_pg.T)
+
+        print("FOO",gradV)
+
+        # Generate the gain epochs and update the size
+        self.generate_gain_epochs(obs)
+        station_list = obs.tarr['site']
+        nt = len(station_list)
+        self.size = self.ff.size
+        self.plbls = self.ff.parameter_labels()
+        self.prior_sigma_list = self.ff.prior_sigma_list
+        
+        # Now add gains
+        for ge in self.gain_epochs :
+            inge = (obs.data['time']>=ge[0])*(obs.data['time']<ge[1])
+
+            dVda = 0*V_pg
+            dVdp = 0*V_pg
+            for station in station_list :
+                # G1
+                inget1 = inge*(obs.data['t1']==station)
+                if (np.any(inget1)) :
+                    dVda[inget1] = V_pg[inget1]
+                    dVdp[inget1] = 1.0j * V_pg[inget1]
+                    
+                # G1*
+                inget2 = inge*(obs.data['t2']==station)
+                if (np.any(inget2)) :
+                    dVda[inget2] = V_pg[inget2]
+                    dVdp[inget2] = -1.0j * V_pg[inget2]
+
+                # Check if any cases
+                if (np.any(inget1) or np.any(inget1)) :
+                    gradV.append(dVda)
+                    gradV.append(dVdp)
+                    self.size +=2
+                    self.plbls.append(r'$\ln(|G|_{%s})$'%(station))
+                    self.plbls.append(r'${\rm arg}(G_{%s})$'%(station))
+
+                    if ( len(list(self.gain_amplitude_priors.keys()))>0 ) :
+                        if ( station in self.gain_amplitude_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_amplitude_priors[station])
+                            self.prior_sigma_list.append(None)
+                        elif ( 'All' in self.gain_amplitude_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_amplitude_priors['All'])
+                            self.prior_sigma_list.append(None)
+                        else :
+                            self.prior_sigma_list.append(None)
+                            self.prior_sigma_list.append(None)
+                    else :
+                            self.prior_sigma_list.append(None)
+                            self.prior_sigma_list.append(None)
+
+        gradV = np.array(gradV)
+
+        print("FOO2:",gradV.shape)
+
+        return gradV.T
+
+    def parameter_labels(self) :
+        return self.plbls
+
+    def set_gain_amplitude_prior(self,sigma,station=None) :
+        if (station is None) :
+            self.gain_amplitude_priors = {'All':sigma}
+        else :
+            self.gain_amplitude_priors = {station:sigma}
+    
+    
 
     
 class FF_model_image(FisherForecast) :
