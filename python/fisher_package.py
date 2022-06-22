@@ -198,8 +198,10 @@ class FisherForecast :
 
                 gradV_fd.append((Vp-Vm)/(2.0*h[i]))
             gradV_fd = np.array(gradV_fd).T
+            
         else:
             gradV_an_RR, gradV_an_LL, gradV_an_RL, gradV_an_LR = self.visibility_gradients(obs,p,stokes='full',verbosity=verbosity)
+            gradV_an = gradV_an_RR + gradV_an_LL + gradV_an_RL + gradV_an_LR
             gradV_fd = []
             q = np.copy(p)
             for i in range(self.size) :
@@ -211,7 +213,6 @@ class FisherForecast :
 
                 gradV_fd.append(((Vp_RR-Vm_RR)/(2.0*h[i])) + ((Vp_LL-Vm_LL)/(2.0*h[i])) + ((Vp_RL-Vm_RL)/(2.0*h[i])) + ((Vp_LR-Vm_LR)/(2.0*h[i])))
             gradV_fd = np.array(gradV_fd).T
-
 
         lbls = self.parameter_labels()
         err = (gradV_fd-gradV_an)
@@ -274,8 +275,8 @@ class FisherForecast :
     #         self.covar = self.fisher_covar(u,v,sig,p,**kwargs)
     #     return self.covar
 
-    def uniparameter_uncertainties(self,obs,p,**kwargs) :
-        C = 2.0*self.fisher_covar(obs,p,**kwargs)
+    def uniparameter_uncertainties(self,obs,p,stokes='I',**kwargs) :
+        C = 2.0*self.fisher_covar(obs,p,stokes=stokes,**kwargs)
         Sig_uni = np.zeros(self.size)
         ilist = np.arange(self.size)
         for i in ilist :
@@ -283,8 +284,8 @@ class FisherForecast :
             Sig_uni[i] = np.sqrt(2.0/N)
         return Sig_uni
 
-    def marginalized_uncertainties(self,obs,p,**kwargs) :
-        C = 2.0*self.fisher_covar(obs,p,**kwargs)
+    def marginalized_uncertainties(self,obs,p,stokes='I',**kwargs) :
+        C = 2.0*self.fisher_covar(obs,p,stokes=stokes,**kwargs)
         Sig_marg = np.zeros(self.size)
         M = np.zeros((self.size-1,self.size-1))
         v = np.zeros(self.size-1)
@@ -301,8 +302,8 @@ class FisherForecast :
             Sig_marg[i] = np.sqrt(2.0/mN)
         return Sig_marg
 
-    def uncertainties(self,obs,p,**kwargs) :
-        C = 2.0*self.fisher_covar(obs,p,**kwargs)
+    def uncertainties(self,obs,p,stokes='I',**kwargs) :
+        C = 2.0*self.fisher_covar(obs,p,stokes=stokes,**kwargs)
 
         # print("FOO:",C)
         
@@ -389,8 +390,8 @@ class FisherForecast :
     #     return Sig_uni,Sig_marg
     
 
-    def joint_biparameter_chisq(self,obs,p,i1,i2,**kwargs) :
-        C = 2.0*self.fisher_covar(obs,p,**kwargs)
+    def joint_biparameter_chisq(self,obs,p,i1,i2,stokes='I',**kwargs) :
+        C = 2.0*self.fisher_covar(obs,p,stokes=stokes,**kwargs)
         M = np.zeros((self.size-2,self.size-2))
         v1 = np.zeros(self.size-2)
         v2 = np.zeros(self.size-2)
@@ -1093,22 +1094,21 @@ class FF_thick_mring(FisherForecast) :
 
         params = {}
         params['F0'] = p[0]
-        params['d'] = p[1]
-        params['alpha'] = p[2]
-        params['x0'] = p[3]
-        params['y0'] = p[4]
-
+        params['d'] = p[1] * eh.RADPERUAS
+        params['alpha'] = p[2] * eh.RADPERUAS
+        params['x0'] = p[3] * eh.RADPERUAS
+        params['y0'] = p[4] * eh.RADPERUAS
         beta_list = np.zeros(self.m, dtype="complex")
         ind_start = 5
         for i in range(self.m):
-            beta_list[i] = p[ind_start+(2*i)] + (1j)*p[ind_start+1+(2*i)]
+            beta_list[i] = p[ind_start+(2*i)]*np.exp((1j)*p[ind_start+1+(2*i)])
         params['beta_list'] = beta_list
 
         if self.mp > 0:
             beta_list_pol = np.zeros(1 + 2*self.mp, dtype="complex")
             ind_start = 5 + 2*len(beta_list)
             for i in range(1+2*self.mp):
-                beta_list_pol[i] = p[ind_start+(2*i)] + (1j)*p[ind_start+1+(2*i)]
+                beta_list_pol[i] = p[ind_start+(2*i)]*np.exp((1j)*p[ind_start+1+(2*i)])
             params['beta_list_pol'] = beta_list_pol
         else:
             params['beta_list_pol'] = np.zeros(0, dtype="complex")
@@ -1117,7 +1117,7 @@ class FF_thick_mring(FisherForecast) :
             beta_list_cpol = np.zeros(1 + 2*self.mc, dtype="complex")
             ind_start = 5 + 2*len(beta_list) + 2*len(beta_list_pol)
             for i in range(1+2*self.mc):
-                beta_list_cpol[i] = p[ind_start+(2*i)] + (1j)*p[ind_start+1+(2*i)]
+                beta_list_cpol[i] = p[ind_start+(2*i)]*np.exp((1j)*p[ind_start+1+(2*i)])
             params['beta_list_cpol'] = beta_list_cpol
         else:
             params['beta_list_cpol'] = np.zeros(0, dtype="complex")
@@ -1182,43 +1182,73 @@ class FF_thick_mring(FisherForecast) :
         # compute model gradients
         if stokes == 'I':
             grad = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='I',fit_pol=True,fit_cpol=True)
+            
+            # unit conversion
+            grad[1,:] *= eh.RADPERUAS
+            grad[2,:] *= eh.RADPERUAS
+            grad[3,:] *= eh.RADPERUAS
+            grad[4,:] *= eh.RADPERUAS
+            
             return grad.T
+
         else:
             grad_RR = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='RR',fit_pol=True,fit_cpol=True)
             grad_LL = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='LL',fit_pol=True,fit_cpol=True)
             grad_RL = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='RL',fit_pol=True,fit_cpol=True)
             grad_LR = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='LR',fit_pol=True,fit_cpol=True)
+            
+            # unit conversion
+            grad_RR[1,:] *= eh.RADPERUAS
+            grad_RR[2,:] *= eh.RADPERUAS
+            grad_RR[3,:] *= eh.RADPERUAS
+            grad_RR[4,:] *= eh.RADPERUAS
+
+            grad_LL[1,:] *= eh.RADPERUAS
+            grad_LL[2,:] *= eh.RADPERUAS
+            grad_LL[3,:] *= eh.RADPERUAS
+            grad_LL[4,:] *= eh.RADPERUAS
+
+            grad_RL[1,:] *= eh.RADPERUAS
+            grad_RL[2,:] *= eh.RADPERUAS
+            grad_RL[3,:] *= eh.RADPERUAS
+            grad_RL[4,:] *= eh.RADPERUAS
+
+            grad_LR[1,:] *= eh.RADPERUAS
+            grad_LR[2,:] *= eh.RADPERUAS
+            grad_LR[3,:] *= eh.RADPERUAS
+            grad_LR[4,:] *= eh.RADPERUAS
+
             return grad_RR.T, grad_LL.T, grad_RL.T, grad_LR.T
 
     def parameter_labels(self):
         labels = list()
         labels.append(r'$\delta F~({\rm Jy})$')
-        labels.append(r'$\delta d~({\rm rad})$')
-        labels.append(r'$\delta \alpha~({\rm rad})$')
-        labels.append(r'$\delta x_0~({\rm rad})$')
-        labels.append(r'$\delta y_0~({\rm rad})$')
+        labels.append(r'$\delta d~(\mu{\rm as})$')
+        labels.append(r'$\delta \alpha~(\mu{\rm as})$')
+        labels.append(r'$\delta x_0~(\mu{\rm as})$')
+        labels.append(r'$\delta y_0~(\mu{\rm as})$')
         
         for i in range(self.m):
-            labels.append(r'$\delta {\rm Re}\beta_{m=' + str(i+1) + r'}$')
-            labels.append(r'$\delta {\rm Im}\beta_{m=' + str(i+1) + r'}$')
+            labels.append(r'$\delta |\beta_{m=' + str(i+1) + r'}|$')
+            labels.append(r'$\delta {\rm arg}\beta_{m=' + str(i+1) + r'}$')
         if self.mp > 0:
             for i in range(self.mp):
-                labels.append(r'$\delta {\rm Re}\beta_{mp=-' + str(self.mp - i) + r'}$')
-                labels.append(r'$\delta {\rm Im}\beta_{mp=-' + str(self.mp - i) + r'}$')
-            labels.append(r'$\delta {\rm Re}\beta_{mp=0}$')
-            labels.append(r'$\delta {\rm Im}\beta_{mp=0}$')
+                labels.append(r'$\delta |\beta_{mp=-' + str(self.mp - i) + r'}|$')
+                labels.append(r'$\delta {\rm arg}\beta_{mp=-' + str(self.mp - i) + r'}$')
+            labels.append(r'$\delta |\beta_{mp=0}|$')
+            labels.append(r'$\delta {\rm arg}\beta_{mp=0}$')
             for i in range(self.mp):
-                labels.append(r'$\delta {\rm Re}\beta_{mp=' + str(i + 1) + r'}$')
-                labels.append(r'$\delta {\rm Im}\beta_{mp=' + str(i + 1) + r'}$')
+                labels.append(r'$\delta |\beta_{mp=' + str(i + 1) + r'}|$')
+                labels.append(r'$\delta {\rm arg}\beta_{mp=' + str(i + 1) + r'}$')
         if self.mc > 0:
             for i in range(self.mc):
-                labels.append(r'$\delta {\rm Re}\beta_{mc=-' + str(self.mc - i) + r'}$')
-                labels.append(r'$\delta {\rm Im}\beta_{mc=-' + str(self.mc - i) + r'}$')
-            labels.append(r'$\delta {\rm Re}\beta_{mc=0}$')
-            labels.append(r'$\delta {\rm Im}\beta_{mc=0}$')
+                labels.append(r'$\delta |\beta_{mc=-' + str(self.mc - i) + r'}|$')
+                labels.append(r'$\delta {\rm arg}\beta_{mc=-' + str(self.mc - i) + r'}$')
+            labels.append(r'$\delta |\beta_{mc=0}|$')
+            labels.append(r'$\delta {\rm arg}\beta_{mc=0}$')
             for i in range(self.mc):
-                labels.append(r'$\delta {\rm Re}\beta_{mc=' + str(i + 1) + r'}$')
-                labels.append(r'$\delta {\rm Im}\beta_{mc=' + str(i + 1) + r'}$')
+                labels.append(r'$\delta |\beta_{mc=' + str(i + 1) + r'}|$')
+                labels.append(r'$\delta {\rm arg}\beta_{mc=' + str(i + 1) + r'}$')
 
         return labels
 
@@ -1354,7 +1384,7 @@ _ff_color_list = ['r','b','g','orange','purple']
 _ff_cmap_list = ['Reds_r','Blues_r','Greens_r','Oranges_r','Purples_r']
 _ff_color_size = 5
     
-def plot_1d_forecast(ff,p,i1,obslist,labels=None) :
+def plot_1d_forecast(ff,p,i1,obslist,stokes='I',labels=None) :
 
     if (labels is None) :
         labels = len(obslist)*[None]
@@ -1366,7 +1396,7 @@ def plot_1d_forecast(ff,p,i1,obslist,labels=None) :
     
     sigdict = {}
     for k,obs in enumerate(obslist) :
-        _,Sigm = ff.uncertainties(obs,p)
+        _,Sigm = ff.uncertainties(obs,p,stokes=stokes)
 
         x = np.linspace(-5*Sigm[i1],5*Sigm[i1],n)
         y = np.exp(-x**2/(2.0*Sigm[i1]**2)) / np.sqrt(2.0*np.pi*Sigm[i1]**2)
@@ -1382,7 +1412,7 @@ def plot_1d_forecast(ff,p,i1,obslist,labels=None) :
     return plt.gcf(),plt.gca()
 
 
-def plot_2d_forecast(ff,p,i1,i2,obslist,labels=None) :
+def plot_2d_forecast(ff,p,i1,i2,obslist,stokes='I',labels=None) :
     
     if (labels is None) :
         labels = len(obslist)*[None]
@@ -1391,7 +1421,7 @@ def plot_2d_forecast(ff,p,i1,i2,obslist,labels=None) :
     plt.axes([0.2,0.2,0.75,0.75])
 
     for k,obs in enumerate(obslist) :
-        d,w,csq,mcsq = ff.joint_biparameter_chisq(obs,p,i1,i2)
+        d,w,csq,mcsq = ff.joint_biparameter_chisq(obs,p,i1,i2,stokes=stokes)
         plt.contourf(d,w,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=0.75,levels=[0,1,2,3])
         plt.contour(d,w,np.sqrt(mcsq),colors=_ff_color_list[k%_ff_color_size],alpha=1,levels=[0,1,2,3])
         plt.plot([],[],'-',color=_ff_color_list[k%_ff_color_size],label=labels[k])
@@ -1404,7 +1434,7 @@ def plot_2d_forecast(ff,p,i1,i2,obslist,labels=None) :
     return plt.gcf(),plt.gca()
 
 
-def plot_triangle_forecast(ff,p,ilist,obslist,labels=None) :
+def plot_triangle_forecast(ff,p,ilist,obslist,stokes='I',labels=None) :
 
     wdx = 2
     wdy = 2
@@ -1429,7 +1459,7 @@ def plot_triangle_forecast(ff,p,ilist,obslist,labels=None) :
 
     xlim_dict = {}
     for k,obs in enumerate(obslist) :
-        _,Sigm = ff.uncertainties(obs,p)
+        _,Sigm = ff.uncertainties(obs,p,stokes=stokes)
 
         for j in range(ni) :
             jj = ilist[j]
@@ -1451,7 +1481,7 @@ def plot_triangle_forecast(ff,p,ilist,obslist,labels=None) :
 
                 plt.sca(axs[i,j])
         
-                p1,p2,csq,mcsq = ff.joint_biparameter_chisq(obs,p,ii,jj)
+                p1,p2,csq,mcsq = ff.joint_biparameter_chisq(obs,p,ii,jj,stokes=stokes)
                 plt.contourf(p1,p2,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=0.75,levels=[0,1,2,3])
                 plt.contour(p1,p2,np.sqrt(mcsq),colors=_ff_color_list[k%_ff_color_size],alpha=1,levels=[0,1,2,3])
 
