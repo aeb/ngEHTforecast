@@ -519,7 +519,7 @@ class FF_complex_gains(FisherForecast) :
         # Start with model parameters
         gradV = list(gradV_pg.T)
 
-        print("FOO",gradV)
+        print("FOO1",gradV_pg.shape)
 
         # Generate the gain epochs and update the size
         self.generate_gain_epochs(obs)
@@ -570,11 +570,11 @@ class FF_complex_gains(FisherForecast) :
                             self.prior_sigma_list.append(None)
                             self.prior_sigma_list.append(None)
 
-        gradV = np.array(gradV)
+        gradV = np.array(gradV).T
 
         print("FOO2:",gradV.shape)
 
-        return gradV.T
+        return gradV
 
     def parameter_labels(self) :
         return self.plbls
