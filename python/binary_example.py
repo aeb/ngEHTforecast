@@ -80,3 +80,72 @@ plt.ylim(top=1e2)
 plt.savefig('binary_forecast_prec.png',dpi=300)
 
 
+## Plot of ngeht separation precision as functions of separation
+plt.figure(figsize=(5,4))
+plt.axes([0.15,0.15,0.8,0.8])
+
+#ffg = ff
+# ffg = fp.FF_complex_gains_single_epoch(ff)
+ffg = fp.FF_complex_gains(ff)
+ffg.set_gain_epochs(scans=True)
+ffg.set_gain_amplitude_prior(0.1)
+
+seplist = np.linspace(1,40,32)
+lslist = [':','--','-']
+lbllist = ['1 mJy','10 mJy','100 mJy']
+# lslist = ['-']
+# lbllist = ['1 Jy']
+for j,ftot in enumerate([1e-3, 1e-2, 1e-1]) :
+# for j,ftot in enumerate([1.0]) :
+
+    Sigmlist = 0.0*seplist
+
+    q = 1
+
+    print("Starting!")
+    
+    for i,s in enumerate(seplist) :
+        f1 = ftot/(1+q)
+        f2 = ftot*q/(1+q)
+        p = [f1, 20, f2, 20, 0, s]
+        _,Sigm = ffg.uncertainties(obs_ngeht,p)
+        Sigmlist[i] = Sigm[5]
+    plt.plot(seplist,Sigmlist,'b',ls=lslist[j],label='Full ngEHT '+lbllist[j])
+
+    print("%15s %15s"%("Sep.","Sigma"))
+    for i in range(len(seplist)) :
+        print("%15.8g %15.8g"%(seplist[i],Sigmlist[i]))
+    
+    print("Full -------- %g %g ---------------"%(j,ftot))
+    
+for j,ftot in enumerate([1e-3, 1e-2, 1e-1]) :
+
+    Sigmlist = 0.0*seplist
+
+    q = 1
+    
+    for i,s in enumerate(seplist) :
+        f1 = ftot/(1+q)
+        f2 = ftot*q/(1+q)
+        p = [f1, 20, f2, 20, 0, s]
+        _,Sigm = ffg.uncertainties(obs,p)
+        Sigmlist[i] = Sigm[5]
+    plt.plot(seplist,Sigmlist,'r',ls=lslist[j],label='ngEHT w/o EHT '+lbllist[j])
+
+    print("Red. -------- %g %g ---------------"%(j,ftot))
+
+plt.legend()
+
+plt.grid(True,alpha=0.25)
+plt.xlabel(r'Separation $(\mu{\rm as})$')
+plt.ylabel(r'Separation Uncertainty $(\mu{\rm as})$')
+# plt.xscale('log')
+plt.yscale('log')
+
+plt.axhline(p[-1],ls='--',color='k')
+plt.xlim((0,40))
+#plt.ylim(top=1e2)
+
+plt.savefig('binary_forecast_separationo_prec.png',dpi=300)
+
+
