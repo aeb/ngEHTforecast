@@ -255,9 +255,9 @@ class FisherForecast :
                 for i in range(self.size) :
                     for j in range(self.size) :
                         self.covar[i][j] = 0.5*np.sum( np.conj(grad_RR[:,i])*grad_RR[:,j]/obs.data['rrsigma']**2 + grad_RR[:,i]*np.conj(grad_RR[:,j])/obs.data['rrsigma']**2)
-                        covar[i][j] += 0.5*np.sum( np.conj(grad_LL[:,i])*grad_LL[:,j]/obs.data['llsigma']**2 + grad_LL[:,i]*np.conj(grad_LL[:,j])/obs.data['llsigma']**2)
-                        covar[i][j] += 0.5*np.sum( np.conj(grad_RL[:,i])*grad_RL[:,j]/obs.data['rlsigma']**2 + grad_RL[:,i]*np.conj(grad_RL[:,j])/obs.data['rlsigma']**2)
-                        covar[i][j] += 0.5*np.sum( np.conj(grad_LR[:,i])*grad_LR[:,j]/obs.data['lrsigma']**2 + grad_LR[:,i]*np.conj(grad_LR[:,j])/obs.data['lrsigma']**2)
+                        self.covar[i][j] += 0.5*np.sum( np.conj(grad_LL[:,i])*grad_LL[:,j]/obs.data['llsigma']**2 + grad_LL[:,i]*np.conj(grad_LL[:,j])/obs.data['llsigma']**2)
+                        self.covar[i][j] += 0.5*np.sum( np.conj(grad_RL[:,i])*grad_RL[:,j]/obs.data['rlsigma']**2 + grad_RL[:,i]*np.conj(grad_RL[:,j])/obs.data['rlsigma']**2)
+                        self.covar[i][j] += 0.5*np.sum( np.conj(grad_LR[:,i])*grad_LR[:,j]/obs.data['lrsigma']**2 + grad_LR[:,i]*np.conj(grad_LR[:,j])/obs.data['lrsigma']**2)
 
             if (len(self.prior_sigma_list)>0) :
                 for i in range(self.size) :
@@ -490,7 +490,7 @@ class FF_complex_gains_single_epoch(FisherForecast) :
         self.prior_sigma_list = self.ff.prior_sigma_list
         self.gain_amplitude_priors = {}
         
-    def visiblities(self,obs,p,verbosity=0,**kwargs) :
+    def visibilities(self,obs,p,verbosity=0,**kwargs) :
         return self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
 
     def visibility_gradients(self,obs,p,verbosity=0,**kwargs) :
@@ -611,7 +611,7 @@ class FF_complex_gains(FisherForecast) :
             self.gain_epochs[:,0] = tu - 0.5*dt[:-1]
             self.gain_epochs[:,1] = tu + 0.5*dt[1:]
     
-    def visiblities(self,obs,p,verbosity=0,**kwargs) :
+    def visibilities(self,obs,p,verbosity=0,**kwargs) :
         return self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
 
     def visibility_gradients(self,obs,p,verbosity=0,**kwargs) :
@@ -1036,6 +1036,9 @@ class FF_splined_raster(FisherForecast) :
 
         self.stokes = stokes
 
+        if self.stokes != 'I':
+            self.size *= 4
+
     def visibilities(self,obs,p,verbosity=0) :
         # Takes:
         #  p[0] ... p[0,0]
@@ -1045,18 +1048,38 @@ class FF_splined_raster(FisherForecast) :
 
         u = obs.data['u']
         v = obs.data['v']
-
-        V = 0.0j*u
         
         # Add themage
         if self.stokes == 'I':
+            V = 0.0j*u
             for i in range(self.npx) :
                 for j in range(self.npx) :
                     V = V + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * ty.vis.W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*ty.vis.W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
+            return V
+        
         else:
-            raise(Exception("Polarized visibilities not yet implemented in FF_splined_raster!"))
+            I = 0.0j*u
+            Q = 0.0j*u
+            U = 0.0j*u
+            V = 0.0j*u
 
-        return V
+            countI = 0
+            for i in range(self.npx) :
+                for j in range(self.npx) :
+                    I = I + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * ty.vis.W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*ty.vis.W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
+                    countI += 1
+            for i in range(self.npx) :
+                for j in range(self.npx) :
+                    Q = Q + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[countI + i+self.npx*j]) * ty.vis.W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*ty.vis.W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
+                    U = U + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[2*countI + i+self.npx*j]) * ty.vis.W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*ty.vis.W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
+                    V = V + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[3*countI + i+self.npx*j]) * ty.vis.W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*ty.vis.W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
+
+            RR = I + V
+            LL = I - V
+            RL = Q + (1.0j)*U
+            LR = Q - (1.0j)*U
+
+            return RR, LL, RL, LR
         
     def visibility_gradients(self,obs,p,verbosity=0) :
         # Takes:
@@ -1064,24 +1087,50 @@ class FF_splined_raster(FisherForecast) :
         #  p[1] ... p[1,0]
         #  ...
         #  p[NxN-1] = p[N-1,N-1]
-
+        
         u = obs.data['u']
         v = obs.data['v']
-
-        gradV = []
-
+        
         # Add themage
         if self.stokes == 'I':
+            gradV = list()
             for j in range(self.npx) :
                 for i in range(self.npx) :
                     gradV.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * ty.vis.W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*ty.vis.W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
-
             gradV = np.array(gradV)
+            return gradV.T
         else:
-            raise(Exception("Polarized visibility gradients not yet implemented in FF_splined_raster!"))
-        
-        return gradV.T
-        
+            gradI = list()
+            gradQ = list()
+            gradU = list()
+            gradV = list()
+            
+            countI = 0
+            for j in range(self.npx) :
+                for i in range(self.npx) :
+                    gradI.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * ty.vis.W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*ty.vis.W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
+                    countI += 1
+            for j in range(self.npx) :
+                for i in range(self.npx) :
+                    gradQ.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[countI + i+self.npx*j]) * ty.vis.W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*ty.vis.W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
+                    gradU.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[2*countI + i+self.npx*j]) * ty.vis.W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*ty.vis.W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
+                    gradV.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[3*countI + i+self.npx*j]) * ty.vis.W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*ty.vis.W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
+            gradI_small = np.array(gradI).T
+            gradQ_small = np.array(gradQ).T
+            gradU_small = np.array(gradU).T
+            gradV_small = np.array(gradV).T
+
+            gradI = np.block([1.0*gradI_small,0.0*gradQ_small,0.0*gradU_small,0.0*gradV_small])
+            gradQ = np.block([0.0*gradI_small,1.0*gradQ_small,0.0*gradU_small,0.0*gradV_small])
+            gradU = np.block([0.0*gradI_small,0.0*gradQ_small,1.0*gradU_small,0.0*gradV_small])
+            gradV = np.block([0.0*gradI_small,0.0*gradQ_small,0.0*gradU_small,1.0*gradV_small])
+
+            grad_RR = gradI + gradV
+            grad_LL = gradI - gradV
+            grad_RL = gradQ + (1.0j)*gradU
+            grad_LR = gradQ - (1.0j)*gradU
+            
+            return grad_RR, grad_LL, grad_RL, grad_LR
 
     def parameter_labels(self) :
 
@@ -1089,6 +1138,17 @@ class FF_splined_raster(FisherForecast) :
         for j in range(self.npx) :
             for i in range(self.npx) :
                 pll.append( r'$\delta I_{%i,%i}$'%(i,j) )
+
+        if self.stokes != 'I':
+            for j in range(self.npx) :
+                for i in range(self.npx) :
+                    pll.append( r'$\delta Q_{%i,%i}$'%(i,j) )
+            for j in range(self.npx) :
+                for i in range(self.npx) :
+                    pll.append( r'$\delta U_{%i,%i}$'%(i,j) )
+            for j in range(self.npx) :
+                for i in range(self.npx) :
+                    pll.append( r'$\delta V_{%i,%i}$'%(i,j) )
 
         return pll
 
@@ -1209,7 +1269,7 @@ class FF_thick_mring(FisherForecast) :
         self.mp = mp
         self.mc = mc
         self.stokes = stokes
-        self.size = 5 + 2*m
+        self.size = 3 + 2*m
         if self.stokes != 'I':
             if (self.mp > 0):
                 self.size += 2 + 4*self.mp
@@ -1223,10 +1283,10 @@ class FF_thick_mring(FisherForecast) :
         params['F0'] = p[0]
         params['d'] = p[1] * eh.RADPERUAS
         params['alpha'] = p[2] * eh.RADPERUAS
-        params['x0'] = p[3] * eh.RADPERUAS
-        params['y0'] = p[4] * eh.RADPERUAS
+        params['x0'] = 0.0
+        params['y0'] = 0.0
         beta_list = np.zeros(self.m, dtype="complex")
-        ind_start = 5
+        ind_start = 3
         for i in range(self.m):
             beta_list[i] = p[ind_start+(2*i)]*np.exp((1j)*p[ind_start+1+(2*i)])
         params['beta_list'] = beta_list
@@ -1234,7 +1294,7 @@ class FF_thick_mring(FisherForecast) :
         if self.stokes != 'I':
             if self.mp > 0:
                 beta_list_pol = np.zeros(1 + 2*self.mp, dtype="complex")
-                ind_start = 5 + 2*len(beta_list)
+                ind_start += 2*len(beta_list)
                 for i in range(1+2*self.mp):
                     beta_list_pol[i] = p[ind_start+(2*i)]*np.exp((1j)*p[ind_start+1+(2*i)])
                 params['beta_list_pol'] = beta_list_pol
@@ -1243,7 +1303,7 @@ class FF_thick_mring(FisherForecast) :
 
             if self.mc > 0:
                 beta_list_cpol = np.zeros(1 + 2*self.mc, dtype="complex")
-                ind_start = 5 + 2*len(beta_list) + 2*len(beta_list_pol)
+                ind_start += 2*len(beta_list_pol)
                 for i in range(1+2*self.mc):
                     beta_list_cpol[i] = p[ind_start+(2*i)]*np.exp((1j)*p[ind_start+1+(2*i)])
                 params['beta_list_cpol'] = beta_list_cpol
@@ -1257,14 +1317,12 @@ class FF_thick_mring(FisherForecast) :
         # p[0] ... total flux of the ring (Jy), which is also beta_0.
         # p[1] ... ring diameter (radians)
         # p[2] ... ring thickness (FWHM of Gaussian convolution) (radians)
-        # p[3] ... x-coordinate (radians)
-        # p[4] ... y-coordinate (radians)
-        # p[5] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
+        # p[...] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
         #          Negative indices are determined by the condition beta_{-m} = beta_m*.
         #          Indices are all scaled by F0 = beta_0, so they are dimensionless.
-        # p[6] ... beta list for linear polarization (if present)
+        # p[...] ... beta list for linear polarization (if present)
         #          list of complex Fourier coefficients, [beta_{-mp}, beta_{-mp+1}, ..., beta_{mp-1}, beta_{mp}]
-        # p[7] ... beta list for circular polarization (if present)
+        # p[...] ... beta list for circular polarization (if present)
         #          list of complex Fourier coefficients, [beta_{-mc}, beta_{-mc+1}, ..., beta_{mc-1}, beta_{mc}]
 
         # set up parameter dictionary for ehtim
@@ -1290,14 +1348,12 @@ class FF_thick_mring(FisherForecast) :
         # p[0] ... total flux of the ring (Jy), which is also beta_0.
         # p[1] ... ring diameter (radians)
         # p[2] ... ring thickness (FWHM of Gaussian convolution) (radians)
-        # p[3] ... x-coordinate (radians)
-        # p[4] ... y-coordinate (radians)
-        # p[5] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
+        # p[...] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
         #          Negative indices are determined by the condition beta_{-m} = beta_m*.
         #          Indices are all scaled by F0 = beta_0, so they are dimensionless.
-        # p[6] ... beta list for linear polarization (if present)
+        # p[...] ... beta list for linear polarization (if present)
         #          list of complex Fourier coefficients, [beta_{-mp}, beta_{-mp+1}, ..., beta_{mp-1}, beta_{mp}]
-        # p[7] ... beta list for circular polarization (if present)
+        # p[...] ... beta list for circular polarization (if present)
         #          list of complex Fourier coefficients, [beta_{-mc}, beta_{-mc+1}, ..., beta_{mc-1}, beta_{mc}]
 
         # set up parameter dictionary for ehtim
@@ -1314,8 +1370,9 @@ class FF_thick_mring(FisherForecast) :
             # unit conversion
             grad[1,:] *= eh.RADPERUAS
             grad[2,:] *= eh.RADPERUAS
-            grad[3,:] *= eh.RADPERUAS
-            grad[4,:] *= eh.RADPERUAS
+
+            # remove (x0,y0) parameters
+            grad = np.concatenate((grad[:3, :], grad[5:, :]))
             
             return grad.T
 
@@ -1328,23 +1385,21 @@ class FF_thick_mring(FisherForecast) :
             # unit conversion
             grad_RR[1,:] *= eh.RADPERUAS
             grad_RR[2,:] *= eh.RADPERUAS
-            grad_RR[3,:] *= eh.RADPERUAS
-            grad_RR[4,:] *= eh.RADPERUAS
 
             grad_LL[1,:] *= eh.RADPERUAS
             grad_LL[2,:] *= eh.RADPERUAS
-            grad_LL[3,:] *= eh.RADPERUAS
-            grad_LL[4,:] *= eh.RADPERUAS
 
             grad_RL[1,:] *= eh.RADPERUAS
             grad_RL[2,:] *= eh.RADPERUAS
-            grad_RL[3,:] *= eh.RADPERUAS
-            grad_RL[4,:] *= eh.RADPERUAS
 
             grad_LR[1,:] *= eh.RADPERUAS
             grad_LR[2,:] *= eh.RADPERUAS
-            grad_LR[3,:] *= eh.RADPERUAS
-            grad_LR[4,:] *= eh.RADPERUAS
+
+            # remove (x0,y0) parameters
+            grad_RR = np.concatenate((grad_RR[:3, :], grad_RR[5:, :]))
+            grad_LL = np.concatenate((grad_LL[:3, :], grad_LL[5:, :]))
+            grad_RL = np.concatenate((grad_RL[:3, :], grad_RL[5:, :]))
+            grad_LR = np.concatenate((grad_LR[:3, :], grad_LR[5:, :]))
 
             return grad_RR.T, grad_LL.T, grad_RL.T, grad_LR.T
 
@@ -1353,8 +1408,8 @@ class FF_thick_mring(FisherForecast) :
         labels.append(r'$\delta F~({\rm Jy})$')
         labels.append(r'$\delta d~(\mu{\rm as})$')
         labels.append(r'$\delta \alpha~(\mu{\rm as})$')
-        labels.append(r'$\delta x_0~(\mu{\rm as})$')
-        labels.append(r'$\delta y_0~(\mu{\rm as})$')
+        # labels.append(r'$\delta x_0~(\mu{\rm as})$')
+        # labels.append(r'$\delta y_0~(\mu{\rm as})$')
         
         for i in range(self.m):
             labels.append(r'$\delta |\beta_{m=' + str(i+1) + r'}|$')
@@ -1385,9 +1440,10 @@ class FF_thick_mring(FisherForecast) :
     
 class FF_sum(FisherForecast) :
 
-    def __init__(self,ff_list=None) :
+    def __init__(self,ff_list=None,stokes='I') :
         super().__init__()
         self.ff_list = []
+        self.stokes = stokes
 
         if (not ff_list is None) :
             self.ff_list = copy.copy(ff_list) # This is a SHALLOW copy
@@ -1410,6 +1466,14 @@ class FF_sum(FisherForecast) :
                 else :
                     self.prior_sigma_list.extend(ff.prior_sigma_list+[None,None])
 
+        if (not ff_list is None):
+            if len(ff_list) > 0:
+                self.stokes = ff_list[0].stokes
+                if (len(ff_list) > 1):
+                    for ff in self.ff_list[1:]:
+                        if (ff.stokes != self.stokes):
+                            raise(Exception('The model components in FF_sum do not have the same stokes type!'))
+
     def add(self,ff) :
         self.ff_list.append(ff)
         if (len(self.ff_list)==1) :
@@ -1431,59 +1495,146 @@ class FF_sum(FisherForecast) :
             
             
     def visibilities(self,obs,p,verbosity=0) :
-        V = 0.0j*obs.data['u']
+        
         k = 0
-        uas2rad = np.pi/180./3600e6        
-        for i,ff in enumerate(self.ff_list) :
-            q = p[k:(k+ff.size)]
+        uas2rad = np.pi/180./3600e6
 
-            if (i==0) :
-                shift_factor = 1.0
-                k += ff.size
-            else :
-                dx = p[k+ff.size]
-                dy = p[k+ff.size+1]
-                shift_factor = np.exp( 2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
-                k += ff.size + 2
-                
-            V = V + ff.visibilities(obs,q,verbosity=verbosity) * shift_factor
-        return V
+        if (self.stokes == 'I'):
+            V = 0.0j*obs.data['u']
+            for i,ff in enumerate(self.ff_list) :
+                q = p[k:(k+ff.size)]
+
+                if (i==0) :
+                    shift_factor = 1.0
+                    k += ff.size
+                else :
+                    dx = p[k+ff.size]
+                    dy = p[k+ff.size+1]
+                    shift_factor = np.exp( 2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
+                    k += ff.size + 2
+                    
+                V = V + ff.visibilities(obs,q,verbosity=verbosity) * shift_factor
+            return V
+
+        else:
+            RR = 0.0j*obs.data['u']
+            LL = 0.0j*obs.data['u']
+            RL = 0.0j*obs.data['u']
+            LR = 0.0j*obs.data['u']
+            for i,ff in enumerate(self.ff_list) :
+                q = p[k:(k+ff.size)]
+
+                if (i==0) :
+                    shift_factor = 1.0
+                    k += ff.size
+                else :
+                    dx = p[k+ff.size]
+                    dy = p[k+ff.size+1]
+                    shift_factor = np.exp( 2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
+                    k += ff.size + 2
+                    
+                RR_prev, LL_prev, RL_prev, LR_prev = ff.visibilities(obs,q,verbosity=verbosity)
+                RR += RR_prev * shift_factor
+                LL += LL_prev * shift_factor
+                RL += RL_prev * shift_factor
+                LR += LR_prev * shift_factor
+
+            return RR, LL, RL, LR
 
     def visibility_gradients(self,obs,p,verbosity=0) :
 
         u = obs.data['u']
         v = obs.data['v']
+        uas2rad = np.pi/180./3600e6
 
-        gradV = []
-        k = 0
-        uas2rad = np.pi/180./3600e6        
-        for i,ff in enumerate(self.ff_list) :
-            q = p[k:(k+ff.size)]
-            dx = p[k+ff.size]
-            dy = p[k+ff.size+1]
+        if (self.stokes == 'I'):
+            gradV = []
+            k = 0
+            for i,ff in enumerate(self.ff_list) :
+                q = p[k:(k+ff.size)]
 
-            if (i==0) :
-                shift_factor = 1.0
-                k += ff.size
-            else :
-                dx = p[k+ff.size]
-                dy = p[k+ff.size+1]
-                V = ff.visibilities(obs,q,verbosity=verbosity)
-                shift_factor = np.exp( -2.0j*np.pi*(u*dx+v*dy)*uas2rad )
-                k += ff.size + 2
-            
-            for gV in ff.visibility_gradients(obs,q,verbosity=verbosity).T :
-                gradV.append( gV*shift_factor )
+                if (i==0) :
+                    shift_factor = 1.0
+                    k += ff.size
+                else :
+                    dx = p[k+ff.size]
+                    dy = p[k+ff.size+1]
+                    V = ff.visibilities(obs,q,verbosity=verbosity)
+                    shift_factor = np.exp( -2.0j*np.pi*(u*dx+v*dy)*uas2rad )
+                    k += ff.size + 2
+                
+                for gV in ff.visibility_gradients(obs,q,verbosity=verbosity).T :
+                    gradV.append( gV*shift_factor )
 
-            if (i>0) :
-                gradV.append(-2.0j*np.pi*u*shift_factor*V*uas2rad)
-                gradV.append(-2.0j*np.pi*v*shift_factor*V*uas2rad)
+                if (i>0) :
+                    gradV.append(-2.0j*np.pi*u*shift_factor*V*uas2rad)
+                    gradV.append(-2.0j*np.pi*v*shift_factor*V*uas2rad)
 
-        gradV = np.array(gradV)
+            gradV = np.array(gradV)
 
-        # print("gradV size:",gradV.shape)
-        
-        return gradV.T
+            return gradV.T
+
+        else:
+            gradRR = []
+            gradLL = []
+            gradRL = []
+            gradLR = []
+            k = 0
+            for i,ff in enumerate(self.ff_list) :
+                q = p[k:(k+ff.size)]
+
+                if (i==0) :
+                    shift_factor = 1.0
+                    k += ff.size
+                else :
+                    dx = p[k+ff.size]
+                    dy = p[k+ff.size+1]
+                    RR,LL,RL,LR = ff.visibilities(obs,q,verbosity=verbosity)
+                    shift_factor = np.exp( -2.0j*np.pi*(u*dx+v*dy)*uas2rad )
+                    k += ff.size + 2
+                
+                gradRR_prev, gradLL_prev, gradRL_prev, gradLR_prev = ff.visibility_gradients(obs,q,verbosity=verbosity)
+                
+                # gradRR = gradRR_prev.T*shift_factor
+                # gradLL = gradLL_prev.T*shift_factor
+                # gradRL = gradRL_prev.T*shift_factor
+                # gradLR = gradLR_prev.T*shift_factor
+
+                for gRR in gradRR_prev.T:
+                    gradRR.append(gRR*shift_factor)
+                for gLL in gradLL_prev.T:
+                    gradLL.append(gLL*shift_factor)
+                for gRL in gradRL_prev.T:
+                    gradRL.append(gRL*shift_factor)
+                for gLR in gradLR_prev.T:
+                    gradLR.append(gLR*shift_factor)
+
+                if (i>0) :
+                    # gRR_shift = np.array([-2.0j*np.pi*u*shift_factor*RR*uas2rad,-2.0j*np.pi*v*shift_factor*RR*uas2rad])
+                    # gLL_shift = np.array([-2.0j*np.pi*u*shift_factor*LL*uas2rad,-2.0j*np.pi*v*shift_factor*LL*uas2rad])
+                    # gRL_shift = np.array([-2.0j*np.pi*u*shift_factor*RL*uas2rad,-2.0j*np.pi*v*shift_factor*RL*uas2rad])
+                    # gLR_shift = np.array([-2.0j*np.pi*u*shift_factor*LR*uas2rad,-2.0j*np.pi*v*shift_factor*LR*uas2rad])
+
+                    # gradRR = np.concatenate((gradRR,gRR_shift))
+                    # gradLL = np.concatenate((gradLL,gLL_shift))
+                    # gradRL = np.concatenate((gradRL,gRL_shift))
+                    # gradLR = np.concatenate((gradLR,gLR_shift))
+
+                    gradRR.append(-2.0j*np.pi*u*shift_factor*RR*uas2rad)
+                    gradRR.append(-2.0j*np.pi*v*shift_factor*RR*uas2rad)
+                    gradLL.append(-2.0j*np.pi*u*shift_factor*LL*uas2rad)
+                    gradLL.append(-2.0j*np.pi*v*shift_factor*LL*uas2rad)
+                    gradRL.append(-2.0j*np.pi*u*shift_factor*RL*uas2rad)
+                    gradRL.append(-2.0j*np.pi*v*shift_factor*RL*uas2rad)
+                    gradLR.append(-2.0j*np.pi*u*shift_factor*LR*uas2rad)
+                    gradLR.append(-2.0j*np.pi*v*shift_factor*LR*uas2rad)
+
+            gradRR = np.array(gradRR)
+            gradLL = np.array(gradLL)
+            gradRL = np.array(gradRL)
+            gradLR = np.array(gradLR)
+
+            return gradRR.T, gradLL.T, gradRL.T, gradLR.T
                 
     def parameter_labels(self) :
 
