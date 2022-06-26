@@ -7,7 +7,11 @@ import matplotlib.pyplot as plt
 # Make Fisher forecast object
 ff1 = fp.FF_splined_raster(5,100)
 ff2 = fp.FF_smoothed_delta_ring()
-ff = fp.FF_sum([ff1,ff2])
+ffr = fp.FF_sum([ff1,ff2])
+ff = fp.FF_complex_gains(ffr)
+
+ff.set_gain_epochs(scans=True)
+ff.set_gain_amplitude_prior(0.1)
 
 # Read in some data
 obs_ngeht = eh.obsdata.load_uvfits('../data/M87_230GHz_40uas.uvfits')
