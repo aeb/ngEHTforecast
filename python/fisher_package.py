@@ -449,6 +449,7 @@ class FF_complex_gains_single_epoch(FisherForecast) :
         self.plbls = self.ff.parameter_labels()
         self.prior_sigma_list = self.ff.prior_sigma_list
         self.gain_amplitude_priors = {}
+        self.gain_phase_priors = {}
         
     def visibilities(self,obs,p,verbosity=0,**kwargs) :
         return self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
@@ -465,12 +466,12 @@ class FF_complex_gains_single_epoch(FisherForecast) :
         nt = len(station_list)
         self.size = self.ff.size
         self.plbls = self.ff.parameter_labels()
-        self.prior_sigma_list = self.ff.prior_sigma_list
+        self.prior_sigma_list = copy.copy(self.ff.prior_sigma_list)
         
         # Now add gains
         for station in station_list :
-            dVda = 0*V_pg
-            dVdp = 0*V_pg
+            dVda = 0.0j*V_pg
+            dVdp = 0.0j*V_pg
 
             # G
             inget1 = (obs.data['t1']==station)
@@ -492,33 +493,65 @@ class FF_complex_gains_single_epoch(FisherForecast) :
                 self.plbls.append(r'$\ln(|G|_{%s})$'%(station))
                 self.plbls.append(r'${\rm arg}(G_{%s})$'%(station))
 
-                if ( len(list(self.gain_amplitude_priors.keys()))>0 ) :
+                if ( len(list(self.gain_amplitude_priors.keys()))>0 or len(list(self.gain_phase_priors.keys()))>0) :
+
+                    # Set amplitude priors
                     if ( station in self.gain_amplitude_priors.keys() ) :
                         self.prior_sigma_list.append(self.gain_amplitude_priors[station])
-                        self.prior_sigma_list.append(100.0) # Big phase
                     elif ( 'All' in self.gain_amplitude_priors.keys() ) :
                         self.prior_sigma_list.append(self.gain_amplitude_priors['All'])
-                        self.prior_sigma_list.append(100.0) # Big phase
                     else :
                         self.prior_sigma_list.append(10.0) # Big amplitude
+
+                    # Set phase priors
+                    if ( station in self.gain_phase_priors.keys() ) :
+                        self.prior_sigma_list.append(self.gain_phase_priors[station])
+                    elif ( 'All' in self.gain_phase_priors.keys() ) :
+                        self.prior_sigma_list.append(self.gain_phase_priors['All'])
+                    else :
                         self.prior_sigma_list.append(100.0) # Big phase
+
                 else :
                         self.prior_sigma_list.append(10.0) # Big amplitude
                         self.prior_sigma_list.append(100.0) # Big phase
 
+                if (verbosity>1) :
+                    print("SEG %s amp   priors:"%(station),self.gain_amplitude_priors)
+                    print("SEG %s phase priors:"%(station),self.gain_phase_priors)
+                    print("SEG %s priors:"%(station),self.prior_sigma_list)
+
         gradV = np.array(gradV).T
-        
+
+        if (verbosity>0) :
+            for j in range(min(10,gradV.shape[0])) :
+                line = "SEG gradV: %10.3g %10.3g"%(obs.data['u'][j],obs.data['v'][j])
+                for k in range(gradV.shape[1]) :
+                    line = line + " %8.3g + %8.3gi"%(gradV[j,k].real,gradV[j,k].imag)
+                print(line)
+                
         return gradV
 
     def parameter_labels(self) :
         return self.plbls
 
     def set_gain_amplitude_prior(self,sigma,station=None) :
+        sigma = min(sigma,10.0)
         if (station is None) :
             self.gain_amplitude_priors = {'All':sigma}
         else :
-            self.gain_amplitude_priors = {station:sigma}
+            self.gain_amplitude_priors[station] = sigma
+            
+        self.argument_hash = None
 
+    def set_gain_phase_prior(self,sigma,station=None) :
+        sigma = min(sigma,100.0)
+        if (station is None) :
+            self.gain_phase_priors = {'All':sigma}
+        else :
+            self.gain_phase_priors[station] = sigma
+            
+        self.argument_hash = None
+        
 
 class FF_complex_gains(FisherForecast) :
     """
@@ -636,11 +669,23 @@ class FF_complex_gains(FisherForecast) :
         return self.ff.parameter_labels()
 
     def set_gain_amplitude_prior(self,sigma,station=None) :
+        sigma = min(sigma,10.0)
         if (station is None) :
             self.gain_amplitude_priors = {'All':sigma}
         else :
-            self.gain_amplitude_priors = {station:sigma}
+            self.gain_amplitude_priors[station] = sigma
+            
+        self.argument_hash = None
 
+    def set_gain_phase_prior(self,sigma,station=None) :
+        sigma = min(sigma,100.0)
+        if (station is None) :
+            self.gain_phase_priors = {'All':sigma}
+        else :
+            self.gain_phase_priors[station] = sigma
+            
+        self.argument_hash = None
+            
             
     
 
