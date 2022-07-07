@@ -24,65 +24,104 @@ class FisherForecast :
         
     def visibilities(self,obs,p,verbosity=0) :
         """
-        Generates visibilities associated with a given model image object.  Note 
-        that this uses FFTs to create the visibilities and then interpolates.
+        User-defined function in child classes that generates visibilities 
+        associated with a given model image object.
 
         Args:
-          u (np.array): list of u positions in units of :math:`\\lambda`.
-          v (np.array): list of v positions in units of :math:`\\lambda`.
+          obs (Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)
           p (np.array): list of parameters for the model image used to create object.
-          verbosity (int): Verbosity level. 0 prints nothing. 1 prints various elements of the plotting process. Passed to :func:`model_image.generate_intensity_map`. Default: 0.
+          verbosity (int): Verbosity level. Default: 0.
 
         Returns:
           V (np.array): list of complex visibilities computed at observations.
         """
 
         raise(RuntimeError("visibilities function not implemented in base class!"))
-        
-        # Return something
         return 0*obs.data['u']
 
             
     def visibility_gradients(self,obs,p,verbosity=0,**kwargs) :
         """
-        Generates visibilities associated with a given model image object.  Note 
-        that this uses FFTs to create the visibilities and then interpolates.
+        User-defined function in child classes that generates visibilit gradients
+        associated with a given model image object.
 
         Args:
-          u (np.array): list of u positions in units of :math:`\\lambda`.
-          v (np.array): list of v positions in units of :math:`\\lambda`.
+          obs (Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)
           p (np.array): list of parameters for the model image used to create object.
-          verbosity (int): Verbosity level. 0 prints nothing. 1 prints various elements of the plotting process. Passed to :func:`model_image.generate_intensity_map`. Default: 0.
+          verbosity (int): Verbosity level. Default: 0.
 
         Returns:
           gradV (np.ndarray): list of complex visibilities gradients computed at observations.
         """
 
         raise(RuntimeError("visibility_gradients function not implemented in base class!"))
-
-        # Return something    
         return 0*obs.data['u']
 
 
-    def parameter_labels(self) :
+    def parameter_labels(self,verbosity=0) :
+        """
+        User-defined function in child classes that returns a list of
+        of parameter labels to be used in plotting.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """
 
         raise(RuntimeError("parameter_labels function not implemented in base class!"))
-
         return []
 
-    def add_gaussian_prior(self,pindex,sigma) :
+    
+    def add_gaussian_prior(self,pindex,sigma,verbosity=0) :
+        """
+        Add a Gaussian prior on the parameter with the specified index.
+
+        Args:
+          pindex (int): Index of the parameter on which to place the prior.
+          sigma (float): Standard deviation of the Gaussian prior to apply.
+          verbosity (int): Verbosity level. Default: 0.
+        """
+
         if (pindex>self.size) :
             raise(RuntimeError("Parameter %i does not exist, expected in [0,%i]."%(pindex,self.size-1)))
         if (len(self.prior_sigma_list)==0) :
             self.prior_sigma_list = self.size*[None]
         self.prior_sigma_list[pindex] = sigma
         
-    def add_gaussian_prior_list(self,sigma_list) :
+    def add_gaussian_prior_list(self,sigma_list,verbosity=0) :
+        """
+        Add a Gaussian priors on all of the model parameters.
+
+        Args:
+          sigma_list (list): List of standard deviations of the Gaussian priors to apply.
+          verbosity (int): Verbosity level. Default: 0.
+        """
+
         self.prior_sigma_list = copy.copy(sigma_list)
         if (len(self.prior_sigma_list)!=self.size) :
             raise(RuntimeError("Priors must be specified for all parameters if set by list.  If sigma is None, no prior will be applied."))
 
     def generate_image(self,p,limits=None,shape=None,verbosity=0) :
+        """
+        Generate and return an image for the given visibility model evaluated
+        at a given set of parameter values.  The user is responsible for setting
+        the plot limits and shape intelligently.  Note that this uses FFTs and 
+        assumes that the resolution and field of view are sufficient to adequately
+        resolve model image features.
+
+        Args:
+          p (list): List of parameter values.
+          limits (float,list): Limits on the field of view in which to construct the image in uas.  Either a single float, in which case the limits are symmetric and set to [-limits,limits,-limits,limits], or a list of floats. Default: 100.
+          shape (int,list): Dimensions of the image.  If an int, the dimensions are equal.  If a two-element list of ints, sets the dimensions to the two values. Default: 256.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          x (np.ndarray): x positions of the pixel centers in uas.
+          y (np.ndarray): y positions of the pixel centers in uas.
+          I (np.ndarray): Intensities at pixel centers in Jy/uas^2.
+        """
 
         # Fix image limits
         if (limits is None) :
@@ -234,6 +273,18 @@ class FisherForecast :
 
             
     def fisher_covar(self,obs,p,**kwargs) :
+        """
+        Returns the Fisher matrix M as defined in the accompanying documentation.
+        Intelligently avoids recomputation if the observation and parameters are
+        unchanged.
+
+        Args:
+          obs (Obsdata): An Obsdata object containing the observation particulars.
+          p (list): List of model parameters at which to compute the Fisher matrix.
+
+        Returns:
+          M (np.ndarray): The Fisher matrix M.
+        """
         # Get the fisher covariance 
         new_argument_hash = hashlib.md5(bytes(str(obs)+str(p),'utf-8')).hexdigest()
         if ( new_argument_hash == self.argument_hash ) :
@@ -246,7 +297,7 @@ class FisherForecast :
                 self.covar = np.zeros((self.size,self.size))
                 for i in range(self.size) :
                     for j in range(self.size) :
-                        self.covar[i][j] = 0.5*np.sum( np.conj(gradV[:,i])*gradV[:,j]/obs.data['sigma']**2 + gradV[:,i]*np.conj(gradV[:,j])/obs.data['sigma']**2)
+                        self.covar[i][j] = np.sum( np.conj(gradV[:,i])*gradV[:,j]/obs.data['sigma']**2 + gradV[:,i]*np.conj(gradV[:,j])/obs.data['sigma']**2)
             
             else:
                 obs = obs.switch_polrep('circ')
@@ -254,32 +305,21 @@ class FisherForecast :
                 self.covar = np.zeros((self.size,self.size))
                 for i in range(self.size) :
                     for j in range(self.size) :
-                        self.covar[i][j] = 0.5*np.sum( np.conj(grad_RR[:,i])*grad_RR[:,j]/obs.data['rrsigma']**2 + grad_RR[:,i]*np.conj(grad_RR[:,j])/obs.data['rrsigma']**2)
-                        self.covar[i][j] += 0.5*np.sum( np.conj(grad_LL[:,i])*grad_LL[:,j]/obs.data['llsigma']**2 + grad_LL[:,i]*np.conj(grad_LL[:,j])/obs.data['llsigma']**2)
-                        self.covar[i][j] += 0.5*np.sum( np.conj(grad_RL[:,i])*grad_RL[:,j]/obs.data['rlsigma']**2 + grad_RL[:,i]*np.conj(grad_RL[:,j])/obs.data['rlsigma']**2)
-                        self.covar[i][j] += 0.5*np.sum( np.conj(grad_LR[:,i])*grad_LR[:,j]/obs.data['lrsigma']**2 + grad_LR[:,i]*np.conj(grad_LR[:,j])/obs.data['lrsigma']**2)
+                        self.covar[i][j] = np.sum( np.conj(grad_RR[:,i])*grad_RR[:,j]/obs.data['rrsigma']**2 + grad_RR[:,i]*np.conj(grad_RR[:,j])/obs.data['rrsigma']**2)
+                        self.covar[i][j] += np.sum( np.conj(grad_LL[:,i])*grad_LL[:,j]/obs.data['llsigma']**2 + grad_LL[:,i]*np.conj(grad_LL[:,j])/obs.data['llsigma']**2)
+                        self.covar[i][j] += np.sum( np.conj(grad_RL[:,i])*grad_RL[:,j]/obs.data['rlsigma']**2 + grad_RL[:,i]*np.conj(grad_RL[:,j])/obs.data['rlsigma']**2)
+                        self.covar[i][j] += np.sum( np.conj(grad_LR[:,i])*grad_LR[:,j]/obs.data['lrsigma']**2 + grad_LR[:,i]*np.conj(grad_LR[:,j])/obs.data['lrsigma']**2)
 
             if (len(self.prior_sigma_list)>0) :
                 for i in range(self.size) :
                     if (not self.prior_sigma_list[i] is None) :
-                        self.covar[i][i] += 1.0/self.prior_sigma_list[i]**2
+                        self.covar[i][i] += 1.0/(self.prior_sigma_list[i]**2)
                     
         return self.covar
 
-    # def fisher_covar_from_obs(self,obs,p,**kwargs) :
-    #     new_argument_hash = hashlib.md5(bytes(str(obs)+str(p),'utf-8')).hexdigest()
-    #     if ( new_argument_hash == self.argument_hash ) :
-    #         return self.covar
-    #     else :
-    #         self.argument_hash = new_argument_hash
-    #         u = obs.data['u']
-    #         v = obs.data['v']
-    #         sig = obs.data['sigma']
-    #         self.covar = self.fisher_covar(u,v,sig,p,**kwargs)
-    #     return self.covar
-
+    
     def uniparameter_uncertainties(self,obs,p,**kwargs) :
-        C = 2.0*self.fisher_covar(obs,p,**kwargs)
+        C = self.fisher_covar(obs,p,**kwargs)
         Sig_uni = np.zeros(self.size)
         ilist = np.arange(self.size)
         for i in ilist :
@@ -287,8 +327,9 @@ class FisherForecast :
             Sig_uni[i] = np.sqrt(2.0/N)
         return Sig_uni
 
+    
     def marginalized_uncertainties(self,obs,p,**kwargs) :
-        C = 2.0*self.fisher_covar(obs,p,**kwargs)
+        C = self.fisher_covar(obs,p,**kwargs)
         Sig_marg = np.zeros(self.size)
         M = np.zeros((self.size-1,self.size-1))
         v = np.zeros(self.size-1)
@@ -305,11 +346,9 @@ class FisherForecast :
             Sig_marg[i] = np.sqrt(2.0/mN)
         return Sig_marg
 
+    
     def uncertainties(self,obs,p,**kwargs) :
-        C = 2.0*self.fisher_covar(obs,p,**kwargs)
-
-        # print("FOO:",C)
-        
+        C = self.fisher_covar(obs,p,**kwargs)
         Sig_uni = np.zeros(self.size)
         Sig_marg = np.zeros(self.size)
         M = np.zeros((self.size-1,self.size-1))
@@ -324,77 +363,13 @@ class FisherForecast :
             N = C[i][i]
             Minv = np.linalg.inv(M)
             mN = N - np.matmul(v,np.matmul(Minv,v))
-
-            # print("BAR: %5g %15.8g %15.8g"%(i,N,mN))
-
-
-            # mN = np.maximum(1e-6*N,mN)
-            
             Sig_uni[i] = np.sqrt(2.0/N)
             Sig_marg[i] = np.sqrt(2.0/mN)
-
         return Sig_uni,Sig_marg
 
-    # def uniparameter_uncertainties_from_obs(self,obs,p,**kwargs) :
-    #     C = 2.0*self.fisher_covar_from_obs(obs,p,**kwargs)
-    #     Sig_uni = np.zeros(self.size)
-    #     ilist = np.arange(self.size)
-    #     for i in ilist :
-    #         N = C[i][i]
-    #         Sig_uni[i] = np.sqrt(2.0/N)
-    #     return Sig_uni
-
-    # def marginalized_uncertainties_from_obs(self,obs,p,**kwargs) :
-    #     C = 2.0*self.fisher_covar_from_obs(obs,p,**kwargs)
-    #     Sig_marg = np.zeros(self.size)
-    #     M = np.zeros((self.size-1,self.size-1))
-    #     v = np.zeros(self.size-1)
-    #     ilist = np.arange(self.size)
-    #     for i in ilist :
-    #         ini = ilist[ilist!=i]
-    #         for j2,j in enumerate(ini) :
-    #             for k2,k in enumerate(ini) :
-    #                 M[j2,k2] = C[j][k]
-    #             v[j2] = C[i][j]
-    #         N = C[i][i]
-    #         Minv = np.linalg.inv(M)
-    #         mN = N - np.matmul(v,np.matmul(Minv,v))
-    #         Sig_marg[i] = np.sqrt(2.0/mN)
-    #     return Sig_marg
-
-    # def uncertainties_from_obs(self,obs,p,**kwargs) :
-    #     C = 2.0*self.fisher_covar_from_obs(obs,p,**kwargs)
-
-    #     # print("FOO:",C)
-        
-    #     Sig_uni = np.zeros(self.size)
-    #     Sig_marg = np.zeros(self.size)
-    #     M = np.zeros((self.size-1,self.size-1))
-    #     v = np.zeros(self.size-1)
-    #     ilist = np.arange(self.size)
-    #     for i in ilist :
-    #         ini = ilist[ilist!=i]
-    #         for j2,j in enumerate(ini) :
-    #             for k2,k in enumerate(ini) :
-    #                 M[j2,k2] = C[j][k]
-    #             v[j2] = C[i][j]
-    #         N = C[i][i]
-    #         Minv = np.linalg.inv(M)
-    #         mN = N - np.matmul(v,np.matmul(Minv,v))
-
-    #         # print("BAR: %5g %15.8g %15.8g"%(i,N,mN))
-
-
-    #         # mN = np.maximum(1e-6*N,mN)
-            
-    #         Sig_uni[i] = np.sqrt(2.0/N)
-    #         Sig_marg[i] = np.sqrt(2.0/mN)
-
-    #     return Sig_uni,Sig_marg
     
-
     def joint_biparameter_chisq(self,obs,p,i1,i2,**kwargs) :
-        C = 2.0*self.fisher_covar(obs,p,**kwargs)
+        C = self.fisher_covar(obs,p,**kwargs)
         M = np.zeros((self.size-2,self.size-2))
         v1 = np.zeros(self.size-2)
         v2 = np.zeros(self.size-2)
@@ -411,9 +386,9 @@ class FisherForecast :
         C12 = C[i1][i2]
 
         Minv = np.linalg.inv(M)
-        mN1 = N1 - np.matmul(v1,np.matmul(Minv,v1))
-        mN2 = N2 - np.matmul(v2,np.matmul(Minv,v2))
-        mC12 = C12 - 0.5*(np.matmul(v1,np.matmul(Minv,v2)) + np.matmul(v2,np.matmul(Minv,v1)))
+        mN1 = N1 - np.matmul(v1.T,np.matmul(Minv,v1))
+        mN2 = N2 - np.matmul(v2.T,np.matmul(Minv,v2))
+        mC12 = C12 - 0.5*(np.matmul(v1.T,np.matmul(Minv,v2)) + np.matmul(v2.T,np.matmul(Minv,v1)))
 
         # Find range with eigenvectors/values
         l1 = 0.5*( (mN1+mN2) + np.sqrt( (mN1-mN2)**2 + 4.0*mC12**2 ) )
@@ -421,15 +396,8 @@ class FisherForecast :
 
         e1 = np.array( [ mC12, l1-mN1 ] )
         e2 = np.array( [ e1[1], -e1[0] ] )
-        # e2 = np.array( [ l2-mN2, mC12 ] )
         e1 = e1/ np.sqrt( e1[0]**2+e1[1]**2 )
         e2 = e2/ np.sqrt( e2[0]**2+e2[1]**2 )
-
-
-        # l1 = max(1e-6*N1,l1)
-        # l2 = max(1e-6*N2,l2)
-
-        # print("BAZ:",i1,i2,l1,l2)
         
         if (l1<=0 or l2<=0) :
             print("Something's wrong! Variances are nonpositive!")
@@ -450,21 +418,13 @@ class FisherForecast :
             e_maj = np.copy(e1)
             e_min = np.copy(e2)
 
-        # dp1 = max( 4.5*Sig_maj*np.abs(e_maj[0]), 4.5*Sig_min*np.abs(e_min[0]) )
-        # dp2 = max( 4.5*Sig_maj*np.abs(e_maj[1]), 4.5*Sig_min*np.abs(e_min[1]) )
         dp1 = 4.5*( Sig_maj*np.abs(e_maj[0]) + Sig_min*np.abs(e_min[0]) )
         dp2 = 4.5*( Sig_maj*np.abs(e_maj[1]) + Sig_min*np.abs(e_min[1]) )
 
-        # if (i2==28) :
-        #     print("FOO:",i1,i2,dp1,dp2,Sig_maj,Sig_min,abs(e_maj[0]),abs(e_min[0]),e_maj[0]*e_min[0]+e_maj[1]*e_min[1])
-        #     print("    ",l1,l2,e1,e2)
-        #     print("    ",mN1,mN2,mC12)
-
-            
         Npx = int(max(128,min(16*Sig_maj/Sig_min,1024)))
         p1,p2 = np.meshgrid(np.linspace(-dp1,dp1,Npx),np.linspace(-dp2,dp2,Npx))
-        csq = N1*p1**2 + 2*C12*p1*p2 + N2*p2**2
-        mcsq = mN1*p1**2 + 2*mC12*p1*p2 + mN2*p2**2
+        csq = 0.5*(N1*p1**2 + 2*C12*p1*p2 + N2*p2**2)
+        mcsq = 0.5*(mN1*p1**2 + 2*mC12*p1*p2 + mN2*p2**2)
 
         return p1,p2,csq,mcsq
 
@@ -496,8 +456,6 @@ class FF_complex_gains_single_epoch(FisherForecast) :
     def visibility_gradients(self,obs,p,verbosity=0,**kwargs) :
         V_pg = self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
         gradV_pg = self.ff.visibility_gradients(obs,p,verbosity=verbosity,**kwargs)
-
-        # print("cgse: gradV initial:\n",gradV_pg)
         
         # Start with model parameters
         gradV = list(gradV_pg.T)
@@ -508,8 +466,6 @@ class FF_complex_gains_single_epoch(FisherForecast) :
         self.size = self.ff.size
         self.plbls = self.ff.parameter_labels()
         self.prior_sigma_list = self.ff.prior_sigma_list
-
-        # print("station_list:",station_list)
         
         # Now add gains
         for station in station_list :
@@ -530,10 +486,6 @@ class FF_complex_gains_single_epoch(FisherForecast) :
 
             # Check if any cases
             if (np.any(inget1) or np.any(inget2)) :
-                # print("Adding gain for %s"%(station))
-                # print("dVda:",dVda)
-                # print("dVdp:",dVdp)
-                
                 gradV.append(dVda)
                 gradV.append(dVdp)
                 self.size +=2
@@ -555,9 +507,6 @@ class FF_complex_gains_single_epoch(FisherForecast) :
                         self.prior_sigma_list.append(100.0) # Big phase
 
         gradV = np.array(gradV).T
-
-        # print("cgse: gradV final:\n",gradV)
-        # print(gradV.shape,self.size)
         
         return gradV
 
@@ -639,14 +588,11 @@ class FF_complex_gains(FisherForecast) :
                     
                     for i in range(self.ff_cgse.size) :
                         for j in range(self.ff_cgse.size) :
-                            covar_wgs[i][j] = 0.5*np.sum( np.conj(gradV_wgs[:,i])*gradV_wgs[:,j]/obs_ge.data['sigma']**2 + gradV_wgs[:,i]*np.conj(gradV_wgs[:,j])/obs_ge.data['sigma']**2)
+                            covar_wgs[i][j] = np.sum( np.conj(gradV_wgs[:,i])*gradV_wgs[:,j]/obs_ge.data['sigma']**2 + gradV_wgs[:,i]*np.conj(gradV_wgs[:,j])/obs_ge.data['sigma']**2)
 
-                    # print("Checking priors:",self.ff.size,self.ff_cgse.size)
                     for i in np.arange(self.ff.size,self.ff_cgse.size) :
-                        # print("Gain priors:",i,self.ff_cgse.prior_sigma_list[i])
                         if (not self.ff_cgse.prior_sigma_list[i] is None) :
                             covar_wgs[i][i] += 1.0/self.ff_cgse.prior_sigma_list[i]**2
-                        
                             
                     n = covar_wgs[:self.ff.size,:self.ff.size]
                     r = covar_wgs[self.ff.size:,:self.ff.size]
