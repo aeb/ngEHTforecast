@@ -8,6 +8,20 @@ import hashlib
 import themispy as ty
 import ehtim.parloop as ploop
 
+def _print_matrix(m) :
+    for i in range(m.shape[0]) :
+        line = ""
+        for j in range(m.shape[1]) :
+            line = line + ' %10.3g'%(m[i][j])
+        print(line)
+
+def _print_vector(v) :
+    line = ""
+    for i in range(v.shape[0]) :
+        line = line + ' %10.3g'%(v[i])
+    print(line)
+
+
 class FisherForecast :
     """
     Class that collects and contains information for making Fisher-matrix type
@@ -89,6 +103,9 @@ class FisherForecast :
         if (len(self.prior_sigma_list)==0) :
             self.prior_sigma_list = self.size*[None]
         self.prior_sigma_list[pindex] = sigma
+
+        self.argument_hash = None
+        
         
     def add_gaussian_prior_list(self,sigma_list,verbosity=0) :
         """
@@ -102,6 +119,8 @@ class FisherForecast :
         self.prior_sigma_list = copy.copy(sigma_list)
         if (len(self.prior_sigma_list)!=self.size) :
             raise(RuntimeError("Priors must be specified for all parameters if set by list.  If sigma is None, no prior will be applied."))
+        self.argument_hash = None
+        
 
     def generate_image(self,p,limits=None,shape=None,verbosity=0) :
         """
@@ -272,7 +291,7 @@ class FisherForecast :
         
 
             
-    def fisher_covar(self,obs,p,**kwargs) :
+    def fisher_covar(self,obs,p,verbosity=0,**kwargs) :
         """
         Returns the Fisher matrix M as defined in the accompanying documentation.
         Intelligently avoids recomputation if the observation and parameters are
@@ -293,7 +312,7 @@ class FisherForecast :
             self.argument_hash = new_argument_hash
             if self.stokes == 'I':
                 obs = obs.switch_polrep('stokes')
-                gradV = self.visibility_gradients(obs,p,**kwargs)
+                gradV = self.visibility_gradients(obs,p,verbosity=verbosity,**kwargs)
                 self.covar = np.zeros((self.size,self.size))
                 for i in range(self.size) :
                     for j in range(self.size) :
@@ -301,7 +320,7 @@ class FisherForecast :
             
             else:
                 obs = obs.switch_polrep('circ')
-                grad_RR, grad_LL, grad_RL, grad_LR = self.visibility_gradients(obs,p,**kwargs)
+                grad_RR, grad_LL, grad_RL, grad_LR = self.visibility_gradients(obs,p,verbosity=verbosity,**kwargs)
                 self.covar = np.zeros((self.size,self.size))
                 for i in range(self.size) :
                     for j in range(self.size) :
@@ -310,16 +329,29 @@ class FisherForecast :
                         self.covar[i][j] += np.sum( np.conj(grad_RL[:,i])*grad_RL[:,j]/obs.data['rlsigma']**2 + grad_RL[:,i]*np.conj(grad_RL[:,j])/obs.data['rlsigma']**2)
                         self.covar[i][j] += np.sum( np.conj(grad_LR[:,i])*grad_LR[:,j]/obs.data['lrsigma']**2 + grad_LR[:,i]*np.conj(grad_LR[:,j])/obs.data['lrsigma']**2)
 
+            if (verbosity>0) :
+                print("FisherCovar covar before priors:")
+                _print_matrix(self.covar)
+
             if (len(self.prior_sigma_list)>0) :
                 for i in range(self.size) :
                     if (not self.prior_sigma_list[i] is None) :
-                        self.covar[i][i] += 1.0/(self.prior_sigma_list[i]**2)
-                    
+                        self.covar[i][i] += 2.0/(self.prior_sigma_list[i]**2) # Why factor of 2?
+        
+            if (verbosity>0) :
+                print("FisherCovar covar after priors:")
+                _print_matrix(self.covar)
+
+            if (verbosity>1) :
+                print("FisherCovar priors:",self.prior_sigma_list)
+                print("Dimensions:",self.covar.shape)
+
+                
         return self.covar
 
     
-    def uniparameter_uncertainties(self,obs,p,**kwargs) :
-        C = self.fisher_covar(obs,p,**kwargs)
+    def uniparameter_uncertainties(self,obs,p,verbosity=0,**kwargs) :
+        C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
         Sig_uni = np.zeros(self.size)
         ilist = np.arange(self.size)
         for i in ilist :
@@ -328,8 +360,8 @@ class FisherForecast :
         return Sig_uni
 
     
-    def marginalized_uncertainties(self,obs,p,**kwargs) :
-        C = self.fisher_covar(obs,p,**kwargs)
+    def marginalized_uncertainties(self,obs,p,verbosity=0,**kwargs) :
+        C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
         Sig_marg = np.zeros(self.size)
         M = np.zeros((self.size-1,self.size-1))
         v = np.zeros(self.size-1)
@@ -347,8 +379,11 @@ class FisherForecast :
         return Sig_marg
 
     
-    def uncertainties(self,obs,p,**kwargs) :
-        C = self.fisher_covar(obs,p,**kwargs)
+    def uncertainties(self,obs,p,verbosity=0,**kwargs) :
+        C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
+        if (verbosity>1) :
+            print("Fisher Matrix:")
+            _print_matrix(C)
         Sig_uni = np.zeros(self.size)
         Sig_marg = np.zeros(self.size)
         M = np.zeros((self.size-1,self.size-1))
@@ -365,11 +400,21 @@ class FisherForecast :
             mN = N - np.matmul(v,np.matmul(Minv,v))
             Sig_uni[i] = np.sqrt(2.0/N)
             Sig_marg[i] = np.sqrt(2.0/mN)
+
+            if (verbosity>1) :
+                print("Submatrix (%i):"%(i))
+                _print_matrix(M)
+                print("Submatrix inverse (%i):"%(i))                
+                _print_matrix(Minv)
+                print("Subvectors v1 (%i):"%(i))
+                _print_vector(v)
+                print("N,mN (%i):"%(i),N,mN)
+            
         return Sig_uni,Sig_marg
 
     
-    def joint_biparameter_chisq(self,obs,p,i1,i2,**kwargs) :
-        C = self.fisher_covar(obs,p,**kwargs)
+    def joint_biparameter_chisq(self,obs,p,i1,i2,verbosity=0,**kwargs) :
+        C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
         M = np.zeros((self.size-2,self.size-2))
         v1 = np.zeros(self.size-2)
         v2 = np.zeros(self.size-2)
@@ -385,6 +430,17 @@ class FisherForecast :
         N2 = C[i2][i2]
         C12 = C[i1][i2]
 
+        if (verbosity>1) :
+            print("Fisher Matrix:")
+            _print_matrix(C)
+            print("Submatrix (%i,%i):"%(i1,i2))
+            _print_matrix(M)
+            print("Subvectors v1:")
+            _print_vector(v1)
+            print("Subvectors v2:")
+            _print_vector(v2)
+
+        
         Minv = np.linalg.inv(M)
         mN1 = N1 - np.matmul(v1.T,np.matmul(Minv,v1))
         mN2 = N2 - np.matmul(v2.T,np.matmul(Minv,v2))
@@ -599,7 +655,7 @@ class FF_complex_gains(FisherForecast) :
     def visibility_gradients(self,obs,p,verbosity=0,**kwargs) :
         return self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
 
-    def fisher_covar(self,obs,p,**kwargs) :
+    def fisher_covar(self,obs,p,verbosity=0,**kwargs) :
         # Get the fisher covariance 
         new_argument_hash = hashlib.md5(bytes(str(obs)+str(p),'utf-8')).hexdigest()
         if ( new_argument_hash == self.argument_hash ) :
@@ -610,7 +666,7 @@ class FF_complex_gains(FisherForecast) :
             if self.stokes == 'I':
                 obs = obs.switch_polrep('stokes')
                 self.generate_gain_epochs(obs)
-                self.ff_cgse.gain_amplitude_priors = self.gain_amplitude_priors
+                self.ff_cgse.gain_amplitude_priors = copy.copy(self.gain_amplitude_priors)
                 
                 for ige,ge in enumerate(self.gain_epochs) :
                     with ploop.HiddenPrints():
@@ -661,7 +717,7 @@ class FF_complex_gains(FisherForecast) :
             if (len(self.prior_sigma_list)>0) :
                 for i in range(self.size) :
                     if (not self.prior_sigma_list[i] is None) :
-                        self.covar[i][i] += 1.0/self.prior_sigma_list[i]**2
+                        self.covar[i][i] += 2.0/self.prior_sigma_list[i]**2 # Why factor of 2?
                     
         return self.covar
     

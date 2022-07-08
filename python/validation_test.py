@@ -37,25 +37,27 @@ Sig_exp = np.sqrt(1.0/(np.sum(obs.data['sigma']**-2)))
 print("  Expected uncertainty from standard propagation: %15.8g"%(Sig_exp))
 
 # Point source (only one parameter : total flux)
+print("\n=== Point Source w/ Single Gain & Weak Amp Prior Test ===========")
 ffgs = fp.FF_complex_gains_single_epoch(ff)
-ga = 0.1
+ga = 0.01
 ffgs.set_gain_amplitude_prior(1e-10)
 ffgs.set_gain_amplitude_prior(ga,station='AA')
 ffgs.set_gain_phase_prior(1e-10)
 p = [1.0,0.001]
 Sig,Sigm = ffgs.uncertainties(obs,p,verbosity=0)
-print("\n=== Point Source w/ Single Gain & Weak Amp Prior Test ===========")
 print("  Uncertainties from FF -- marginalized / single: %15.8g / %15.8g"%(Sigm[0],Sig[0]))
- # sigma_wgains = np.sqrt( obs.data['sigma']**2 + (ga*p[0])**2 + (ga*p[0])**2 )
-# Sig_exp = np.sqrt(1.0/np.sum( sigma_wgains**(-2) ))
+# print("  Sig all: ",Sig)
+# print("  Sigm all:",Sigm)
 Sig_F = np.sqrt(1.0/(np.sum(obs.data['sigma']**-2)))
 Sig_exp = p[0] * np.sqrt( (Sig_F/p[0])**2 + ga**2 )
-print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp),Sig_F,p[0],ga)
+print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #,Sig_F,p[0],ga)
+print("  Gain uncertainties from FF -- marginalized: %15.8g %15.8g %15.8g %15.8g"%tuple(Sigm[2:]))
+print("  Expected uncertainties from priors:         %15.8g %15.8g %15.8g %15.8g"%tuple(ffgs.prior_sigma_list[2:]))
 
 
 # Point source (only one parameter : total flux)
 ffgs = fp.FF_complex_gains_single_epoch(ff)
-ga = 0.1
+ga = 0.01
 ffgs.set_gain_amplitude_prior(1e-10)
 ffgs.set_gain_amplitude_prior(ga,station='AA')
 ffgs.set_gain_amplitude_prior(ga,station='AP')
@@ -66,33 +68,44 @@ print("\n=== Point Source w/ Two Gain & Weak Amp Prior Test ==============")
 print("  Uncertainties from FF -- marginalized / single: %15.8g / %15.8g"%(Sigm[0],Sig[0]))
 Sig_F = np.sqrt(1.0/(np.sum(obs.data['sigma']**-2)))
 Sig_exp = p[0] * np.sqrt( (Sig_F/p[0])**2 + ga**2 + ga**2)
-# Sig_exp = p[0] * np.sqrt( (Sig_F/p[0])**2 + ga**2/2.0 )
-print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp),Sig_F,p[0],ga)
+print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #,Sig_F,p[0],ga)
 
 
-######### plotting log-likelihood after marginalization over gains
-N = len(obs.data['u'])
-sig = obs.data['sigma'][0]
-sigg = ga
-F,a = np.meshgrid(np.linspace(1-10*Sig[0],1+10*Sig[0],512),np.linspace(-0.001,0.001,512))
-# lL = -N*(F*np.exp(a)-1)**2/(2.0*sig**2) - a**2/(2.0*sigg**2)
-# lL = -N*(F*(1+a)-1)**2/(2.0*sig**2) - a**2/(2.0*sigg**2)
-lL = -N*(F+a-1)**2/(2.0*sig**2) - a**2/(2.0*sigg**2)
-P = np.exp(lL)
-P = P/np.sum(P)
-plt.pcolormesh(F,a,np.sqrt(-2.0*np.log(P)))
-plt.colorbar()
-# plt.contour(F,a,np.sqrt(-2.0*np.log(P)),colors='b',linestyles='-',levels=[0,1,2,3])
-plt.plot([],[],'-b',label='P(F,a)')
-plt.legend()
-plt.xlabel(r'$I~{\rm Jy}$')
-plt.ylabel(r'$a~{\mu{\rm as}}$')
-plt.savefig('gain_validation_2d.png',dpi=300)
-plt.show()
+# ######### plotting log-likelihood after marginalization over gains
+# N = len(obs.data['u'])
+# sig = obs.data['sigma'][0]
+# sigg = ga
+# F,a = np.meshgrid(np.linspace(1-10*Sig[0],1+10*Sig[0],512),np.linspace(-0.001,0.001,512))
+# # lL = -N*(F*np.exp(a)-1)**2/(2.0*sig**2) - a**2/(2.0*sigg**2)
+# # lL = -N*(F*(1+a)-1)**2/(2.0*sig**2) - a**2/(2.0*sigg**2)
+# lL = -N*(F+a-1)**2/(2.0*sig**2) - a**2/(2.0*sigg**2)
+# P = np.exp(lL)
+# P = P/np.sum(P)
+# plt.pcolormesh(F,a,np.sqrt(-2.0*np.log(P)))
+# plt.colorbar()
+# # plt.contour(F,a,np.sqrt(-2.0*np.log(P)),colors='b',linestyles='-',levels=[0,1,2,3])
+# plt.plot([],[],'-b',label='P(F,a)')
+# plt.legend()
+# plt.xlabel(r'$I~{\rm Jy}$')
+# plt.ylabel(r'$a~{\mu{\rm as}}$')
+# plt.savefig('gain_validation_2d.png',dpi=300)
+# plt.show()
 
+
+# General source prior check
+ff.add_gaussian_prior(0,1e-10)
+ff.add_gaussian_prior(1,1e-6)
+p = [1.0,20.0]
+Sig,Sigm = ff.uncertainties(obs,p)
+print("\n=== Prior Test ==================================================")
+print("  Uncertainties from FF -- marginalized: %15.8g %15.8g"%(Sigm[0],Sigm[1]))
+Sig_exp = np.sqrt(1.0/(np.sum(obs.data['sigma']**-2)))
+print("  Expected uncertainty from priors:      %15.8g %15.8g"%(ff.prior_sigma_list[0],ff.prior_sigma_list[1]))
+ff.add_gaussian_prior(0,None)
+ff.add_gaussian_prior(1,0.001)
 
 # General source
-ff.add_gaussian_prior(1,1000)
+ff.add_gaussian_prior(1,None)
 p = [1.0,20.0]
 fp.plot_2d_forecast(ff,p,0,1,[obs],labels=['Fisher Est.'])
 Vd = ff.visibilities(obs,p)
@@ -108,9 +121,11 @@ for i in range(x.shape[0]) :
         chi2[i,j] = np.sum( (Vd.real-Vm.real)**2/obs.data['sigma']**2 ) + np.sum( (Vd.imag-Vm.imag)**2/obs.data['sigma']**2 )
 plt.contour(x,y,np.sqrt(chi2),colors='b',linestyles='--',levels=[0,1,2,3])
 plt.plot([],[],'--b',label='Grid search')
+plt.gcf().set_size_inches(5.5,5)
+plt.gca().set_position([0.225,0.15,0.7,0.8])
 plt.legend()
-plt.xlabel(r'$\delta I~{\rm Jy}$')
-plt.ylabel(r'$\delta\sigma~{\mu{\rm as}}$')
+plt.xlabel(r'$\delta I~({\rm Jy})$')
+plt.ylabel(r'$\delta\sigma~({\mu{\rm as}})$')
 plt.savefig('gaussian_validation_2d.png',dpi=300)
 
 P = np.exp(-0.5*chi2)
