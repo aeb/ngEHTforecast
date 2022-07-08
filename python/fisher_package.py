@@ -629,6 +629,7 @@ class FF_complex_gains(FisherForecast) :
         self.plbls = self.ff.parameter_labels()
         self.prior_sigma_list = self.ff.prior_sigma_list
         self.gain_amplitude_priors = {}
+        self.gain_phase_priors = {}
         self.ff_cgse = FF_complex_gains_single_epoch(ff)
         self.size = self.ff.size
         self.covar = np.zeros((self.ff.size,self.ff.size))
@@ -667,12 +668,19 @@ class FF_complex_gains(FisherForecast) :
                 obs = obs.switch_polrep('stokes')
                 self.generate_gain_epochs(obs)
                 self.ff_cgse.gain_amplitude_priors = copy.copy(self.gain_amplitude_priors)
+                self.ff_cgse.gain_phase_priors = copy.copy(self.gain_phase_priors)
+                self.ff_cgse.argument_hash = None
+
+                if (verbosity>0) :
+                    print("gain amplitude dicts -- global:",self.gain_amplitude_priors)
+                    print("gain amplitude dicts -- local: ",self.ff_cgse.gain_amplitude_priors)
+                    
                 
                 for ige,ge in enumerate(self.gain_epochs) :
                     with ploop.HiddenPrints():
                         obs_ge = obs.flag_UT_range(UT_start_hour=ge[0],UT_stop_hour=ge[1],output='flagged')
 
-                    gradV_wgs = self.ff_cgse.visibility_gradients(obs_ge,p,**kwargs)
+                    gradV_wgs = self.ff_cgse.visibility_gradients(obs_ge,p,verbosity=verbosity,**kwargs)
                     covar_wgs = np.zeros((self.ff_cgse.size,self.ff_cgse.size))
                     
                     for i in range(self.ff_cgse.size) :
@@ -681,26 +689,39 @@ class FF_complex_gains(FisherForecast) :
 
                     for i in np.arange(self.ff.size,self.ff_cgse.size) :
                         if (not self.ff_cgse.prior_sigma_list[i] is None) :
-                            covar_wgs[i][i] += 1.0/self.ff_cgse.prior_sigma_list[i]**2
+                            covar_wgs[i][i] += 2.0/self.ff_cgse.prior_sigma_list[i]**2
                             
                     n = covar_wgs[:self.ff.size,:self.ff.size]
                     r = covar_wgs[self.ff.size:,:self.ff.size]
                     m = covar_wgs[self.ff.size:,self.ff.size:]
 
-                    # print("gain epoch %g of %g ----------------------"%(ige,self.gain_epochs.shape[0]))
-                    # print("obs stations:",np.unique(list(obs_ge.data['t1'])+list(obs_ge.data['t2'])))
-                    # print("obs times:",np.unique(obs_ge.data['time']))
-                    # print("obs data:\n",obs_ge.data)
-                    # print("gradV gains:\n",gradV_wgs[self.size:])
-                    # print("covar:\n",covar_wgs)
-                    # print("n:\n",n)
-                    # print("r:\n",r)
-                    # print("m:\n",m)
-                    # print("minv:\n",np.linalg.inv(m))
+                    mn = n - np.matmul(r.T,np.matmul(np.linalg.inv(m),r))
+                    
+                    if (verbosity>1) :
+                        print("gain epoch %g of %g ----------------------"%(ige,self.gain_epochs.shape[0]))
+                        print("obs stations:",np.unique(list(obs_ge.data['t1'])+list(obs_ge.data['t2'])))
+                        print("obs times:",np.unique(obs_ge.data['time']))
+                        print("obs data:\n",obs_ge.data)
+                        print("gradV gains:\n",gradV_wgs[self.size:])
+                        print("covar:")
+                        _print_matrix(covar_wgs)
+                        print("n:")
+                        _print_matrix(n)
+                        print("r:")
+                        _print_matrix(r)
+                        print("m:")
+                        _print_matrix(m)
+                        print("minv:")
+                        _print_matrix(np.linalg.inv(m))
+                        print("marginalized n:")
+                        _print_matrix(mn)
+                        print("marginalized/symmetrized n:")
+                        _print_matrix(0.5*(mn+mn.T))
 
                     #quit()
+
                     
-                    self.covar = self.covar + n - np.matmul(r.T,np.matmul(np.linalg.inv(m),r))
+                    self.covar = self.covar + 0.5*(mn+mn.T)
 
             else:
                 raise(RuntimeError("Polarized models with gains remains to be implemented."))
@@ -724,22 +745,28 @@ class FF_complex_gains(FisherForecast) :
     def parameter_labels(self) :
         return self.ff.parameter_labels()
 
-    def set_gain_amplitude_prior(self,sigma,station=None) :
+    def set_gain_amplitude_prior(self,sigma,station=None,verbosity=0) :
         sigma = min(sigma,10.0)
         if (station is None) :
             self.gain_amplitude_priors = {'All':sigma}
         else :
             self.gain_amplitude_priors[station] = sigma
             
+        if (verbosity>0) :
+            print("Gain amplitude dict:",self.gain_amplitude_priors)
+            
         self.argument_hash = None
 
-    def set_gain_phase_prior(self,sigma,station=None) :
+    def set_gain_phase_prior(self,sigma,station=None,verbosity=0) :
         sigma = min(sigma,100.0)
         if (station is None) :
             self.gain_phase_priors = {'All':sigma}
         else :
             self.gain_phase_priors[station] = sigma
             
+        if (verbosity>0) :
+            print("Gain phase dict:",self.gain_phase_priors)
+
         self.argument_hash = None
             
             
@@ -1733,7 +1760,7 @@ def plot_1d_forecast(ff,p,i1,obslist,labels=None) :
     return plt.gcf(),plt.gca()
 
 
-def plot_2d_forecast(ff,p,i1,i2,obslist,labels=None) :
+def plot_2d_forecast(ff,p,i1,i2,obslist,labels=None,verbosity=0,**kwargs) :
     
     if (labels is None) :
         labels = len(obslist)*[None]
@@ -1742,7 +1769,7 @@ def plot_2d_forecast(ff,p,i1,i2,obslist,labels=None) :
     plt.axes([0.2,0.2,0.75,0.75])
 
     for k,obs in enumerate(obslist) :
-        d,w,csq,mcsq = ff.joint_biparameter_chisq(obs,p,i1,i2)
+        d,w,csq,mcsq = ff.joint_biparameter_chisq(obs,p,i1,i2,verbosity=verbosity,**kwargs)
         plt.contourf(d,w,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=0.75,levels=[0,1,2,3])
         plt.contour(d,w,np.sqrt(mcsq),colors=_ff_color_list[k%_ff_color_size],alpha=1,levels=[0,1,2,3])
         plt.plot([],[],'-',color=_ff_color_list[k%_ff_color_size],label=labels[k])
