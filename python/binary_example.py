@@ -26,7 +26,6 @@ p = [0.1,20,0.05,20,10,15]
 for o in obslist :
     o.data['vis'] = ff.visibilities(o,p)
     o = o.add_fractional_noise(0.01)
-
     o = o.flag_low_snr()
 
     
