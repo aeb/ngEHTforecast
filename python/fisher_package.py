@@ -571,7 +571,7 @@ class FF_complex_gains_single_epoch(FisherForecast) :
                         self.prior_sigma_list.append(10.0) # Big amplitude
                         self.prior_sigma_list.append(100.0) # Big phase
 
-                if (verbosity>1) :
+                if (verbosity>0) :
                     print("SEG %s amp   priors:"%(station),self.gain_amplitude_priors)
                     print("SEG %s phase priors:"%(station),self.gain_phase_priors)
                     print("SEG %s priors:"%(station),self.prior_sigma_list)
@@ -1584,7 +1584,7 @@ class FF_sum(FisherForecast) :
                 else :
                     dx = p[k+ff.size]
                     dy = p[k+ff.size+1]
-                    shift_factor = np.exp( 2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
+                    shift_factor = np.exp( -2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
                     k += ff.size + 2
                     
                 V = V + ff.visibilities(obs,q,verbosity=verbosity) * shift_factor
@@ -1604,7 +1604,7 @@ class FF_sum(FisherForecast) :
                 else :
                     dx = p[k+ff.size]
                     dy = p[k+ff.size+1]
-                    shift_factor = np.exp( 2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
+                    shift_factor = np.exp( -2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
                     k += ff.size + 2
                     
                 RR_prev, LL_prev, RL_prev, LR_prev = ff.visibilities(obs,q,verbosity=verbosity)
