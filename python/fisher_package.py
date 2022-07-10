@@ -8,6 +8,9 @@ import hashlib
 import themispy as ty
 import ehtim.parloop as ploop
 
+# import scipy.linalg as linalg
+import numpy.linalg as linalg
+
 def _print_matrix(m) :
     for i in range(m.shape[0]) :
         line = ""
@@ -21,6 +24,12 @@ def _print_vector(v) :
         line = line + ' %10.3g'%(v[i])
     print(line)
 
+def _invert_matrix(a):
+    return linalg.inv(a)
+    # return linalg.pinvh(a)
+    # n = a.shape[0]
+    # I = np.identity(n)
+    # return linalg.solve(a, I, sym_pos = True, overwrite_b = True)
 
 class FisherForecast :
     """
@@ -56,7 +65,7 @@ class FisherForecast :
             
     def visibility_gradients(self,obs,p,verbosity=0,**kwargs) :
         """
-        User-defined function in child classes that generates visibilit gradients
+        User-defined function in child classes that generates visibility gradients
         associated with a given model image object.
 
         Args:
@@ -373,7 +382,7 @@ class FisherForecast :
                     M[j2,k2] = C[j][k]
                 v[j2] = C[i][j]
             N = C[i][i]
-            Minv = np.linalg.inv(M)
+            Minv = _invert_matrix(M)
             mN = N - np.matmul(v,np.matmul(Minv,v))
             Sig_marg[i] = np.sqrt(2.0/mN)
         return Sig_marg
@@ -396,7 +405,7 @@ class FisherForecast :
                     M[j2,k2] = C[j][k]
                 v[j2] = C[i][j]
             N = C[i][i]
-            Minv = np.linalg.inv(M)
+            Minv = _invert_matrix(M)
             mN = N - np.matmul(v,np.matmul(Minv,v))
             Sig_uni[i] = np.sqrt(2.0/N)
             Sig_marg[i] = np.sqrt(2.0/mN)
@@ -441,7 +450,7 @@ class FisherForecast :
             _print_vector(v2)
 
         
-        Minv = np.linalg.inv(M)
+        Minv = _invert_matrix(M)
         mN1 = N1 - np.matmul(v1.T,np.matmul(Minv,v1))
         mN2 = N2 - np.matmul(v2.T,np.matmul(Minv,v2))
         mC12 = C12 - 0.5*(np.matmul(v1.T,np.matmul(Minv,v2)) + np.matmul(v2.T,np.matmul(Minv,v1)))
@@ -500,92 +509,290 @@ class FF_complex_gains_single_epoch(FisherForecast) :
     def __init__(self,ff) :
         super().__init__()
         self.ff = ff
+        self.stokes = self.ff.stokes
         self.scans = False
         self.gain_epochs = None
         self.plbls = self.ff.parameter_labels()
         self.prior_sigma_list = self.ff.prior_sigma_list
         self.gain_amplitude_priors = {}
         self.gain_phase_priors = {}
+        self.gain_ratio_amplitude_priors = {}
+        self.gain_ratio_phase_priors = {}
         
     def visibilities(self,obs,p,verbosity=0,**kwargs) :
         return self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
 
     def visibility_gradients(self,obs,p,verbosity=0,**kwargs) :
-        V_pg = self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
-        gradV_pg = self.ff.visibility_gradients(obs,p,verbosity=verbosity,**kwargs)
         
-        # Start with model parameters
-        gradV = list(gradV_pg.T)
-
         # Generate the gain epochs and update the size
-        station_list = obs.tarr['site']
+        station_list = np.unique(np.concatenate((obs.data['t1'],obs.data['t2'])))
         nt = len(station_list)
         self.size = self.ff.size
         self.plbls = self.ff.parameter_labels()
         self.prior_sigma_list = copy.copy(self.ff.prior_sigma_list)
-        
-        # Now add gains
-        for station in station_list :
-            dVda = 0.0j*V_pg
-            dVdp = 0.0j*V_pg
 
-            # G
-            inget1 = (obs.data['t1']==station)
-            if (np.any(inget1)) :
-                dVda[inget1] = V_pg[inget1]
-                dVdp[inget1] = 1.0j * V_pg[inget1]
+        if (self.prior_sigma_list == []) :
+            self.prior_sigma_list = [None]*self.size
 
-            # G*
-            inget2 = (obs.data['t2']==station)
-            if (np.any(inget2)) :
-                dVda[inget2] = V_pg[inget2]
-                dVdp[inget2] = -1.0j * V_pg[inget2]
+        if (self.stokes == 'I'):
 
-            # Check if any cases
-            if (np.any(inget1) or np.any(inget2)) :
-                gradV.append(dVda)
-                gradV.append(dVdp)
-                self.size +=2
-                self.plbls.append(r'$\ln(|G|_{%s})$'%(station))
-                self.plbls.append(r'${\rm arg}(G_{%s})$'%(station))
+            V_pg = self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
+            gradV_pg = self.ff.visibility_gradients(obs,p,verbosity=verbosity,**kwargs)
 
-                if ( len(list(self.gain_amplitude_priors.keys()))>0 or len(list(self.gain_phase_priors.keys()))>0) :
+            # Start with model parameters
+            gradV = list(gradV_pg.T)
 
-                    # Set amplitude priors
-                    if ( station in self.gain_amplitude_priors.keys() ) :
-                        self.prior_sigma_list.append(self.gain_amplitude_priors[station])
-                    elif ( 'All' in self.gain_amplitude_priors.keys() ) :
-                        self.prior_sigma_list.append(self.gain_amplitude_priors['All'])
+            # Now add gains
+            for station in station_list :
+                dVda = 0.0j*V_pg
+                dVdp = 0.0j*V_pg
+
+                # G
+                inget1 = (obs.data['t1']==station)
+                if (np.any(inget1)) :
+                    dVda[inget1] = V_pg[inget1]
+                    dVdp[inget1] = 1.0j * V_pg[inget1]
+
+                # G*
+                inget2 = (obs.data['t2']==station)
+                if (np.any(inget2)) :
+                    dVda[inget2] = V_pg[inget2]
+                    dVdp[inget2] = -1.0j * V_pg[inget2]
+
+                # Check if any cases
+                if (np.any(inget1) or np.any(inget2)) :
+
+                    gradV.append(dVda)
+                    gradV.append(dVdp)
+                    self.size +=2
+                    self.plbls.append(r'$\ln(|G|_{%s})$'%(station))
+                    self.plbls.append(r'${\rm arg}(G_{%s})$'%(station))
+
+                    if ( len(list(self.gain_amplitude_priors.keys()))>0 or len(list(self.gain_phase_priors.keys()))>0) :
+                        
+                        # Set amplitude priors
+                        if ( station in self.gain_amplitude_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_amplitude_priors[station])
+                        elif ( 'All' in self.gain_amplitude_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_amplitude_priors['All'])
+                        else :
+                            self.prior_sigma_list.append(10.0) # Big amplitude
+
+                        # Set phase priors
+                        if ( station in self.gain_phase_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_phase_priors[station])
+                        elif ( 'All' in self.gain_phase_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_phase_priors['All'])
+                        else :
+                            self.prior_sigma_list.append(100.0) # Big phase
+
                     else :
                         self.prior_sigma_list.append(10.0) # Big amplitude
-
-                    # Set phase priors
-                    if ( station in self.gain_phase_priors.keys() ) :
-                        self.prior_sigma_list.append(self.gain_phase_priors[station])
-                    elif ( 'All' in self.gain_phase_priors.keys() ) :
-                        self.prior_sigma_list.append(self.gain_phase_priors['All'])
-                    else :
                         self.prior_sigma_list.append(100.0) # Big phase
 
-                else :
-                        self.prior_sigma_list.append(10.0) # Big amplitude
-                        self.prior_sigma_list.append(100.0) # Big phase
+            gradV = np.array(gradV).T
 
-                if (verbosity>0) :
-                    print("SEG %s amp   priors:"%(station),self.gain_amplitude_priors)
-                    print("SEG %s phase priors:"%(station),self.gain_phase_priors)
-                    print("SEG %s priors:"%(station),self.prior_sigma_list)
+            if (verbosity>0) :
+                for j in range(min(10,gradV.shape[0])) :
+                    line = "SEG gradV: %10.3g %10.3g"%(obs.data['u'][j],obs.data['v'][j])
+                    for k in range(gradV.shape[1]) :
+                        line = line + " %8.3g + %8.3gi"%(gradV[j,k].real,gradV[j,k].imag)
+                    print(line)
 
-        gradV = np.array(gradV).T
+            return gradV
 
-        if (verbosity>0) :
-            for j in range(min(10,gradV.shape[0])) :
-                line = "SEG gradV: %10.3g %10.3g"%(obs.data['u'][j],obs.data['v'][j])
-                for k in range(gradV.shape[1]) :
-                    line = line + " %8.3g + %8.3gi"%(gradV[j,k].real,gradV[j,k].imag)
-                print(line)
+        else:
+
+            RR_pg, LL_pg, RL_pg, LR_pg = self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
+            gradRR_pg, gradLL_pg, gradRL_pg, gradLR_pg = self.ff.visibility_gradients(obs,p,verbosity=verbosity,**kwargs)
+
+            # start with the current list of model parameters
+            gradRR = list(gradRR_pg.T)
+            gradLL = list(gradLL_pg.T)
+            gradRL = list(gradRL_pg.T)
+            gradLR = list(gradLR_pg.T)
+
+            # add gains
+            for station in station_list :
                 
-        return gradV
+                dRRda = 0.0j*RR_pg
+                dRRdp = 0.0j*RR_pg
+                dRRdr = 0.0j*RR_pg
+                dRRdt = 0.0j*RR_pg
+
+                dLLda = 0.0j*LL_pg
+                dLLdp = 0.0j*LL_pg
+                dLLdr = 0.0j*LL_pg
+                dLLdt = 0.0j*LL_pg
+
+                dRLda = 0.0j*RL_pg
+                dRLdp = 0.0j*RL_pg
+                dRLdr = 0.0j*RL_pg
+                dRLdt = 0.0j*RL_pg
+
+                dLRda = 0.0j*LR_pg
+                dLRdp = 0.0j*LR_pg
+                dLRdr = 0.0j*LR_pg
+                dLRdt = 0.0j*LR_pg
+
+                # G
+                inget1 = (obs.data['t1']==station)
+                if (np.any(inget1)) :
+
+                    dRRda[inget1] = RR_pg[inget1]
+                    dRRdp[inget1] = 1.0j * RR_pg[inget1]
+                    dRRdr[inget1] = 0.5 * RR_pg[inget1]
+                    dRRdt[inget1] = 0.5j * RR_pg[inget1]
+
+                    dLLda[inget1] = LL_pg[inget1]
+                    dLLdp[inget1] = 1.0j * LL_pg[inget1]
+                    dLLdr[inget1] = -0.5 * LL_pg[inget1]
+                    dLLdt[inget1] = -0.5j * LL_pg[inget1]
+
+                    dRLda[inget1] = RL_pg[inget1]
+                    dRLdp[inget1] = 1.0j * RL_pg[inget1]
+                    dRLdr[inget1] = 0.5 * RL_pg[inget1]
+                    dRLdt[inget1] = 0.5j * RL_pg[inget1]
+
+                    dLRda[inget1] = LR_pg[inget1]
+                    dLRdp[inget1] = 1.0j * LR_pg[inget1]
+                    dLRdr[inget1] = -0.5 * LR_pg[inget1]
+                    dLRdt[inget1] = -0.5j * LR_pg[inget1]
+
+                # G*
+                inget2 = (obs.data['t2']==station)
+                if (np.any(inget2)) :
+
+                    dRRda[inget2] = RR_pg[inget2]
+                    dRRdp[inget2] = -1.0j * RR_pg[inget2]
+                    dRRdr[inget2] = 0.5 * RR_pg[inget2]
+                    dRRdt[inget2] = -0.5j * RR_pg[inget2]
+
+                    dLLda[inget2] = LL_pg[inget2]
+                    dLLdp[inget2] = -1.0j * LL_pg[inget2]
+                    dLLdr[inget2] = -0.5 * LL_pg[inget2]
+                    dLLdt[inget2] = 0.5j * LL_pg[inget2]
+
+                    dRLda[inget2] = RL_pg[inget2]
+                    dRLdp[inget2] = -1.0j * RL_pg[inget2]
+                    dRLdr[inget2] = -0.5 * RL_pg[inget2]
+                    dRLdt[inget2] = 0.5j * RL_pg[inget2]
+
+                    dLRda[inget2] = LR_pg[inget2]
+                    dLRdp[inget2] = -1.0j * LR_pg[inget2]
+                    dLRdr[inget2] = 0.5 * LR_pg[inget2]
+                    dLRdt[inget2] = -0.5j * LR_pg[inget2]
+
+                # check if any cases
+                if (np.any(inget1) or np.any(inget2)) :
+
+                    gradRR.append(dRRda)
+                    gradRR.append(dRRdp)
+                    gradRR.append(dRRdr)
+                    gradRR.append(dRRdt)
+
+                    gradLL.append(dLLda)
+                    gradLL.append(dLLdp)
+                    gradLL.append(dLLdr)
+                    gradLL.append(dLLdt)
+
+                    gradRL.append(dRLda)
+                    gradRL.append(dRLdp)
+                    gradRL.append(dRLdr)
+                    gradRL.append(dRLdt)
+
+                    gradLR.append(dLRda)
+                    gradLR.append(dLRdp)
+                    gradLR.append(dLRdr)
+                    gradLR.append(dLRdt)
+
+                    self.size += 4
+
+                    # gain geometric mean labels
+                    self.plbls.append(r'$\ln(|G|_{%s})$'%(station))
+                    self.plbls.append(r'${\rm arg}(G_{%s})$'%(station))
+
+                    # gain ratio labels
+                    self.plbls.append(r'$\ln(|R|_{%s})$'%(station))
+                    self.plbls.append(r'${\rm arg}(R_{%s})$'%(station))
+
+                    # complex gain priors
+                    if ( len(list(self.gain_amplitude_priors.keys()))>0 or len(list(self.gain_phase_priors.keys()))>0) :
+                        
+                        # Set amplitude priors
+                        if ( station in self.gain_amplitude_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_amplitude_priors[station])
+                        elif ( 'All' in self.gain_amplitude_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_amplitude_priors['All'])
+                        else :
+                            self.prior_sigma_list.append(10.0) # Big amplitude
+
+                        # Set phase priors
+                        if ( station in self.gain_phase_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_phase_priors[station])
+                        elif ( 'All' in self.gain_phase_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_phase_priors['All'])
+                        else :
+                            self.prior_sigma_list.append(100.0) # Big phase
+
+                    else :
+                        self.prior_sigma_list.append(10.0) # Big amplitude
+                        self.prior_sigma_list.append(100.0) # Big phase
+
+                    # complex gain ratio priors
+                    if ( len(list(self.gain_ratio_amplitude_priors.keys()))>0 or len(list(self.gain_ratio_phase_priors.keys()))>0) :
+
+                        # Set gain ratio amplitude priors
+                        if ( station in self.gain_ratio_amplitude_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_ratio_amplitude_priors[station])
+                        elif ( 'All' in self.gain_ratio_amplitude_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_ratio_amplitude_priors['All'])
+                        else :
+                            self.prior_sigma_list.append(1e-10) # small amplitude
+
+                        # Set gain ratio phase priors
+                        if ( station in self.gain_ratio_phase_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_ratio_phase_priors[station])
+                        elif ( 'All' in self.gain_ratio_phase_priors.keys() ) :
+                            self.prior_sigma_list.append(self.gain_ratio_phase_priors['All'])
+                        else :
+                            self.prior_sigma_list.append(1e-10) # small phase
+
+                    else :
+                        self.prior_sigma_list.append(1e-10) # small amplitude
+                        self.prior_sigma_list.append(1e-10) # small phase
+
+            gradRR = np.array(gradRR).T
+            gradLL = np.array(gradLL).T
+            gradRL = np.array(gradRL).T
+            gradLR = np.array(gradLR).T
+
+            if (verbosity>0) :
+                for j in range(min(10,gradRR.shape[0])) :
+                    line = "SEG gradRR: %10.3g %10.3g"%(obs.data['u'][j],obs.data['v'][j])
+                    for k in range(gradRR.shape[1]) :
+                        line = line + " %8.3g + %8.3gi"%(gradRR[j,k].real,gradRR[j,k].imag)
+                    print(line)
+                for j in range(min(10,gradLL.shape[0])) :
+                    line = "SEG gradLL: %10.3g %10.3g"%(obs.data['u'][j],obs.data['v'][j])
+                    for k in range(gradLL.shape[1]) :
+                        line = line + " %8.3g + %8.3gi"%(gradLL[j,k].real,gradLL[j,k].imag)
+                    print(line)
+                for j in range(min(10,gradRL.shape[0])) :
+                    line = "SEG gradRL: %10.3g %10.3g"%(obs.data['u'][j],obs.data['v'][j])
+                    for k in range(gradRL.shape[1]) :
+                        line = line + " %8.3g + %8.3gi"%(gradRL[j,k].real,gradRL[j,k].imag)
+                    print(line)
+                for j in range(min(10,gradLR.shape[0])) :
+                    line = "SEG gradLR: %10.3g %10.3g"%(obs.data['u'][j],obs.data['v'][j])
+                    for k in range(gradLR.shape[1]) :
+                        line = line + " %8.3g + %8.3gi"%(gradLR[j,k].real,gradLR[j,k].imag)
+                    print(line)
+
+
+            # print('Prior sigma list:',self.prior_sigma_list)
+
+            return gradRR, gradLL, gradRL, gradLR
 
     def parameter_labels(self) :
         return self.plbls
@@ -607,6 +814,24 @@ class FF_complex_gains_single_epoch(FisherForecast) :
             self.gain_phase_priors[station] = sigma
             
         self.argument_hash = None
+
+    def set_gain_ratio_amplitude_prior(self,sigma,station=None) :
+        sigma = min(sigma,100.0)
+        if (station is None) :
+            self.gain_ratio_amplitude_priors = {'All':sigma}
+        else :
+            self.gain_ratio_amplitude_priors[station] = sigma
+            
+        self.argument_hash = None
+
+    def set_gain_ratio_phase_prior(self,sigma,station=None) :
+        sigma = min(sigma,100.0)
+        if (station is None) :
+            self.gain_ratio_phase_priors = {'All':sigma}
+        else :
+            self.gain_ratio_phase_priors[station] = sigma
+            
+        self.argument_hash = None
         
 
 class FF_complex_gains(FisherForecast) :
@@ -624,6 +849,7 @@ class FF_complex_gains(FisherForecast) :
     def __init__(self,ff) :
         super().__init__()
         self.ff = ff
+        self.stokes = self.ff.stokes
         self.scans = False
         self.gain_epochs = None
         self.plbls = self.ff.parameter_labels()
@@ -695,7 +921,7 @@ class FF_complex_gains(FisherForecast) :
                     r = covar_wgs[self.ff.size:,:self.ff.size]
                     m = covar_wgs[self.ff.size:,self.ff.size:]
 
-                    mn = n - np.matmul(r.T,np.matmul(np.linalg.inv(m),r))
+                    mn = n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
                     
                     if (verbosity>1) :
                         print("gain epoch %g of %g ----------------------"%(ige,self.gain_epochs.shape[0]))
@@ -712,7 +938,7 @@ class FF_complex_gains(FisherForecast) :
                         print("m:")
                         _print_matrix(m)
                         print("minv:")
-                        _print_matrix(np.linalg.inv(m))
+                        _print_matrix(_invert_matrix(m))
                         print("marginalized n:")
                         _print_matrix(mn)
                         print("marginalized/symmetrized n:")
@@ -724,16 +950,49 @@ class FF_complex_gains(FisherForecast) :
                     self.covar = self.covar + 0.5*(mn+mn.T)
 
             else:
-                raise(RuntimeError("Polarized models with gains remains to be implemented."))
-                # obs = obs.switch_polrep('circ')
-                # grad_RR, grad_LL, grad_RL, grad_LR = self.visibility_gradients(obs,p,**kwargs)
-                # covar = np.zeros((self.size,self.size))
-                # for i in range(self.size) :
-                #     for j in range(self.size) :
-                #         covar[i][j] = 0.5*np.sum( np.conj(grad_RR[:,i])*grad_RR[:,j]/obs.data['rrsigma']**2 + grad_RR[:,i]*np.conj(grad_RR[:,j])/obs.data['rrsigma']**2)
-                #         covar[i][j] += 0.5*np.sum( np.conj(grad_LL[:,i])*grad_LL[:,j]/obs.data['llsigma']**2 + grad_LL[:,i]*np.conj(grad_LL[:,j])/obs.data['llsigma']**2)
-                #         covar[i][j] += 0.5*np.sum( np.conj(grad_RL[:,i])*grad_RL[:,j]/obs.data['rlsigma']**2 + grad_RL[:,i]*np.conj(grad_RL[:,j])/obs.data['rlsigma']**2)
-                #         covar[i][j] += 0.5*np.sum( np.conj(grad_LR[:,i])*grad_LR[:,j]/obs.data['lrsigma']**2 + grad_LR[:,i]*np.conj(grad_LR[:,j])/obs.data['lrsigma']**2)
+                obs = obs.switch_polrep('circ')
+                self.generate_gain_epochs(obs)
+                self.ff_cgse.gain_amplitude_priors = copy.copy(self.gain_amplitude_priors)
+                self.ff_cgse.gain_phase_priors = copy.copy(self.gain_phase_priors)
+                self.ff_cgse.gain_ratio_amplitude_priors = copy.copy(self.gain_ratio_amplitude_priors)
+                self.ff_cgse.gain_ratio_phase_priors = copy.copy(self.gain_ratio_phase_priors)
+                self.ff_cgse.argument_hash = None
+
+                if (verbosity>0) :
+                    print("gain amplitude dicts -- global:",self.gain_amplitude_priors)
+                    print("gain amplitude dicts -- local: ",self.ff_cgse.gain_amplitude_priors)
+                    print("gain phase dicts -- global:",self.gain_phase_priors)
+                    print("gain phase dicts -- local: ",self.ff_cgse.gain_phase_priors)
+                    print("gain ratio amplitude dicts -- global:",self.gain_ratio_amplitude_priors)
+                    print("gain ratio amplitude dicts -- local: ",self.ff_cgse.gain_ratio_amplitude_priors)
+                    print("gain ratio phase dicts -- global:",self.gain_ratio_phase_priors)
+                    print("gain ratio phase dicts -- local: ",self.ff_cgse.gain_ratio_phase_priors)
+
+                for ige,ge in enumerate(self.gain_epochs) :
+                    with ploop.HiddenPrints():
+                        obs_ge = obs.flag_UT_range(UT_start_hour=ge[0],UT_stop_hour=ge[1],output='flagged')
+
+                    gradRR_wgs, gradLL_wgs, gradRL_wgs, gradLR_wgs = self.ff_cgse.visibility_gradients(obs_ge,p,verbosity=verbosity,**kwargs)
+                    covar_wgs = np.zeros((self.ff_cgse.size,self.ff_cgse.size))
+
+                    for i in range(self.ff_cgse.size) :
+                        for j in range(self.ff_cgse.size) :
+                            covar_wgs[i][j] = np.sum( np.conj(gradRR_wgs[:,i])*gradRR_wgs[:,j]/obs_ge.data['rrsigma']**2 + gradRR_wgs[:,i]*np.conj(gradRR_wgs[:,j])/obs_ge.data['rrsigma']**2)
+                            covar_wgs[i][j] += np.sum( np.conj(gradLL_wgs[:,i])*gradLL_wgs[:,j]/obs_ge.data['llsigma']**2 + gradLL_wgs[:,i]*np.conj(gradLL_wgs[:,j])/obs_ge.data['llsigma']**2)
+                            covar_wgs[i][j] += np.sum( np.conj(gradRL_wgs[:,i])*gradRL_wgs[:,j]/obs_ge.data['rlsigma']**2 + gradRL_wgs[:,i]*np.conj(gradRL_wgs[:,j])/obs_ge.data['rlsigma']**2)
+                            covar_wgs[i][j] += np.sum( np.conj(gradLR_wgs[:,i])*gradLR_wgs[:,j]/obs_ge.data['lrsigma']**2 + gradLR_wgs[:,i]*np.conj(gradLR_wgs[:,j])/obs_ge.data['lrsigma']**2)
+
+                    for i in np.arange(self.ff.size,self.ff_cgse.size) :
+                        if (not self.ff_cgse.prior_sigma_list[i] is None) :
+                            covar_wgs[i][i] += 2.0/self.ff_cgse.prior_sigma_list[i]**2
+
+                    n = covar_wgs[:self.ff.size,:self.ff.size]
+                    r = covar_wgs[self.ff.size:,:self.ff.size]
+                    m = covar_wgs[self.ff.size:,self.ff.size:]
+
+                    mn = n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
+
+                    self.covar = self.covar + 0.5*(mn+mn.T)
 
             if (len(self.prior_sigma_list)>0) :
                 for i in range(self.size) :
@@ -768,10 +1027,31 @@ class FF_complex_gains(FisherForecast) :
             print("Gain phase dict:",self.gain_phase_priors)
 
         self.argument_hash = None
-            
-            
-    
 
+    def set_gain_ratio_amplitude_prior(self,sigma,station=None,verbosity=0) :
+        sigma = min(sigma,100.0)
+        if (station is None) :
+            self.gain_ratio_amplitude_priors = {'All':sigma}
+        else :
+            self.gain_ratio_amplitude_priors[station] = sigma
+            
+        if (verbosity>0) :
+            print("Gain ratio amplitude dict:",self.gain_ratio_amplitude_priors)
+            
+        self.argument_hash = None
+
+    def set_gain_ratio_phase_prior(self,sigma,station=None,verbosity=0) :
+        sigma = min(sigma,100.0)
+        if (station is None) :
+            self.gain_ratio_phase_priors = {'All':sigma}
+        else :
+            self.gain_ratio_phase_priors[station] = sigma
+            
+        if (verbosity>0) :
+            print("Gain ratio phase dict:",self.gain_ratio_phase_priors)
+
+        self.argument_hash = None
+        
     
 class FF_model_image(FisherForecast) :
     """
@@ -809,6 +1089,9 @@ class FF_model_image(FisherForecast) :
         Returns:
           V (np.array): list of complex visibilities computed at observations.
         """
+
+        if self.stokes != 'I':
+            raise(Exception('Polarized visibilities for FF_model_image are not yet implemented!'))
 
         # Generate the image at current location
         self.img.generate(p)
@@ -884,6 +1167,9 @@ class FF_model_image(FisherForecast) :
           gradV (np.ndarray): list of complex visibilities gradients computed at observation.
         """
 
+        if self.stokes != 'I':
+            raise(Exception('Polarized gradients for FF_model_image are not yet implemented!'))
+
         pp = np.copy(p)
         gradV = np.zeros((len(u),self.img.size))
 
@@ -918,6 +1204,9 @@ class FF_smoothed_delta_ring(FisherForecast) :
         #  p[1] ... diameter in uas
         #  p[2] ... width in uas
 
+        if self.stokes != 'I':
+            raise(Exception('Polarized visibilities for FF_smoothed_delta_ring are not yet implemented!'))
+
         u = obs.data['u']
         v = obs.data['v']
         
@@ -938,6 +1227,9 @@ class FF_smoothed_delta_ring(FisherForecast) :
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
         #  p[2] ... width in uas
+
+        if self.stokes != 'I':
+            raise(Exception('Polarized gradients for FF_smoothed_delta_ring are not yet implemented!'))
 
         u = obs.data['u']
         v = obs.data['v']
@@ -975,6 +1267,9 @@ class FF_symmetric_gaussian(FisherForecast) :
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
 
+        if self.stokes != 'I':
+            raise(Exception('Polarized visibilities for FF_symmetric_gaussian are not yet implemented!'))
+
         u = obs.data['u']
         v = obs.data['v']
 
@@ -989,6 +1284,9 @@ class FF_symmetric_gaussian(FisherForecast) :
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
+
+        if self.stokes != 'I':
+            raise(Exception('Polarized gradients for FF_symmetric_gaussian are not yet implemented!'))
 
         u = obs.data['u']
         v = obs.data['v']
@@ -1022,6 +1320,9 @@ class FF_asymmetric_gaussian(FisherForecast) :
         #  p[1] ... mean diameter in uas
         #  p[2] ... asymmetry parameter 
         #  p[3] ... position angle in radians
+
+        if self.stokes != 'I':
+            raise(Exception('Polarized visibilities for FF_asymmetric_gaussian are not yet implemented!'))
 
         u = obs.data['u']
         v = obs.data['v']
@@ -1057,6 +1358,9 @@ class FF_asymmetric_gaussian(FisherForecast) :
         #  p[1] ... mean diameter in uas
         #  p[2] ... asymmetry parameter 
         #  p[3] ... position angle in radians
+
+        if self.stokes != 'I':
+            raise(Exception('Polarized gradients for FF_asymmetric_gaussian are not yet implemented!'))
 
         u = obs.data['u']
         v = obs.data['v']
@@ -1120,6 +1424,9 @@ class FF_splined_raster(FisherForecast) :
         #  ...
         #  p[NxN-1] = p[N-1,N-1]
 
+        if self.stokes != 'I':
+            raise(Exception('Polarized visibilities for FF_splined_raster are not yet implemented!'))
+
         u = obs.data['u']
         v = obs.data['v']
         
@@ -1161,6 +1468,9 @@ class FF_splined_raster(FisherForecast) :
         #  p[1] ... p[1,0]
         #  ...
         #  p[NxN-1] = p[N-1,N-1]
+
+        if self.stokes != 'I':
+            raise(Exception('Polarized gradients for FF_splined_raster are not yet implemented!'))
         
         u = obs.data['u']
         v = obs.data['v']
@@ -1251,6 +1561,9 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
         #  p[NxN+1] ... ring diameter in uas
         #  p[NxN+2] ... ring width in uas
 
+        if self.stokes != 'I':
+            raise(Exception('Polarized visibilities for FF_smoothed_delta_ring_themage are not yet implemented!'))
+
         u = obs.data['u']
         v = obs.data['v']
 
@@ -1289,6 +1602,9 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
         #  p[NxN+0] ... ring flux in Jy
         #  p[NxN+1] ... ring diameter in uas
         #  p[NxN+2] ... ring width in uas
+
+        if self.stokes != 'I':
+            raise(Exception('Polarized gradients for FF_smoothed_delta_ring_themage are not yet implemented!'))
 
         u = obs.data['u']
         v = obs.data['v']
