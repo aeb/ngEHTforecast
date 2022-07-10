@@ -8,10 +8,25 @@ obs = eh.obsdata.load_uvfits('../data/circ_gauss_x2_F0=3.0_FWHM=2.0_sep=5.0_angl
 obs.add_scans()
 obs = obs.avg_coherent(0,scan_avg=True)
 obs.data['sigma'] = 0*obs.data['sigma'] + 0.001 # mJy stuff
-obs.data['t1'] = np.array( len(obs.data['t1'])*['AA'] )
-obs.data['t2'] = np.array( len(obs.data['t2'])*['AP'] )
+
 
 ff = fp.FF_symmetric_gaussian()
+
+# Fill obs data with "truth" for later
+p = [1.0,0.001]
+obs.data['vis'] = ff.visibilities(obs,p)
+obs.source = 'Test'
+
+
+# Keep up to this point
+obs_orig = obs.copy() # All gains
+
+obs_orig.save_uvfits('symmetric_gaussian.uvfits')
+
+
+# Restrict by default to just two stations
+obs.data['t1'] = np.array( len(obs.data['t1'])*['AA'] )
+obs.data['t2'] = np.array( len(obs.data['t2'])*['AP'] )
 
 
 print("")
@@ -72,7 +87,8 @@ print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #
 
 print("\n=== Point Source w/ Single One-epoch Gain & Weak Amp Prior Test ===========")
 obs_single_time = obs.copy()
-obs_single_time.data['time'] = 0.0*obs_single_time.data['time'] + obs_single_time.data['time'][0]
+obs_single_time.data['time'] = 0.0*obs_single_time.data['time']  + obs_single_time.data['time'][0]
+obs_single_time.save_uvfits('symmetric_gaussian_single_time.uvfits')
 ffg = fp.FF_complex_gains(ff)
 ffg.set_gain_epochs(scans=True)
 ga = 0.01
@@ -85,6 +101,9 @@ print("  Uncertainties from FF -- marginalized / single: %15.8g / %15.8g"%(Sigm[
 Sig_F = np.sqrt(1.0/(np.sum(obs.data['sigma']**-2)))
 Sig_exp = p[0] * np.sqrt( (Sig_F/p[0])**2 + ga**2 )
 print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #,Sig_F,p[0],ga)
+obs_single_time.data['time'] = obs_single_time.data['time'] # + np.arange(len(obs_single_time.data['time']))*1e-4
+obs_single_time.save_uvfits('symmetric_gaussian_single_time.uvfits')
+
 
 
 print("\n=== Point Source w/ Single Double-epoch Gains & Weak Amp Prior Test ===========")
@@ -96,7 +115,7 @@ obs_double_time.data['time'][:N1] = 0.0*obs_double_time.data['time'][:N1] + obs_
 obs_double_time.data['time'][N1:] = 0.0*obs_double_time.data['time'][N1:] + t1
 ffg = fp.FF_complex_gains(ff)
 ffg.set_gain_epochs(scans=True)
-ga = 0.1
+ga = 0.01
 ffg.set_gain_amplitude_prior(1e-10,verbosity=0)
 ffg.set_gain_amplitude_prior(ga,station='AA',verbosity=0)
 ffg.set_gain_phase_prior(1e-10,verbosity=0)
@@ -107,6 +126,8 @@ Sig_F1 = obs.data['sigma'][0]/np.sqrt(N1)
 Sig_F2 = obs.data['sigma'][0]/np.sqrt(N2)
 Sig_exp = np.sqrt( 1.0/( 1.0/(Sig_F1**2+(ga*p[0])**2) + 1.0/(Sig_F2**2+(ga*p[0])**2) ) )
 print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #,Sig_F,p[0],ga)
+obs_double_time.data['time'] = obs_double_time.data['time'] # + np.arange(len(obs_double_time.data['time']))*1e-4
+obs_double_time.save_uvfits('symmetric_gaussian_double_time.uvfits')
 
 
 print("\n=== Point Source w/ Two Double-epoch Gains & Weak Amp Prior Test ===========")
@@ -118,7 +139,7 @@ obs_double_time.data['time'][:N1] = 0.0*obs_double_time.data['time'][:N1] + obs_
 obs_double_time.data['time'][N1:] = 0.0*obs_double_time.data['time'][N1:] + t1
 ffg = fp.FF_complex_gains(ff)
 ffg.set_gain_epochs(scans=True)
-ga = 0.1
+ga = 0.01
 ffg.set_gain_amplitude_prior(1e-10,verbosity=0)
 ffg.set_gain_amplitude_prior(ga,station='AA',verbosity=0)
 ffg.set_gain_amplitude_prior(ga,station='AP',verbosity=0)
@@ -130,6 +151,111 @@ Sig_F1 = obs.data['sigma'][0]/np.sqrt(N1)
 Sig_F2 = obs.data['sigma'][0]/np.sqrt(N2)
 Sig_exp = np.sqrt( 1.0/( 1.0/(Sig_F1**2+(ga*p[0])**2+(ga*p[0])**2) + 1.0/(Sig_F2**2+(ga*p[0])**2+(ga*p[0])**2) ) )
 print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #,Sig_F,p[0],ga)
+
+
+
+
+
+print("\n=== Point Source w/ Single One-epoch Gain & Weak Amp Prior Test & Weak Phases ===")
+obs_single_time = obs.copy()
+obs_single_time.data['time'] = 0.0*obs_single_time.data['time']  + obs_single_time.data['time'][0]
+ffg = fp.FF_complex_gains(ff)
+ffg.set_gain_epochs(scans=True)
+ga = 0.01
+ffg.set_gain_amplitude_prior(1e-10,verbosity=0)
+ffg.set_gain_amplitude_prior(ga,station='AA',verbosity=0)
+ffg.set_gain_phase_prior(100.0,verbosity=0)
+p = [1.0,0.001]
+Sig,Sigm = ffg.uncertainties(obs_single_time,p,verbosity=0)
+print("  Uncertainties from FF -- marginalized / single: %15.8g / %15.8g"%(Sigm[0],Sig[0]))
+Sig_F = np.sqrt(1.0/(np.sum(obs.data['sigma']**-2)))
+Sig_exp = p[0] * np.sqrt( (Sig_F/p[0])**2 + ga**2 )
+print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #,Sig_F,p[0],ga)
+obs_single_time.save_uvfits('symmetric_gaussian_single_time.uvfits')
+
+
+
+print("\n=== Point Source w/ Single Double-epoch Gains & Weak Amp Prior Test & Weak Phases ===")
+obs_double_time = obs.copy()
+t1 = obs_double_time.data['time'][len(obs_double_time.data['time'])//2]
+N1 = len(obs_double_time.data['time'][obs_double_time.data['time']<=t1])
+N2 = len(obs_double_time.data['time'][obs_double_time.data['time']>t1])
+obs_double_time.data['time'][:N1] = 0.0*obs_double_time.data['time'][:N1] + obs_double_time.data['time'][0]
+obs_double_time.data['time'][N1:] = 0.0*obs_double_time.data['time'][N1:] + t1
+ffg = fp.FF_complex_gains(ff)
+ffg.set_gain_epochs(scans=True)
+ga = 0.01
+ffg.set_gain_amplitude_prior(1e-10,verbosity=0)
+ffg.set_gain_amplitude_prior(ga,station='AA',verbosity=0)
+ffg.set_gain_phase_prior(100.0,verbosity=0)
+p = [1.0,0.001]
+Sig,Sigm = ffg.uncertainties(obs_double_time,p,verbosity=0)
+print("  Uncertainties from FF -- marginalized / single: %15.8g / %15.8g"%(Sigm[0],Sig[0]))
+Sig_F1 = obs.data['sigma'][0]/np.sqrt(N1)
+Sig_F2 = obs.data['sigma'][0]/np.sqrt(N2)
+Sig_exp = np.sqrt( 1.0/( 1.0/(Sig_F1**2+(ga*p[0])**2) + 1.0/(Sig_F2**2+(ga*p[0])**2) ) )
+print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #,Sig_F,p[0],ga)
+obs_double_time.save_uvfits('symmetric_gaussian_double_time.uvfits')
+
+
+print("\n=== Point Source w/ Two Double-epoch Gains & Weak Amp Prior Test & Weak Phases ===")
+obs_double_time = obs.copy()
+t1 = obs_double_time.data['time'][len(obs_double_time.data['time'])//2]
+N1 = len(obs_double_time.data['time'][obs_double_time.data['time']<=t1])
+N2 = len(obs_double_time.data['time'][obs_double_time.data['time']>t1])
+obs_double_time.data['time'][:N1] = 0.0*obs_double_time.data['time'][:N1] + obs_double_time.data['time'][0]
+obs_double_time.data['time'][N1:] = 0.0*obs_double_time.data['time'][N1:] + t1
+ffg = fp.FF_complex_gains(ff)
+ffg.set_gain_epochs(scans=True)
+ga = 0.01
+ffg.set_gain_amplitude_prior(1e-10,verbosity=0)
+ffg.set_gain_amplitude_prior(ga,station='AA',verbosity=0)
+ffg.set_gain_amplitude_prior(ga,station='AP',verbosity=0)
+ffg.set_gain_phase_prior(100.0,verbosity=0)
+p = [1.0,0.001]
+Sig,Sigm = ffg.uncertainties(obs_double_time,p,verbosity=0)
+print("  Uncertainties from FF -- marginalized / single: %15.8g / %15.8g"%(Sigm[0],Sig[0]))
+Sig_F1 = obs.data['sigma'][0]/np.sqrt(N1)
+Sig_F2 = obs.data['sigma'][0]/np.sqrt(N2)
+Sig_exp = np.sqrt( 1.0/( 1.0/(Sig_F1**2+(ga*p[0])**2+(ga*p[0])**2) + 1.0/(Sig_F2**2+(ga*p[0])**2+(ga*p[0])**2) ) )
+print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #,Sig_F,p[0],ga)
+
+
+
+print("\n=== Point Source w/ Many Single-epoch Gains & Weak Amp Prior Test & Weak Phases ===")
+obs_single_time = obs_orig.copy()
+obs_single_time = obs_single_time.flag_UT_range(obs_single_time.data['time'][0]+0.01,obs_single_time.data['time'][-1]+1)
+ffg = fp.FF_complex_gains(ff)
+ffg.set_gain_epochs(scans=True)
+ga = 0.01
+# ffg.set_gain_amplitude_prior(1e-10,verbosity=0)
+# ffg.set_gain_amplitude_prior(ga,station='AA',verbosity=0)
+ffg.set_gain_amplitude_prior(ga,verbosity=0)
+ffg.set_gain_phase_prior(100.0,verbosity=0)
+p = [1.0,0.001]
+Sig,Sigm = ffg.uncertainties(obs_single_time,p,verbosity=0)
+print("  Uncertainties from FF -- marginalized / single: %15.8g / %15.8g"%(Sigm[0],Sig[0]))
+Sig_F = np.sqrt(1.0/(np.sum(obs.data['sigma']**-2)))
+Sig_exp = p[0] * np.sqrt( (Sig_F/p[0])**2 + ga**2 )
+#print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #,Sig_F,p[0],ga)
+print("  Expected uncertainty from standard propagation: ??? | ") #,Sig_F,p[0],ga)
+obs_single_time.save_uvfits('symmetric_gaussian_single_time_all_gains.uvfits')
+
+
+print("\n=== Point Source w/ Many Many-epoch Gains & Weak Amp Prior Test & Weak Phases ===")
+ffg = fp.FF_complex_gains(ff)
+ffg.set_gain_epochs(scans=True)
+ga = 0.01
+ffg.set_gain_amplitude_prior(ga,verbosity=0)
+ffg.set_gain_phase_prior(100.0,verbosity=0)
+p = [1.0,0.001]
+Sig,Sigm = ffg.uncertainties(obs_orig,p,verbosity=0)
+print("  Uncertainties from FF -- marginalized / single: %15.8g / %15.8g"%(Sigm[0],Sig[0]))
+Sig_F = np.sqrt(1.0/(np.sum(obs.data['sigma']**-2)))
+Sig_exp = p[0] * np.sqrt( (Sig_F/p[0])**2 + ga**2 )
+#print("  Expected uncertainty from standard propagation: %15.8g | "%(Sig_exp)) #,Sig_F,p[0],ga)
+print("  Expected uncertainty from standard propagation: ??? | ") #,Sig_F,p[0],ga)
+
 
 
 # ######### plotting log-likelihood after marginalization over gains
@@ -198,6 +324,31 @@ print("  1D marginalized Sigmas, direct:  %15.8g %15.8g"%(Sigm[0],Sigm[1]))
 print("  1D marginalized Sigmas, from 2D: %15.8g %15.8g"%(sigx,sigy))
 
 print("")
+
+
+
+print("\n=== Prior Test w/ Many Gains ====================================")
+ff.add_gaussian_prior(0,None)
+ff.add_gaussian_prior(1,None)
+ffg.set_gain_epochs(scans=True)
+ga = 0.1
+ffg.set_gain_amplitude_prior(ga,verbosity=0)
+ffg.set_gain_phase_prior(100.0,verbosity=0)
+p = [1.0,20.0]
+Sig,Sigm = ffg.uncertainties(obs,p)
+print("  Uncertainties from FF -- marginalized: %15.8g %15.8g"%(Sigm[0],Sigm[1]))
+Sig_exp = np.sqrt(1.0/(np.sum(obs.data['sigma']**-2)))
+print("  Expected uncertainty from priors:      ???")
+fp.plot_2d_forecast(ffg,p,0,1,[obs],labels=['Fisher Est.'])
+plt.gcf().set_size_inches(5.5,5)
+plt.gca().set_position([0.225,0.15,0.7,0.8])
+plt.legend()
+plt.xlabel(r'$\delta I~({\rm Jy})$')
+plt.ylabel(r'$\delta\sigma~({\mu{\rm as}})$')
+plt.savefig('gaussian_validation_wgains_2d.png',dpi=300)
+obs_orig.data['vis'] = ff.visibilities(obs_orig,p)
+obs_orig.save_uvfits('symmetric_gaussian_large_sigma.uvfits',polrep_out='stokes')
+
 
 # plt.show()
 
