@@ -2098,81 +2098,98 @@ def plot_2d_forecast(ff,p,i1,i2,obslist,labels=None,verbosity=0,**kwargs) :
     return plt.gcf(),plt.gca()
 
 
-def plot_triangle_forecast(ff,p,ilist,obslist,labels=None) :
+def plot_triangle_forecast(ff,p,ilist,obslist,labels=None, axis_location=None, axes=None, alpha=0.75) :
 
-    wdx = 2
-    wdy = 2
-    wgx = 0.25
-    wgy = 0.25
-    wmx = 1
-    wmy = 0.75
-
-    ni = len(ilist)
-
-    fx = wmx + ni*(wdx+wgx)
-    fy = wmy + ni*(wdy+wgy)
-
+    figsize = plt.gcf().get_size_inches()
     
-    plt.figure(figsize=(fx,fy))
+    if (axis_location is None) :
+        lmarg = 0.625 # Margin in inches
+        rmarg = 0.625 # Margin in inches
+        tmarg = 0.625 # Margin in inches
+        bmarg = 0.625 # Margin in inches
+        ax0 = lmarg/figsize[0]
+        ay0 = bmarg/figsize[1]
+        axw = (figsize[0]-lmarg-rmarg)/figsize[0]
+        ayw = (figsize[1]-tmarg-bmarg)/figsize[1]
+        axis_location = [ax0, ay0, axw, ayw]
+
+    # Number of rows/columns
+    nrow = len(ilist)
+
+    # Get window size details
+    gutter_size = 0.0625 # Gutter in inches
+    x_gutter = gutter_size/figsize[0]
+    y_gutter = gutter_size/figsize[1]
+    x_window_size = (axis_location[2] - (nrow-1)*x_gutter)/float(nrow)
+    y_window_size = (axis_location[3] - (nrow-1)*y_gutter)/float(nrow)
+
+
     axs = {}
-    for i in range(ni) :
-        for j in range(ni-i) :
-            ax0 = wmx + i*(wdx+wgx)
-            ay0 = wmy + j*(wdy+wgy)
-            axs[i,j] = plt.axes([ax0/fx,ay0/fy,wdx/fx,wdy/fy])
+    for j in range(nrow) :
+        for i in range(j+1) :
+            # Find axis location with various gutters, etc.
+            x_window_start = axis_location[0] + i*(x_gutter+x_window_size)
+            y_window_start = axis_location[1] + axis_location[3] - y_window_size - j*(y_gutter+y_window_size)
+            
+            axs[i,j] = plt.axes([x_window_start, y_window_start, x_window_size, y_window_size])
 
     xlim_dict = {}
     for k,obs in enumerate(obslist) :
         _,Sigm = ff.uncertainties(obs,p)
 
-        for j in range(ni) :
+        for j in range(nrow) :
             jj = ilist[j]
             xtmp = np.linspace(-3.5*Sigm[jj],3.5*Sigm[jj],256)
             ytmp = np.exp(-xtmp**2/(2.0*Sigm[jj]**2))/np.sqrt(2.0*np.pi*Sigm[jj]**2)
-            axs[j,ni-j-1].fill_between(xtmp,ytmp,y2=0,color=_ff_color_list[k%_ff_color_size],alpha=0.25)
-            axs[j,ni-j-1].plot(xtmp,ytmp,color=_ff_color_list[k%_ff_color_size])
+            axs[j,j].fill_between(xtmp,ytmp,y2=0,color=_ff_color_list[k%_ff_color_size],alpha=0.25)
+            axs[j,j].plot(xtmp,ytmp,color=_ff_color_list[k%_ff_color_size])
 
             if (k==0) :
                 xlim_dict[j] = (-3.5*Sigm[jj],3.5*Sigm[jj])
             else :
                 if (3.5*Sigm[jj]>xlim_dict[j][1]) :
                     xlim_dict[j] = (-3.5*Sigm[jj],3.5*Sigm[jj])                    
+
+        for j in range(nrow) :
+            for i in range(j) :
                 
-        for i in range(ni) :
-            for j in range(ni-i-1) :
+                # ii = ilist[ni-i]
                 ii = ilist[i]
-                jj = ilist[ni-j-1]
+                jj = ilist[j]
 
                 plt.sca(axs[i,j])
         
                 p1,p2,csq,mcsq = ff.joint_biparameter_chisq(obs,p,ii,jj)
-                plt.contourf(p1,p2,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=0.75,levels=[0,1,2,3])
+                plt.contourf(p1,p2,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=alpha,levels=[0,1,2,3])
                 plt.contour(p1,p2,np.sqrt(mcsq),colors=_ff_color_list[k%_ff_color_size],alpha=1,levels=[0,1,2,3])
 
                 plt.xlim(xlim_dict[i])
-                plt.ylim(xlim_dict[ni-j-1])
+                plt.ylim(xlim_dict[j])
 
                 plt.grid(True,alpha=0.25)
 
+                # plt.text(0.05,0.05,'%i,%i / %i,%i'%(i,j,ii,jj),transform=plt.gca().transAxes)
 
-    for j in range(ni) :
-        axs[j,ni-j-1].set_xlim(xlim_dict[j])
-        axs[j,ni-j-1].set_ylim(bottom=0)
-        axs[j,ni-j-1].set_yticks([])
+                
+    for j in range(nrow) :
+        axs[j,j].set_xlim(xlim_dict[j])
+        axs[j,j].set_ylim(bottom=0)
+        axs[j,j].set_yticks([])
 
-    for i in range(ni) :
-        for j in range(1,ni-i) :
+        
+    for j in range(nrow-1) :
+        for i in range(j+1) :
             axs[i,j].set_xticklabels([])
             
-    for i in range(1,ni) :
-        for j in range(ni-i-1) :
+    for j in range(nrow) :
+        for i in range(1,j+1) :
             axs[i,j].set_yticklabels([])
 
-    for j in range(ni-1) :
-        axs[0,j].set_ylabel(ff.parameter_labels()[ilist[ni-j-1]])
+    for j in range(1,nrow) :
+        axs[0,j].set_ylabel(ff.parameter_labels()[ilist[j]])
         
-    for i in range(ni) :
-        axs[i,0].set_xlabel(ff.parameter_labels()[ilist[i]])
+    for i in range(nrow) :
+        axs[i,nrow-1].set_xlabel(ff.parameter_labels()[ilist[i]])
 
 
     # Make axis for labels
