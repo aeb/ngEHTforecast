@@ -24,12 +24,23 @@ def _print_vector(v) :
         line = line + ' %10.3g'%(v[i])
     print(line)
 
-def _invert_matrix(a):
+def _invert_matrix(a) :
     return linalg.inv(a)
     # return linalg.pinvh(a)
     # n = a.shape[0]
     # I = np.identity(n)
     # return linalg.solve(a, I, sym_pos = True, overwrite_b = True)
+
+
+def _double_dot_product(v,M) :
+    # Computes v.M.v
+    return np.matmul(v,np.matmul(M,v))
+    # return np.trace(np.matmul(np.outer(v,v),M))
+    # sumval = 0;
+    # for i in range(len(v)) :
+    #     for j in range(len(v)) :
+    #         sumval += v[i]*M[i,j]*v[j]
+    # return sumval
 
 class FisherForecast :
     """
@@ -359,65 +370,143 @@ class FisherForecast :
         return self.covar
 
     
-    def uniparameter_uncertainties(self,obs,p,verbosity=0,**kwargs) :
+    def uniparameter_uncertainties(self,obs,p,ilist=None,verbosity=0,**kwargs) :
         C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
-        Sig_uni = np.zeros(self.size)
-        ilist = np.arange(self.size)
-        for i in ilist :
-            N = C[i][i]
-            Sig_uni[i] = np.sqrt(2.0/N)
+
+        if (ilist is None) :
+            ilist = np.arange(self.size)
+
+        if (isinstance(ilist,int)) :
+            N = C[ilist][ilist]
+            Sig_uni = np.sqrt(2.0/N)
+        else :
+            Sig_uni = np.zeros(self.size)
+            for i in ilist :
+                N = C[i][i]
+                Sig_uni[i] = np.sqrt(2.0/N)
+                
         return Sig_uni
 
     
-    def marginalized_uncertainties(self,obs,p,verbosity=0,**kwargs) :
+    def marginalized_uncertainties(self,obs,p,ilist=None,verbosity=0,**kwargs) :
         C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
-        Sig_marg = np.zeros(self.size)
-        M = np.zeros((self.size-1,self.size-1))
-        v = np.zeros(self.size-1)
-        ilist = np.arange(self.size)
-        for i in ilist :
+        # M = np.zeros((self.size-1,self.size-1))
+        # v = np.zeros(self.size-1)
+        
+        if (ilist is None) :
+            ilist = np.arange(self.size)
+
+        if (isinstance(ilist,int)) :
+            i = ilist
+            ilist = np.arange(self.size)
             ini = ilist[ilist!=i]
-            for j2,j in enumerate(ini) :
-                for k2,k in enumerate(ini) :
-                    M[j2,k2] = C[j][k]
-                v[j2] = C[i][j]
+            # for j2,j in enumerate(ini) :
+            #     for k2,k in enumerate(ini) :
+            #         M[j2,k2] = C[j][k]
+            #     v[j2] = C[i][j]
+            M = C[ini,:][:,ini]
+            v = C[i,ini]
             N = C[i][i]
             Minv = _invert_matrix(M)
             mN = N - np.matmul(v,np.matmul(Minv,v))
-            Sig_marg[i] = np.sqrt(2.0/mN)
+            # mN = N - _double_dot_product(v,Minv)
+            Sig_marg = np.sqrt(2.0/mN)
+
+        else :
+            Sig_marg = np.zeros(len(ilist))
+            iall = np.arange(self.size)
+            for k,i in enumerate(ilist) :
+                ini = iall[iall!=i]
+                # for j2,j in enumerate(ini) :
+                #     for k2,k in enumerate(ini) :
+                #         M[j2,k2] = C[j][k]
+                #     v[j2] = C[i][j]
+                M = C[ini,:][:,ini]
+                v = C[ini,i]
+                N = C[i][i]
+                Minv = _invert_matrix(M)
+                mN = N - np.matmul(v,np.matmul(Minv,v))
+                # mN = N - _double_dot_product(v,Minv)
+                Sig_marg[k] = np.sqrt(2.0/mN)
+                
         return Sig_marg
 
+
+    def marginalized_covariance(self,obs,p,ilist=None,verbosity=0,**kwargs) :
+        C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
+
+        if (ilist is None) :
+            return C
+        elif (isinstance(ilist,int)) :
+            return self.marginalized_uncertainties(obs,p,ilist=ilist,verbosity=0,**kwargs)
+        else :
+            iall = np.arange(self.size)
+            isni = (iall!=ilist[0])
+            for i in ilist[1:] :
+                isni = isni*(iall!=i)
+            ini = iall[isni]
+            n = C[ilist,:][:,ilist]
+            r = C[ini,:][:,ilist]
+            m = C[ini,:][:,ini]
+
+            print("Shapes:",n.shape,r.shape,m.shape)
+            return n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
+            
     
-    def uncertainties(self,obs,p,verbosity=0,**kwargs) :
+    def uncertainties(self,obs,p,ilist=None,verbosity=0,**kwargs) :
         C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
         if (verbosity>1) :
             print("Fisher Matrix:")
             _print_matrix(C)
-        Sig_uni = np.zeros(self.size)
-        Sig_marg = np.zeros(self.size)
-        M = np.zeros((self.size-1,self.size-1))
-        v = np.zeros(self.size-1)
-        ilist = np.arange(self.size)
-        for i in ilist :
+        
+        if (ilist is None) :
+            ilist = np.arange(self.size)
+
+        if (isinstance(ilist,int)) :
+            i = ilist
+            ilist = np.arange(self.size)
             ini = ilist[ilist!=i]
-            for j2,j in enumerate(ini) :
-                for k2,k in enumerate(ini) :
-                    M[j2,k2] = C[j][k]
-                v[j2] = C[i][j]
+            # for j2,j in enumerate(ini) :
+            #     for k2,k in enumerate(ini) :
+            #         M[j2,k2] = C[j][k]
+            #     v[j2] = C[i][j]
+            M = C[ini,:][:,ini]
+            v = C[i,ini]
             N = C[i][i]
             Minv = _invert_matrix(M)
             mN = N - np.matmul(v,np.matmul(Minv,v))
+            # mN = N - _double_dot_product(v,Minv)
             Sig_uni[i] = np.sqrt(2.0/N)
             Sig_marg[i] = np.sqrt(2.0/mN)
+        else :            
+            Sig_uni = np.zeros(self.size)
+            Sig_marg = np.zeros(self.size)
+            M = np.zeros((self.size-1,self.size-1))
+            v = np.zeros(self.size-1)
+            ilist = np.arange(self.size)
+            for i in ilist :
+                ini = ilist[ilist!=i]
+                # for j2,j in enumerate(ini) :
+                #     for k2,k in enumerate(ini) :
+                #         M[j2,k2] = C[j][k]
+                #     v[j2] = C[i][j]
+                M = C[ini,:][:,ini]
+                v = C[i,ini]
+                N = C[i][i]
+                Minv = _invert_matrix(M)
+                mN = N - np.matmul(v,np.matmul(Minv,v))
+                # mN = N - _double_dot_product(v,Minv)
+                Sig_uni[i] = np.sqrt(2.0/N)
+                Sig_marg[i] = np.sqrt(2.0/mN)
 
-            if (verbosity>1) :
-                print("Submatrix (%i):"%(i))
-                _print_matrix(M)
-                print("Submatrix inverse (%i):"%(i))                
-                _print_matrix(Minv)
-                print("Subvectors v1 (%i):"%(i))
-                _print_vector(v)
-                print("N,mN (%i):"%(i),N,mN)
+                if (verbosity>1) :
+                    print("Submatrix (%i):"%(i))
+                    _print_matrix(M)
+                    print("Submatrix inverse (%i):"%(i))                
+                    _print_matrix(Minv)
+                    print("Subvectors v1 (%i):"%(i))
+                    _print_vector(v)
+                    print("N,mN (%i):"%(i),N,mN)
             
         return Sig_uni,Sig_marg
 
