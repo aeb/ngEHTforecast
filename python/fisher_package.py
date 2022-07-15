@@ -1965,12 +1965,12 @@ class FF_splined_raster(FisherForecast) :
     """
     FisherForecast object for a splined raster (i.e., themage).
     Parameter vector is the log of the intensity at the control points:
-      p[0] ... ln(I[0,0])
-      p[1] ... ln(I[1,0])
-      ...
-      p[N-1] ... ln(I[N-1,0])
-      p[N] ... ln(I[0,1])
-      ...
+      p[0] ....... ln(I[0,0])
+      p[1] ....... ln(I[1,0])
+       ...
+      p[N-1] ..... ln(I[N-1,0])
+      p[N] ....... ln(I[0,1])
+       ...
       p[N*N-1] ... ln(I[N-1,N-1])
     where each I[i,j] is measured in Jy/sr.
 
@@ -2187,13 +2187,32 @@ class FF_splined_raster(FisherForecast) :
 
 class FF_smoothed_delta_ring_themage(FisherForecast) :
     """
-    FisherForecast object for a circular Gaussian.
-    Parameter vector is:
-      p[0] ... Total flux in Jy.
-      p[1] ... FWHM in uas.
+    FisherForecast object for a splined raster (i.e., themage) plus a
+    Gaussian-convolved delta-ring.
+
+    Parameter vector is the log of the intensity at the control points:
+      p[0] ....... ln(I[0,0])
+      p[1] ....... ln(I[1,0])
+       ...
+      p[N-1] ..... ln(I[N-1,0])
+      p[N] ....... ln(I[0,1])
+       ...
+      p[N*N-1] ... ln(I[N-1,N-1])
+      p[N*N+0] ... Total flux in Jy.
+      p[N*N+1] ... Diameter in uas.
+      p[N*N+2] ... Twice the standard deviation of the Gaussian smoothing kernel in uas.
+
+    where each I[i,j] is measured in Jy/sr.
 
     Args:
+      N (int): Raster dimension (only supports square raster).
+      fov (float): Raster field of view in uas (only supports fixed rasters).
       stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
+
+    Attributes:
+      xcp (np.ndarray): x-positions of raster control points.
+      ycp (np.ndarray): y-positions of raster control points.
+      apx (float): Raster pixel size.
     """
 
     def __init__(self,N,fov,stokes='I') :
@@ -2209,6 +2228,18 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
         self.stokes = stokes
 
     def visibilities(self,obs,p,verbosity=0) :
+        """
+        Generates visibilities associated with splined raster + Gaussian-convolved delta-ring.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          V (np.array): list of complex visibilities computed at observations.
+        """
+
         # Takes:
         #  p[0] ... p[0,0]
         #  p[1] ... p[1,0]
@@ -2251,6 +2282,18 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
         return V
         
     def visibility_gradients(self,obs,p,verbosity=0) :
+        """
+        Generates visibility gradients associated with splined-raster + Gaussian-convolved delta-ring.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          gradV (np.array): list of complex visibilities computed at observations.
+        """
+        
         # Takes:
         #  p[0] ... p[0,0]
         #  p[1] ... p[1,0]
@@ -2316,9 +2359,27 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
 
         return pll
 
+    
 class FF_thick_mring(FisherForecast) :
+    """
+    FisherForecast object for an m-ring model (based on ehtim).
+    Parameter vector is:
+      p[0] ... DOM, PLEASE FILL THIS IN.
 
-    def __init__(self,m,mp,mc,stokes='I') :
+    Args:
+      m (int): Stokes I azimuthal Fourier series order.
+      mp (int): Linear polarization azimuthal Fourier series order. Only used if stokes=='full'. Default: None.
+      mc (int): Circular polarization azimuthal Fourier series order. Only used if stokes=='full'. Default: None.
+      stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
+
+    Attributes:
+      m (int): Stokes I azimuthal Fourier series order.
+      mp (int): Linear polarization azimuthal Fourier series order. Only used if stokes=='full'.
+      mc (int): Circular polarization azimuthal Fourier series order. Only used if stokes=='full'.
+
+    """
+
+    def __init__(self,m,mp=None,mc=None,stokes='I') :
         super().__init__()
         self.m = m
         self.mp = mp
@@ -2331,7 +2392,17 @@ class FF_thick_mring(FisherForecast) :
             if (self.mc > 0):
                 self.size += 2 + 4*self.mc
 
-    def param_wrapper(self,p):
+    def param_wrapper(self,p) :
+        """
+        Converts parameters from a flattened list to an ehtim-style dictionary.
+        
+        Args:
+          p (float): Parameter list as used by FisherForecast.
+        
+        Returns:
+          params (dict): Dictionary containing parameter values as used by ehtim.
+        """
+        
         # convert unwrapped parameter list to ehtim-readable version
 
         params = {}
@@ -2367,7 +2438,19 @@ class FF_thick_mring(FisherForecast) :
 
         return params
 
-    def visibilities(self,obs,p,verbosity=0):
+    def visibilities(self,obs,p,verbosity=0) :
+        """
+        Generates visibilities associated with m-ring model.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          V (np.array): list of complex visibilities computed at observations.
+        """
+
         # Takes:
         # p[0] ... total flux of the ring (Jy), which is also beta_0.
         # p[1] ... ring diameter (radians)
@@ -2398,7 +2481,19 @@ class FF_thick_mring(FisherForecast) :
             vis_LR = eh.model.sample_1model_uv(u,v,'thick_mring',params,pol='LR')
             return vis_RR, vis_LL, vis_RL, vis_LR
         
-    def visibility_gradients(self,obs,p,verbosity=0):
+    def visibility_gradients(self,obs,p,verbosity=0) :
+        """
+        Generates visibility gradients associated with m-ring model.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          gradV (np.array): list of complex visibilities computed at observations.
+        """
+        
         # Takes:
         # p[0] ... total flux of the ring (Jy), which is also beta_0.
         # p[1] ... ring diameter (radians)
@@ -2503,6 +2598,34 @@ class FF_thick_mring(FisherForecast) :
         return labels
     
 class FF_sum(FisherForecast) :
+    """
+    FisherForecast object constructed from the sum of multiple 
+    FisherForecast objects. For example, a binary might be generated from
+    the sum of two Gaussians.  
+
+    The parameter vector is constructed from the concatenation of the parameter
+    vectors from each individual object, with all objects after the first
+    gaining a pair of offset parameters.  That is:
+      p[0] ............ Obj1 p[0]
+      p[1] ............ Obj1 p[1]
+        ...
+      p[n1] ........... Obj2 p[0]
+      p[n1+1] ......... Obj2 p[0]
+        ...
+      p[n1+n2] ........ Obj2 dx
+      p[n1+n2+1] ...... Obj2 dy
+      p[n1+n2+2] ...... Obj3 p[0]
+        ...
+      p[n1+n2+n3+2] ... Obj3 dx
+      p[n1+n2+n3+3] ... Obj3 dy
+        ...
+    Prior lists are constructed similarly.
+    
+
+    Args:
+      ff_list (list): List of FisherForecast objects to be summed. Additional objects can be added later. Default: None.
+      stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
+    """
 
     def __init__(self,ff_list=None,stokes='I') :
         super().__init__()
@@ -2539,6 +2662,12 @@ class FF_sum(FisherForecast) :
                             raise(Exception('The model components in FF_sum do not have the same stokes type!'))
 
     def add(self,ff) :
+        """
+        Adds a FisherForecast object to the sum.
+
+        Args:
+          ff (FisherForecast): An existing FisherForecast object to add.
+        """
         self.ff_list.append(ff)
         if (len(self.ff_list)==1) :
             self.size += ff.size
@@ -2559,6 +2688,17 @@ class FF_sum(FisherForecast) :
             
             
     def visibilities(self,obs,p,verbosity=0) :
+        """
+        Generates visibilities associated with the summed model.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          V (np.array): list of complex visibilities computed at observations.
+        """
         
         k = 0
         uas2rad = np.pi/180./3600e6
@@ -2606,6 +2746,17 @@ class FF_sum(FisherForecast) :
             return RR, LL, RL, LR
 
     def visibility_gradients(self,obs,p,verbosity=0) :
+        """
+        Generates visibility gradients associated with the summed model.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          gradV (np.array): list of complex visibilities computed at observations.
+        """
 
         u = obs.data['u']
         v = obs.data['v']
