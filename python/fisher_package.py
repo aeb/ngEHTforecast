@@ -47,6 +47,13 @@ class FisherForecast :
     Class that collects and contains information for making Fisher-matrix type
     forecasts for observations of various types.  Forms a base class for fully
     analytical versions that may be application specific.
+
+    Attributes:
+      size (int): Number of parameters expected by this model.
+      stokes (str): If this is a Stokes I model ('I') or a polarized model ('full').
+      prior_sigma_list (list): List of standard deviations associated with the parameter priors.
+      covar (np.ndarray): Internal space for the computation of the covariance matrix.
+      argument_hash (str): MD5 hash object indicating last state of covariance computation. Used to determine if the covariance needs to be recomputed.
     """
 
     def __init__(self) :
@@ -144,7 +151,7 @@ class FisherForecast :
 
     def generate_image(self,p,limits=None,shape=None,verbosity=0) :
         """
-        Generate and return an image for the given visibility model evaluated
+        Generate and return an image for the parent visibility model evaluated
         at a given set of parameter values.  The user is responsible for setting
         the plot limits and shape intelligently.  Note that this uses FFTs and 
         assumes that the resolution and field of view are sufficient to adequately
@@ -219,8 +226,27 @@ class FisherForecast :
             print("Sum I:", np.sum(I) * ((x[1,1]-x[0,0])*(y[1,1]-y[0,0])) )
         
         return x,y,I
-        
-    def plot_image(self,p,limits=None,shape=None,verbosity=0,**kwargs) :
+
+    
+    def display_image(self,p,limits=None,shape=None,verbosity=0,**kwargs) :
+        """
+        Generate and plot an image for the parent visibility model evaluated
+        at a given set of parameter values.  The user is responsible for setting
+        the plot limits and shape intelligently.  Note that this uses FFTs and 
+        assumes that the resolution and field of view are sufficient to adequately
+        resolve model image features.
+
+        Args:
+          p (list): List of parameter values.
+          limits (float,list): Limits on the field of view in which to construct the image in uas.  Either a single float, in which case the limits are symmetric and set to [-limits,limits,-limits,limits], or a list of floats. Default: 100.
+          shape (int,list): Dimensions of the image.  If an int, the dimensions are equal.  If a two-element list of ints, sets the dimensions to the two values. Default: 256.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          fig (matplotlib.pyplot.figure): Figure handle
+          axs (matplotlib.pyplot.axes): Axes handle
+          cb (matplotlib.pyplot.colorbar): Colorbar handle
+        """
 
         plt.figure(figsize=(6.5,5))
         axs=plt.axes([0.15,0.15,0.8*5/6.5,0.8])
@@ -254,10 +280,25 @@ class FisherForecast :
 
         return plt.gcf(),axs,cbax
         
-    
         
 
     def check_gradients(self,obs,p,h=None,verbosity=0) :
+        """
+        Numerically evaluates the gradients using the visibilities function and
+        compares them to the gradients returned by the visibility_gradients
+        function.  Numerical differentiation is 2nd-order, centered finite
+        differences.  Results are output to standard out.  For best results,
+        the user should pass some option for the step size h to use for numerical 
+        differentiation.
+
+        Args:
+          obs (Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.) at which to check gradients..
+          p (list): List of parameter values.
+          h (float,list): List of small steps which define the finite differences.  If None, uses 1e-4*p.  If a float, uses h*p.  If a list, sets each step size separately.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+        """
 
         if (h is None) :
             h = np.array(len(p)*[1e-4])
@@ -320,6 +361,7 @@ class FisherForecast :
         Args:
           obs (Obsdata): An Obsdata object containing the observation particulars.
           p (list): List of model parameters at which to compute the Fisher matrix.
+          verbosity (int): Verbosity level. Default: 0.
 
         Returns:
           M (np.ndarray): The Fisher matrix M.
@@ -371,6 +413,21 @@ class FisherForecast :
 
     
     def uniparameter_uncertainties(self,obs,p,ilist=None,verbosity=0,**kwargs) :
+        """
+        Computes the uncertainties on a subset of model parameters, fixing all
+        others. Note that this is not a covariance; each uncertainty is for a 
+        single parameter, fixing all others.  This is probably not what is wanted
+        for forecasting, see marginalized_uncertainties.
+
+        Args:
+          obs (Obsdata): An Obsdata object containing the observation particulars.
+          p (list): List of parameter values at which to compute uncertainties.
+          ilist (int,list) : Index or list of indicies for which to compute the uncertainties. If None will return a list of all uncertainties. Default: None.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          Sigma (float,list): Parameter uncertainty or list of marginalized uncertainties of desired parameters.
+        """
         C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
 
         if (ilist is None) :
@@ -389,6 +446,20 @@ class FisherForecast :
 
     
     def marginalized_uncertainties(self,obs,p,ilist=None,verbosity=0,**kwargs) :
+        """
+        Computes the uncertainties on a subset of model parameters, marginalized
+        over all others. Note that this is not the marginalized covariance; each
+        uncertainty is for a single parameter, marginalizing out all others.
+
+        Args:
+          obs (Obsdata): An Obsdata object containing the observation particulars.
+          p (list): List of parameter values at which to compute uncertainties.
+          ilist (int,list) : Index or list of indicies for which to compute the marginalized uncertainties. If None will return a list of all marginalized uncertainties. Default: None.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          Sigma (float,list): Marginalized parameter uncertainty or list of marginalized uncertainties of desired parameters.
+        """
         C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
         # M = np.zeros((self.size-1,self.size-1))
         # v = np.zeros(self.size-1)
@@ -433,6 +504,19 @@ class FisherForecast :
 
 
     def marginalized_covariance(self,obs,p,ilist=None,verbosity=0,**kwargs) :
+        """
+        Computes the covariance for a subset of model parameters, marginalized
+        over all parameters outside of the subset.
+
+        Args:
+          obs (Obsdata): An Obsdata object containing the observation particulars.
+          p (list): List of parameter values at which to compute uncertainties.
+          ilist (int,list) : Index or list of indicies for which to compute the marginalized uncertainties. If None will return a list of all marginalized uncertainties. Default: None.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          covar (np.ndarray): Marginalized covariance for desired parameter subset.
+        """
         C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
 
         if (ilist is None) :
@@ -454,6 +538,20 @@ class FisherForecast :
             
     
     def uncertainties(self,obs,p,ilist=None,verbosity=0,**kwargs) :
+        """
+        Computes the uncertainties on a subset of model parameters, both fixing
+        and marginalizing over all others. 
+
+        Args:
+          obs (Obsdata): An Obsdata object containing the observation particulars.
+          p (list): List of parameter values at which to compute uncertainties.
+          ilist (int,list) : Index or list of indicies for which to compute the marginalized uncertainties. If None will return a list of all marginalized uncertainties. Default: None.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          SigmaF (float,list): Parameter uncertainty or list of marginalized uncertainties of desired parameters.
+          SigmaM (float,list): Marginalized parameter uncertainty or list of marginalized uncertainties of desired parameters.
+        """
         C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
         if (verbosity>1) :
             print("Fisher Matrix:")
@@ -511,7 +609,23 @@ class FisherForecast :
         return Sig_uni,Sig_marg
 
     
-    def joint_biparameter_chisq(self,obs,p,i1,i2,verbosity=0,**kwargs) :
+    def joint_biparameter_chisq(self,obs,p,i1,i2,kind='marginalized',verbosity=0,**kwargs) :
+        """
+        Computes the ensemble-averaged 2nd-order contribution to the chi-square
+        for two parameters after fixing or marginalizing over all others.
+
+        Args:
+          obs (Obsdata): An Obsdata object containing the observation particulars.
+          p (list): List of parameter values at which to compute uncertainties.
+          i1 (int): Index of first parameter.
+          i2 (int): Index of second parameter.
+          kind (str): Choice of what to do with other parameters. Choices are 'marginalized', 'fixed'.  Default: 'marginalized'.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          SigmaF (float,list): Parameter uncertainty or list of marginalized uncertainties of desired parameters.
+          SigmaM (float,list): Marginalized parameter uncertainty or list of marginalized uncertainties of desired parameters.
+        """
         C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)
         M = np.zeros((self.size-2,self.size-2))
         v1 = np.zeros(self.size-2)
@@ -528,37 +642,44 @@ class FisherForecast :
         N2 = C[i2][i2]
         C12 = C[i1][i2]
 
-        if (verbosity>1) :
-            print("Fisher Matrix:")
-            _print_matrix(C)
-            print("Submatrix (%i,%i):"%(i1,i2))
-            _print_matrix(M)
-            print("Subvectors v1:")
-            _print_vector(v1)
-            print("Subvectors v2:")
-            _print_vector(v2)
-
+        if (kind.lower()=='marginalized') :
+            pass
         
-        Minv = _invert_matrix(M)
-        mN1 = N1 - np.matmul(v1.T,np.matmul(Minv,v1))
-        mN2 = N2 - np.matmul(v2.T,np.matmul(Minv,v2))
-        mC12 = C12 - 0.5*(np.matmul(v1.T,np.matmul(Minv,v2)) + np.matmul(v2.T,np.matmul(Minv,v1)))
+        elif (kind.lower()=='marginalized') :
+            if (verbosity>1) :
+                print("Fisher Matrix:")
+                _print_matrix(C)
+                print("Submatrix (%i,%i):"%(i1,i2))
+                _print_matrix(M)
+                print("Subvectors v1:")
+                _print_vector(v1)
+                print("Subvectors v2:")
+                _print_vector(v2)
+        
+            Minv = _invert_matrix(M)
+            N1 = N1 - np.matmul(v1.T,np.matmul(Minv,v1))
+            N2 = N2 - np.matmul(v2.T,np.matmul(Minv,v2))
+            C12 = C12 - 0.5*(np.matmul(v1.T,np.matmul(Minv,v2)) + np.matmul(v2.T,np.matmul(Minv,v1)))
 
+        else :
+            raise(RuntimeError("Received unexpected value for kind, %s. Allowed values are 'fixed' and 'marginalized'."))
+        
+                    
         # Find range with eigenvectors/values
-        l1 = 0.5*( (mN1+mN2) + np.sqrt( (mN1-mN2)**2 + 4.0*mC12**2 ) )
-        l2 = 0.5*( (mN1+mN2) - np.sqrt( (mN1-mN2)**2 + 4.0*mC12**2 ) )
+        l1 = 0.5*( (N1+N2) + np.sqrt( (N1-N2)**2 + 4.0*C12**2 ) )
+        l2 = 0.5*( (N1+N2) - np.sqrt( (N1-N2)**2 + 4.0*C12**2 ) )
 
-        e1 = np.array( [ mC12, l1-mN1 ] )
+        e1 = np.array( [ C12, l1-N1 ] )
         e2 = np.array( [ e1[1], -e1[0] ] )
         e1 = e1/ np.sqrt( e1[0]**2+e1[1]**2 )
         e2 = e2/ np.sqrt( e2[0]**2+e2[1]**2 )
-        
+
         if (l1<=0 or l2<=0) :
             print("Something's wrong! Variances are nonpositive!")
             print(i1,i2)
             print(l1,l2)
             print(N1,N2,C12)
-            print(mN1,mN2,mC12)
+            # print(mN1,mN2,mC12)
             print(C)
 
         if (l1>l2 ):
@@ -578,21 +699,26 @@ class FisherForecast :
         Npx = int(max(128,min(16*Sig_maj/Sig_min,1024)))
         p1,p2 = np.meshgrid(np.linspace(-dp1,dp1,Npx),np.linspace(-dp2,dp2,Npx))
         csq = 0.5*(N1*p1**2 + 2*C12*p1*p2 + N2*p2**2)
-        mcsq = 0.5*(mN1*p1**2 + 2*mC12*p1*p2 + mN2*p2**2)
-
-        return p1,p2,csq,mcsq
+            
+        return p1,p2,csq
 
 
 class FF_complex_gains_single_epoch(FisherForecast) :
     """
-    
     FisherForecast with complex gain reconstruction assuming a single epoch.
+    This is a helper class, and probably not the FisherForecast object that
+    should be used to study the impact of gains.  See FF_complex_gains.
 
     Args:
       ff (FisherForecast): A FisherForecast object to which we wish to add gains.
 
     Attributes:
       ff (FisherForecast): The FisherForecast object before gain reconstruction.
+      plbls (list): List of parameter labels (str) including gains parameter names.
+      gain_amplitude_priors (list): list of standard deviations of the log-normal priors on the gain amplitudes. Default: 10.
+      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 100.
+      gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.
+      gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.
     """
 
     def __init__(self,ff) :
@@ -600,7 +726,6 @@ class FF_complex_gains_single_epoch(FisherForecast) :
         self.ff = ff
         self.stokes = self.ff.stokes
         self.scans = False
-        self.gain_epochs = None
         self.plbls = self.ff.parameter_labels()
         self.prior_sigma_list = self.ff.prior_sigma_list
         self.gain_amplitude_priors = {}
@@ -609,9 +734,39 @@ class FF_complex_gains_single_epoch(FisherForecast) :
         self.gain_ratio_phase_priors = {}
         
     def visibilities(self,obs,p,verbosity=0,**kwargs) :
+        """
+        Complex visibilities associated with the underlying FisherForecast object
+        evaluated at the data points in the given Obsdata object for the model with
+        the given parameter values.
+
+        Args:
+          obs (Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)
+          p (np.array): list of parameters for the model at which visiblities are desired.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          V (np.array): list of complex visibilities computed at observations.
+        """
+        
         return self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
 
     def visibility_gradients(self,obs,p,verbosity=0,**kwargs) :
+        """
+        Gradients of the complex visibilities associated with the underlying 
+        FisherForecast object with respect to the model pararmeters evaluated at 
+        the data points in the given Obsdata object for the model with the given 
+        parameter values, including gradients with respect to the gain amplitudes,
+        phases, and if this is a polarized model, R/L gain amplitude ratios and 
+        phase differences.  
+
+        Args:
+          obs (Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          gradV (np.ndarray): list of complex visibility gradients computed at observations.
+        """
         
         # Generate the gain epochs and update the size
         station_list = np.unique(np.concatenate((obs.data['t1'],obs.data['t2'])))
@@ -883,28 +1038,76 @@ class FF_complex_gains_single_epoch(FisherForecast) :
 
             return gradRR, gradLL, gradRL, gradLR
 
-    def parameter_labels(self) :
+    def parameter_labels(self,verbosity=0) :
+        """
+        Parameter labels to be used in plotting, including those associated
+        with the gains.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """        
         return self.plbls
 
     def set_gain_amplitude_prior(self,sigma,station=None) :
+        """
+        Sets the log-normal priors on the gain amplitudes, either for a
+        specified station or for all stations.
+
+        Args:
+          sigma (float): Standard deviation of the log-amplitude.
+          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
+
+        Returns:
+        """
         sigma = min(sigma,10.0)
         if (station is None) :
             self.gain_amplitude_priors = {'All':sigma}
+        elif (isinstance(station,list)) :
+            for s in station :
+                self.gain_amplitude_priors[s] = sigma
         else :
             self.gain_amplitude_priors[station] = sigma
             
         self.argument_hash = None
 
     def set_gain_phase_prior(self,sigma,station=None) :
+        """
+        Sets the normal priors on the gain phases, either for a specified 
+        station or for all stations. Usually, this should be the default
+        (uniformative).  
+
+        Args:
+          sigma (float): Standard deviation of the phase.
+          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
+
+        Returns:
+        """
         sigma = min(sigma,100.0)
         if (station is None) :
             self.gain_phase_priors = {'All':sigma}
+        elif (isinstance(station,list)) :
+            for s in station :
+                self.gain_phase_priors[s] = sigma
         else :
             self.gain_phase_priors[station] = sigma
             
         self.argument_hash = None
 
     def set_gain_ratio_amplitude_prior(self,sigma,station=None) :
+        """
+        Sets the log-normal priors on the R/L gain amplitude ratios, either 
+        for a specified station or for all stations. Only relevant for
+        polarized models. Default: 1e-10 for all stations.
+
+        Args:
+          sigma (float): Standard deviation of the log-amplitude ratio.
+          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
+
+        Returns:
+        """
         sigma = min(sigma,100.0)
         if (station is None) :
             self.gain_ratio_amplitude_priors = {'All':sigma}
@@ -914,6 +1117,17 @@ class FF_complex_gains_single_epoch(FisherForecast) :
         self.argument_hash = None
 
     def set_gain_ratio_phase_prior(self,sigma,station=None) :
+        """
+        Sets the normal priors on the R/L gain phase differences, either 
+        for a specified station or for all stations. Only relevant for
+        polarized models. Default: 1e-10 for all stations.
+
+        Args:
+          sigma (float): Standard deviation of the phase.
+          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
+
+        Returns:
+        """
         sigma = min(sigma,100.0)
         if (station is None) :
             self.gain_ratio_phase_priors = {'All':sigma}
@@ -925,14 +1139,20 @@ class FF_complex_gains_single_epoch(FisherForecast) :
 
 class FF_complex_gains(FisherForecast) :
     """
-    
-    FisherForecast with complex gain reconstruction.
+    FisherForecast with complex gain reconstruction with multiple epochs.
+    This is usually the FisherForecast object that should be used to investigate
+    the impact of uncertain station gains.
 
     Args:
       ff (FisherForecast): A FisherForecast object to which we wish to add gains.
 
     Attributes:
       ff (FisherForecast): The FisherForecast object before gain reconstruction.
+      gain_epochs (np.ndarray): 2D array containing the start and end times for each gain solution epoch.
+      gain_amplitude_priors (list): list of standard deviations of the log-normal priors on the gain amplitudes. Default: 10.
+      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 100.
+      gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.
+      gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.
     """
 
     def __init__(self,ff) :
@@ -941,15 +1161,28 @@ class FF_complex_gains(FisherForecast) :
         self.stokes = self.ff.stokes
         self.scans = False
         self.gain_epochs = None
-        self.plbls = self.ff.parameter_labels()
         self.prior_sigma_list = self.ff.prior_sigma_list
         self.gain_amplitude_priors = {}
+        self.gain_phase_priors = {}
+        self.gain_ratio_amplitude_priors = {}
         self.gain_phase_priors = {}
         self.ff_cgse = FF_complex_gains_single_epoch(ff)
         self.size = self.ff.size
         self.covar = np.zeros((self.ff.size,self.ff.size))
         
     def set_gain_epochs(self,scans=False,gain_epochs=None) :
+        """
+        Sets the gain solution intervals (gain epochs) to be used. If neither
+        scans nor gain_epochs selected, will solve for gains on each unique
+        timestamp in the data.
+
+        Args:
+          scans (bool): If True, solves for independent gains by scan. Overrides explicit specification of gain solution intervals. Default: False.
+          gain_epochs (nd.array): 2D array containing the start and end times for each gain solution epoch. Default: None.
+
+        Returns:
+        """
+        
         self.scans = scans
         self.gain_epochs = gain_epochs
         
@@ -966,12 +1199,55 @@ class FF_complex_gains(FisherForecast) :
             self.gain_epochs[:,1] = tu + 0.5*dt[1:]
     
     def visibilities(self,obs,p,verbosity=0,**kwargs) :
+        """
+        Complex visibilities associated with the underlying FisherForecast object
+        evaluated at the data points in the given Obsdata object for the model with
+        the given parameter values.
+
+        Args:
+          obs (Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)
+          p (np.array): list of parameters for the model at which visiblities are desired.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          V (np.array): list of complex visibilities computed at observations.
+        """
+        
         return self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
 
     def visibility_gradients(self,obs,p,verbosity=0,**kwargs) :
-        return self.ff.visibilities(obs,p,verbosity=verbosity,**kwargs)
+        """
+        Gradients of the complex visibilities associated with the underlying 
+        FisherForecast object with respect to the model pararmeters evaluated at 
+        the data points in the given Obsdata object for the model with the given 
+        parameter values.  
+
+        Args:
+          obs (Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          gradV (np.ndarray): list of complex visibility gradients computed at observations.
+        """
+        
+        return self.ff.visibility_gradients(obs,p,verbosity=verbosity,**kwargs)
 
     def fisher_covar(self,obs,p,verbosity=0,**kwargs) :
+        """
+        Returns the Fisher matrix M as defined in the accompanying documentation,
+        marginalized over the complex station gains. Intelligently avoids 
+        recomputation if the observation and parameters are unchanged.
+
+        Args:
+          obs (Obsdata): An Obsdata object containing the observation particulars.
+          p (list): List of model parameters at which to compute the Fisher matrix.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          M (np.ndarray): The Fisher matrix M.
+        """
+        
         # Get the fisher covariance 
         new_argument_hash = hashlib.md5(bytes(str(obs)+str(p),'utf-8')).hexdigest()
         if ( new_argument_hash == self.argument_hash ) :
@@ -1090,10 +1366,31 @@ class FF_complex_gains(FisherForecast) :
                     
         return self.covar
     
-    def parameter_labels(self) :
+    def parameter_labels(self,verbosity=0) :
+        """
+        Parameter labels to be used in plotting.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """        
         return self.ff.parameter_labels()
 
     def set_gain_amplitude_prior(self,sigma,station=None,verbosity=0) :
+        """
+        Sets the log-normal priors on the gain amplitudes, either for a
+        specified station or for all stations. Identical priors are 
+        assummed across the entire observation.
+
+        Args:
+          sigma (float): Standard deviation of the log-amplitude.
+          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+        """
         sigma = min(sigma,10.0)
         if (station is None) :
             self.gain_amplitude_priors = {'All':sigma}
@@ -1106,6 +1403,18 @@ class FF_complex_gains(FisherForecast) :
         self.argument_hash = None
 
     def set_gain_phase_prior(self,sigma,station=None,verbosity=0) :
+        """
+        Sets the normal priors on the gain phases, either for a specified 
+        station or for all stations. Usually, this should be the default
+        (uniformative). Identical priors are assummed across the entire 
+        observation.
+
+        Args:
+          sigma (float): Standard deviation of the phase.
+          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
+
+        Returns:
+        """
         sigma = min(sigma,100.0)
         if (station is None) :
             self.gain_phase_priors = {'All':sigma}
@@ -1118,6 +1427,18 @@ class FF_complex_gains(FisherForecast) :
         self.argument_hash = None
 
     def set_gain_ratio_amplitude_prior(self,sigma,station=None,verbosity=0) :
+        """
+        Sets the log-normal priors on the R/L gain amplitude ratios, either 
+        for a specified station or for all stations. Only relevant for
+        polarized models. Default: 1e-10 for all stations. Identical priors 
+        are assummed across the entire observation.
+
+        Args:
+          sigma (float): Standard deviation of the log-amplitude ratio.
+          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
+
+        Returns:
+        """
         sigma = min(sigma,100.0)
         if (station is None) :
             self.gain_ratio_amplitude_priors = {'All':sigma}
@@ -1130,6 +1451,18 @@ class FF_complex_gains(FisherForecast) :
         self.argument_hash = None
 
     def set_gain_ratio_phase_prior(self,sigma,station=None,verbosity=0) :
+        """
+        Sets the normal priors on the R/L gain phase differences, either 
+        for a specified station or for all stations. Only relevant for
+        polarized models. Default: 1e-10 for all stations. Identical priors 
+        are assummed across the entire observation.
+
+        Args:
+          sigma (float): Standard deviation of the phase.
+          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
+
+        Returns:
+        """
         sigma = min(sigma,100.0)
         if (station is None) :
             self.gain_ratio_phase_priors = {'All':sigma}
@@ -1144,13 +1477,13 @@ class FF_complex_gains(FisherForecast) :
     
 class FF_model_image(FisherForecast) :
     """
-    
-    FisherForecast from ThemisyPy model_image objects.  Uses FFTs and centered 
-    finite-difference to compute the visibilities and gradients.  May not always
-    produce sensible behaviors.
+    FisherForecast from ThemisyPy model_image objects. Uses FFTs and centered 
+    finite-difference to compute the visibilities and gradients. May not always
+    produce sensible behaviors. Has not been extensively tested for some time.
 
     Args:
       img (model_image): A ThemisPy model_image object.
+      stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
 
     Attributes:
       img (model_image): The ThemisPy model_image object for which to make forecasts.
@@ -1276,11 +1609,30 @@ class FF_model_image(FisherForecast) :
 
         return gradV
 
-    def parameter_labels(self) :
+    def parameter_labels(self,verbosity=0) :
+        """
+        Parameter labels to be used in plotting.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """        
         return self.img.parameter_name_list()
     
 
 class FF_smoothed_delta_ring(FisherForecast) :
+    """
+    FisherForecast object for a delta-ring convolved with a circular Gaussian.
+    Parameter vector is:
+      p[0] ... Total flux in Jy.
+      p[1] ... Diameter in uas.
+      p[2] ... Twice the standard deviation of the Gaussian smoothing kernel in uas.
+
+    Args:
+      stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
+    """
 
     def __init__(self,stokes='I') :
         super().__init__()
@@ -1288,6 +1640,18 @@ class FF_smoothed_delta_ring(FisherForecast) :
         self.stokes = stokes
         
     def visibilities(self,obs,p,verbosity=0) :
+        """
+        Generates visibilities associated with Gaussian-convolved delta-ring.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          V (np.array): list of complex visibilities computed at observations.
+        """
+        
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
@@ -1312,6 +1676,18 @@ class FF_smoothed_delta_ring(FisherForecast) :
         return V
         
     def visibility_gradients(self,obs,p,verbosity=0) :
+        """
+        Generates visibility gradients associated with Gaussian-convolved delta-ring.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          gradV (np.array): list of complex visibilities computed at observations.
+        """
+
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
@@ -1340,11 +1716,29 @@ class FF_smoothed_delta_ring(FisherForecast) :
         return gradV.T
         
 
-    def parameter_labels(self) :
+    def parameter_labels(self,verbosity=0) :
+        """
+        Parameter labels to be used in plotting.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """        
         return [r'$\delta F~({\rm Jy})$',r'$\delta d~(\mu{\rm as})$',r'$\delta w~(\mu{\rm as})$']
     
 
 class FF_symmetric_gaussian(FisherForecast) :
+    """
+    FisherForecast object for a circular Gaussian.
+    Parameter vector is:
+      p[0] ... Total flux in Jy.
+      p[1] ... FWHM in uas.
+
+    Args:
+      stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
+    """
 
     def __init__(self,stokes='I') :
         super().__init__()
@@ -1352,6 +1746,18 @@ class FF_symmetric_gaussian(FisherForecast) :
         self.stokes = stokes
         
     def visibilities(self,obs,p,verbosity=0) :
+        """
+        Generates visibilities associated with a circular Gaussian.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          V (np.array): list of complex visibilities computed at observations.
+        """
+
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
@@ -1370,6 +1776,18 @@ class FF_symmetric_gaussian(FisherForecast) :
         return p[0]*ey2
         
     def visibility_gradients(self,obs,p,verbosity=0) :
+        """
+        Generates visibility gradients associated with a circular Gaussian.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          gradV (np.array): list of complex visibilities computed at observations.
+        """
+
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
@@ -1392,11 +1810,32 @@ class FF_symmetric_gaussian(FisherForecast) :
         return gradV.T
         
 
-    def parameter_labels(self) :
+    def parameter_labels(self,verbosity=0) :
+        """
+        Parameter labels to be used in plotting.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """        
         return [r'$\delta F~({\rm Jy})$',r'$\delta FWHM~(\mu{\rm as})$']
 
 
 class FF_asymmetric_gaussian(FisherForecast) :
+    """
+    FisherForecast object for a noncircular Gaussian.  
+    Parameter vector is:
+      p[0] ... Total flux in Jy.
+      p[1] ... Symmetrized mean of the FHWM in the major and minor axes in uas.
+      p[2] ... Asymmetry parameter, A, expected to be in the range [0,1).
+      p[3] ... Position angle in radians.
+    The major axis FWHM is p[1]/sqrt(1-A); the minor axis FWHM is p[1]/sqrt(1+A).
+
+    Args:
+      stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
+    """
 
     def __init__(self,stokes='I') :
         super().__init__()
@@ -1404,6 +1843,18 @@ class FF_asymmetric_gaussian(FisherForecast) :
         self.stokes = stokes
         
     def visibilities(self,obs,p,verbosity=0) :
+        """
+        Generates visibilities associated with a noncircular Gaussian.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          V (np.array): list of complex visibilities computed at observations.
+        """
+
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... mean diameter in uas
@@ -1442,6 +1893,18 @@ class FF_asymmetric_gaussian(FisherForecast) :
 
     
     def visibility_gradients(self,obs,p,verbosity=0) :
+        """
+        Generates visibility gradients associated with a noncircular Gaussian.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          V (np.array): list of complex visibilities computed at observations.
+        """
+        
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... mean diameter in uas
@@ -1484,12 +1947,43 @@ class FF_asymmetric_gaussian(FisherForecast) :
         
         return gradV.T
 
-    def parameter_labels(self) :
+    def parameter_labels(self,verbosity=0) :
+        """
+        Parameter labels to be used in plotting.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """        
         return [r'$\delta F~({\rm Jy})$',r'$\delta FWHM~(\mu{\rm as})$',r'$\delta A$',r'$\delta {\rm PA}~({\rm rad})$']
 
     
 
 class FF_splined_raster(FisherForecast) :
+    """
+    FisherForecast object for a splined raster (i.e., themage).
+    Parameter vector is the log of the intensity at the control points:
+      p[0] ... ln(I[0,0])
+      p[1] ... ln(I[1,0])
+      ...
+      p[N-1] ... ln(I[N-1,0])
+      p[N] ... ln(I[0,1])
+      ...
+      p[N*N-1] ... ln(I[N-1,N-1])
+    where each I[i,j] is measured in Jy/sr.
+
+    Args:
+      N (int): Raster dimension (only supports square raster).
+      fov (float): Raster field of view in uas (only supports fixed rasters).
+      stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
+
+    Attributes:
+      xcp (np.ndarray): x-positions of raster control points.
+      ycp (np.ndarray): y-positions of raster control points.
+      apx (float): Raster pixel size.
+    """
 
     def __init__(self,N,fov,stokes='I') :
         super().__init__()
@@ -1507,6 +2001,18 @@ class FF_splined_raster(FisherForecast) :
             self.size *= 4
 
     def visibilities(self,obs,p,verbosity=0) :
+        """
+        Generates visibilities associated with a splined raster model.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          V (np.array): list of complex visibilities computed at observations.
+        """
+        
         # Takes:
         #  p[0] ... p[0,0]
         #  p[1] ... p[1,0]
@@ -1552,6 +2058,18 @@ class FF_splined_raster(FisherForecast) :
             return RR, LL, RL, LR
         
     def visibility_gradients(self,obs,p,verbosity=0) :
+        """
+        Generates visibility gradients associated with a splined raster model.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (np.array): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          gradV (np.array): list of complex visibilities computed at observations.
+        """
+
         # Takes:
         #  p[0] ... p[0,0]
         #  p[1] ... p[1,0]
@@ -1605,8 +2123,17 @@ class FF_splined_raster(FisherForecast) :
             
             return grad_RR, grad_LL, grad_RL, grad_LR
 
-    def parameter_labels(self) :
 
+    def parameter_labels(self,verbosity=0) :
+        """
+        Parameter labels to be used in plotting.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """        
         pll = []
         for j in range(self.npx) :
             for i in range(self.npx) :
@@ -1625,8 +2152,49 @@ class FF_splined_raster(FisherForecast) :
 
         return pll
 
+    def generate_parameter_list(self,glob,p=None) :
+        """
+        Utility function to quickly and easily generate a set of raster values
+        associated with various potential initialization schemes. These include:
+        an existing FisherForecast object, a FisherForecast class, or a FITS file
+        name.
+
+        TBD.
+
+        Args:
+          glob (str): Can be an existing FisherForecast child object, the name of a FisherForecast child class, or a string with a FITS file name.
+          p (list): If glob is a FisherForecast child object or the name of a FisherForecast child class, a parameter list must be passed from which the image will be generated.
+          
+        Returns:
+          p (list): Approximate parameter list for associated splined raster object.
+        """
+
+        if ( issubclass(type(glob),FisherForecast) ) :
+            # This is a FF object, set the parameters, make the images and go
+            pass
+        elif ( issubclass(glob,FisherForecast) ) :
+            # This is a FF class, create a FF obj set the parameters, make the images and go
+            pass
+        elif ( isinstance(glob,str) ) :
+            # This is a string, check for .fits and go
+            pass
+        else :
+            raise(RuntimeError("Unrecognized glob from which to generate acceptable parameter list."))                  
+        
+        pass
+
+    
 
 class FF_smoothed_delta_ring_themage(FisherForecast) :
+    """
+    FisherForecast object for a circular Gaussian.
+    Parameter vector is:
+      p[0] ... Total flux in Jy.
+      p[1] ... FWHM in uas.
+
+    Args:
+      stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
+    """
 
     def __init__(self,N,fov,stokes='I') :
         super().__init__()
@@ -1727,8 +2295,16 @@ class FF_smoothed_delta_ring_themage(FisherForecast) :
         return gradV.T
         
 
-    def parameter_labels(self) :
+    def parameter_labels(self,verbosity=0) :
+        """
+        Parameter labels to be used in plotting.
 
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """        
         pll = []
         for j in range(self.npx) :
             for i in range(self.npx) :
@@ -1882,7 +2458,16 @@ class FF_thick_mring(FisherForecast) :
 
             return grad_RR.T, grad_LL.T, grad_RL.T, grad_LR.T
 
-    def parameter_labels(self):
+    def parameter_labels(self,verbosity=0) :
+        """
+        Parameter labels to be used in plotting.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """        
         labels = list()
         labels.append(r'$\delta F~({\rm Jy})$')
         labels.append(r'$\delta d~(\mu{\rm as})$')
@@ -2115,8 +2700,16 @@ class FF_sum(FisherForecast) :
 
             return gradRR.T, gradLL.T, gradRL.T, gradLR.T
                 
-    def parameter_labels(self) :
+    def parameter_labels(self,verbosity=0) :
+        """
+        Parameter labels to be used in plotting.
 
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          plabels (list): list of strings with parameter labels.
+        """        
         pll = []
         for i,ff in enumerate(self.ff_list) :
             for lbl in ff.parameter_labels() :
