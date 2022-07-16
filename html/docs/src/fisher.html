@@ -1,0 +1,1886 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Fisher &#8212; ngEHTforecast 0+untagged.60.g4c1ea66.dirty documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Developer’s Guide" href="devel.html" />
+    <link rel="prev" title="User’s Guide" href="userguide.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="devel.html" title="Developer’s Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="userguide.html" title="User’s Guide"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ngEHTforecast 0+untagged.60.g4c1ea66.dirty documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="userguide.html" accesskey="U">User’s Guide</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="userguide.html"
+                        title="previous chapter">User’s Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="devel.html"
+                        title="next chapter">Developer’s Guide</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/docs/src/fisher.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-fisher"></span><div class="section" id="fisher">
+<span id="id1"></span><h1>Fisher<a class="headerlink" href="#fisher" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-fisher.fisher_forecast"></span><dl class="py class">
+<dt id="fisher.fisher_forecast.FF_asymmetric_gaussian">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FF_asymmetric_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stokes</span><span class="o">=</span><span class="default_value">'I'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_asymmetric_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_asymmetric_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>FisherForecast object for a noncircular Gaussian.
+Parameter vector is:</p>
+<blockquote>
+<div><p>p[0] … Total flux in Jy.
+p[1] … Symmetrized mean of the FHWM in the major and minor axes in uas.
+p[2] … Asymmetry parameter, A, expected to be in the range [0,1).
+p[3] … Position angle in radians.</p>
+</div></blockquote>
+<p>The major axis FWHM is p[1]/sqrt(1-A); the minor axis FWHM is p[1]/sqrt(1+A).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>stokes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Indicates if this is limited to Stokes I (‘I’) or include full polarization (‘full’). Default: ‘I’.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_asymmetric_gaussian.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_asymmetric_gaussian.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_asymmetric_gaussian.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter labels to be used in plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_asymmetric_gaussian.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_asymmetric_gaussian.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_asymmetric_gaussian.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibilities associated with a noncircular Gaussian.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_asymmetric_gaussian.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_asymmetric_gaussian.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_asymmetric_gaussian.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibility gradients associated with a noncircular Gaussian.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fisher.fisher_forecast.FF_complex_gains">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FF_complex_gains</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ff</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains" title="Permalink to this definition">¶</a></dt>
+<dd><p>FisherForecast with complex gain reconstruction with multiple epochs.
+This is usually the FisherForecast object that should be used to investigate
+the impact of uncertain station gains.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ff</strong> (<a class="reference internal" href="#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><em>FisherForecast</em></a>) – A FisherForecast object to which we wish to add gains.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains.ff">
+<code class="sig-name descname">ff</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.ff" title="Permalink to this definition">¶</a></dt>
+<dd><p>The FisherForecast object before gain reconstruction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast">FisherForecast</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains.gain_epochs">
+<code class="sig-name descname">gain_epochs</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.gain_epochs" title="Permalink to this definition">¶</a></dt>
+<dd><p>2D array containing the start and end times for each gain solution epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains.gain_amplitude_priors">
+<code class="sig-name descname">gain_amplitude_priors</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.gain_amplitude_priors" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of standard deviations of the log-normal priors on the gain amplitudes. Default: 10.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains.gain_phase_priors">
+<code class="sig-name descname">gain_phase_priors</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.gain_phase_priors" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of standard deviations on the normal priors on the gain phases. Default: 100.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains.gain_ratio_amplitude_priors">
+<code class="sig-name descname">gain_ratio_amplitude_priors</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.gain_ratio_amplitude_priors" title="Permalink to this definition">¶</a></dt>
+<dd><p>For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains.gain_ratio_phase_priors">
+<code class="sig-name descname">gain_ratio_phase_priors</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.gain_ratio_phase_priors" title="Permalink to this definition">¶</a></dt>
+<dd><p>For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains.fisher_covar">
+<code class="sig-name descname">fisher_covar</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains.fisher_covar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.fisher_covar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Fisher matrix M as defined in the accompanying documentation,
+marginalized over the complex station gains. Intelligently avoids
+recomputation if the observation and parameters are unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An Obsdata object containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of model parameters at which to compute the Fisher matrix.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The Fisher matrix M.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>M (np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter labels to be used in plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains.set_gain_amplitude_prior">
+<code class="sig-name descname">set_gain_amplitude_prior</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">station</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains.set_gain_amplitude_prior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.set_gain_amplitude_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the log-normal priors on the gain amplitudes, either for a
+specified station or for all stations. Identical priors are
+assummed across the entire observation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Standard deviation of the log-amplitude.</p></li>
+<li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains.set_gain_epochs">
+<code class="sig-name descname">set_gain_epochs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scans</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">gain_epochs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains.set_gain_epochs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.set_gain_epochs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the gain solution intervals (gain epochs) to be used. If neither
+scans nor gain_epochs selected, will solve for gains on each unique
+timestamp in the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scans</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If True, solves for independent gains by scan. Overrides explicit specification of gain solution intervals. Default: False.</p></li>
+<li><p><strong>gain_epochs</strong> (<em>nd.array</em>) – 2D array containing the start and end times for each gain solution epoch. Default: None.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains.set_gain_phase_prior">
+<code class="sig-name descname">set_gain_phase_prior</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">station</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains.set_gain_phase_prior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.set_gain_phase_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the normal priors on the gain phases, either for a specified
+station or for all stations. Usually, this should be the default
+(uniformative). Identical priors are assummed across the entire
+observation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Standard deviation of the phase.</p></li>
+<li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains.set_gain_ratio_amplitude_prior">
+<code class="sig-name descname">set_gain_ratio_amplitude_prior</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">station</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains.set_gain_ratio_amplitude_prior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.set_gain_ratio_amplitude_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the log-normal priors on the R/L gain amplitude ratios, either
+for a specified station or for all stations. Only relevant for
+polarized models. Default: 1e-10 for all stations. Identical priors
+are assummed across the entire observation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Standard deviation of the log-amplitude ratio.</p></li>
+<li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains.set_gain_ratio_phase_prior">
+<code class="sig-name descname">set_gain_ratio_phase_prior</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">station</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains.set_gain_ratio_phase_prior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.set_gain_ratio_phase_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the normal priors on the R/L gain phase differences, either
+for a specified station or for all stations. Only relevant for
+polarized models. Default: 1e-10 for all stations. Identical priors
+are assummed across the entire observation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Standard deviation of the phase.</p></li>
+<li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Complex visibilities associated with the underlying FisherForecast object
+evaluated at the data points in the given Obsdata object for the model with
+the given parameter values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model at which visiblities are desired.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gradients of the complex visibilities associated with the underlying
+FisherForecast object with respect to the model pararmeters evaluated at
+the data points in the given Obsdata object for the model with the given
+parameter values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibility gradients computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>gradV (np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FF_complex_gains_single_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ff</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains_single_epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>FisherForecast with complex gain reconstruction assuming a single epoch.
+This is a helper class, and probably not the FisherForecast object that
+should be used to study the impact of gains.  See FF_complex_gains.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ff</strong> (<a class="reference internal" href="#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><em>FisherForecast</em></a>) – A FisherForecast object to which we wish to add gains.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.ff">
+<code class="sig-name descname">ff</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.ff" title="Permalink to this definition">¶</a></dt>
+<dd><p>The FisherForecast object before gain reconstruction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast">FisherForecast</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.plbls">
+<code class="sig-name descname">plbls</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.plbls" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of parameter labels (str) including gains parameter names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.gain_amplitude_priors">
+<code class="sig-name descname">gain_amplitude_priors</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.gain_amplitude_priors" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of standard deviations of the log-normal priors on the gain amplitudes. Default: 10.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.gain_phase_priors">
+<code class="sig-name descname">gain_phase_priors</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.gain_phase_priors" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of standard deviations on the normal priors on the gain phases. Default: 100.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.gain_ratio_amplitude_priors">
+<code class="sig-name descname">gain_ratio_amplitude_priors</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.gain_ratio_amplitude_priors" title="Permalink to this definition">¶</a></dt>
+<dd><p>For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.gain_ratio_phase_priors">
+<code class="sig-name descname">gain_ratio_phase_priors</code><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.gain_ratio_phase_priors" title="Permalink to this definition">¶</a></dt>
+<dd><p>For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains_single_epoch.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter labels to be used in plotting, including those associated
+with the gains.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.set_gain_amplitude_prior">
+<code class="sig-name descname">set_gain_amplitude_prior</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">station</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains_single_epoch.set_gain_amplitude_prior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.set_gain_amplitude_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the log-normal priors on the gain amplitudes, either for a
+specified station or for all stations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Standard deviation of the log-amplitude.</p></li>
+<li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.set_gain_phase_prior">
+<code class="sig-name descname">set_gain_phase_prior</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">station</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains_single_epoch.set_gain_phase_prior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.set_gain_phase_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the normal priors on the gain phases, either for a specified
+station or for all stations. Usually, this should be the default
+(uniformative).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Standard deviation of the phase.</p></li>
+<li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.set_gain_ratio_amplitude_prior">
+<code class="sig-name descname">set_gain_ratio_amplitude_prior</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">station</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains_single_epoch.set_gain_ratio_amplitude_prior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.set_gain_ratio_amplitude_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the log-normal priors on the R/L gain amplitude ratios, either
+for a specified station or for all stations. Only relevant for
+polarized models. Default: 1e-10 for all stations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Standard deviation of the log-amplitude ratio.</p></li>
+<li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.set_gain_ratio_phase_prior">
+<code class="sig-name descname">set_gain_ratio_phase_prior</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">station</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains_single_epoch.set_gain_ratio_phase_prior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.set_gain_ratio_phase_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the normal priors on the R/L gain phase differences, either
+for a specified station or for all stations. Only relevant for
+polarized models. Default: 1e-10 for all stations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Standard deviation of the phase.</p></li>
+<li><p><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains_single_epoch.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Complex visibilities associated with the underlying FisherForecast object
+evaluated at the data points in the given Obsdata object for the model with
+the given parameter values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model at which visiblities are desired.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_complex_gains_single_epoch.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_complex_gains_single_epoch.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_complex_gains_single_epoch.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gradients of the complex visibilities associated with the underlying
+FisherForecast object with respect to the model pararmeters evaluated at
+the data points in the given Obsdata object for the model with the given
+parameter values, including gradients with respect to the gain amplitudes,
+phases, and if this is a polarized model, R/L gain amplitude ratios and
+phase differences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibility gradients computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>gradV (np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fisher.fisher_forecast.FF_model_image">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FF_model_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">stokes</span><span class="o">=</span><span class="default_value">'I'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_model_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_model_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>FisherForecast from ThemisyPy model_image objects. Uses FFTs and centered
+finite-difference to compute the visibilities and gradients. May not always
+produce sensible behaviors. Has not been extensively tested for some time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>model_image</em>) – A ThemisPy model_image object.</p></li>
+<li><p><strong>stokes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Indicates if this is limited to Stokes I (‘I’) or include full polarization (‘full’). Default: ‘I’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_model_image.img">
+<code class="sig-name descname">img</code><a class="headerlink" href="#fisher.fisher_forecast.FF_model_image.img" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ThemisPy model_image object for which to make forecasts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>model_image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_model_image.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_model_image.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_model_image.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter labels to be used in plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_model_image.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">limits</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">shape</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_model_image.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_model_image.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibilities associated with a given model image object.  Note
+that this uses FFTs to create the visibilities and then interpolates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>limits</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – May be single number, list with four elements specifying in <span class="math notranslate nohighlight">\(\mu as\)</span> the symmetric limits or explicit limits in [xmin,xmax,ymin,ymax] order.  Default: 100.</p></li>
+<li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – May be single number or list with two elements indicating the number of pixels in the two directions.  Default: 256.</p></li>
+<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Factor by which to pad image with zeros prior to FFT.  Default: 4.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. 0 prints nothing. 1 prints various elements of the plotting process. Passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">model_image.generate_intensity_map()</span></code>. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_model_image.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">limits</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">shape</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_model_image.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_model_image.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibilities associated with a given model image object.  Note
+that this uses FFTs to create the visibilities and then interpolates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>h</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – fractional step for finite-difference gradient computation.  Default: 0.01.</p></li>
+<li><p><strong>limits</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – May be single number, list with four elements specifying in <span class="math notranslate nohighlight">\(\mu as\)</span> the symmetric limits or explicit limits in [xmin,xmax,ymin,ymax] order.  Default: 100.</p></li>
+<li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – May be single number or list with two elements indicating the number of pixels in the two directions.  Default: 256.</p></li>
+<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Factor by which to pad image with zeros prior to FFT.  Default: 4.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. 0 prints nothing. 1 prints various elements of the plotting process. Passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">model_image.generate_intensity_map()</span></code>. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities gradients computed at observation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>gradV (np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FF_smoothed_delta_ring</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stokes</span><span class="o">=</span><span class="default_value">'I'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_smoothed_delta_ring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring" title="Permalink to this definition">¶</a></dt>
+<dd><p>FisherForecast object for a delta-ring convolved with a circular Gaussian.
+Parameter vector is:</p>
+<blockquote>
+<div><p>p[0] … Total flux in Jy.
+p[1] … Diameter in uas.
+p[2] … Twice the standard deviation of the Gaussian smoothing kernel in uas.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>stokes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Indicates if this is limited to Stokes I (‘I’) or include full polarization (‘full’). Default: ‘I’.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_smoothed_delta_ring.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter labels to be used in plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_smoothed_delta_ring.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibilities associated with Gaussian-convolved delta-ring.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_smoothed_delta_ring.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibility gradients associated with Gaussian-convolved delta-ring.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>gradV (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring_themage">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FF_smoothed_delta_ring_themage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">fov</span></em>, <em class="sig-param"><span class="n">stokes</span><span class="o">=</span><span class="default_value">'I'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_smoothed_delta_ring_themage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring_themage" title="Permalink to this definition">¶</a></dt>
+<dd><p>FisherForecast object for a splined raster (i.e., themage) plus a
+Gaussian-convolved delta-ring.</p>
+<dl>
+<dt>Parameter vector is the log of the intensity at the control points:</dt><dd><p>p[0] ……. ln(I[0,0])
+p[1] ……. ln(I[1,0])</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+<p>p[N-1] ….. ln(I[N-1,0])
+p[N] ……. ln(I[0,1])</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+<p>p[N*N-1] … ln(I[N-1,N-1])
+p[N*N+0] … Total flux in Jy.
+p[N*N+1] … Diameter in uas.
+p[N*N+2] … Twice the standard deviation of the Gaussian smoothing kernel in uas.</p>
+</dd>
+</dl>
+<p>where each I[i,j] is measured in Jy/sr.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Raster dimension (only supports square raster).</p></li>
+<li><p><strong>fov</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Raster field of view in uas (only supports fixed rasters).</p></li>
+<li><p><strong>stokes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Indicates if this is limited to Stokes I (‘I’) or include full polarization (‘full’). Default: ‘I’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring_themage.xcp">
+<code class="sig-name descname">xcp</code><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring_themage.xcp" title="Permalink to this definition">¶</a></dt>
+<dd><p>x-positions of raster control points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring_themage.ycp">
+<code class="sig-name descname">ycp</code><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring_themage.ycp" title="Permalink to this definition">¶</a></dt>
+<dd><p>y-positions of raster control points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring_themage.apx">
+<code class="sig-name descname">apx</code><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring_themage.apx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raster pixel size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring_themage.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_smoothed_delta_ring_themage.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring_themage.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter labels to be used in plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring_themage.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_smoothed_delta_ring_themage.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring_themage.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibilities associated with splined raster + Gaussian-convolved delta-ring.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_smoothed_delta_ring_themage.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_smoothed_delta_ring_themage.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_smoothed_delta_ring_themage.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibility gradients associated with splined-raster + Gaussian-convolved delta-ring.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>gradV (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fisher.fisher_forecast.FF_splined_raster">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FF_splined_raster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">fov</span></em>, <em class="sig-param"><span class="n">stokes</span><span class="o">=</span><span class="default_value">'I'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_splined_raster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_splined_raster" title="Permalink to this definition">¶</a></dt>
+<dd><p>FisherForecast object for a splined raster (i.e., themage).
+Parameter vector is the log of the intensity at the control points:</p>
+<blockquote>
+<div><p>p[0] ……. ln(I[0,0])
+p[1] ……. ln(I[1,0])</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+<p>p[N-1] ….. ln(I[N-1,0])
+p[N] ……. ln(I[0,1])</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+<p>p[N*N-1] … ln(I[N-1,N-1])</p>
+</div></blockquote>
+<p>where each I[i,j] is measured in Jy/sr.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Raster dimension (only supports square raster).</p></li>
+<li><p><strong>fov</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Raster field of view in uas (only supports fixed rasters).</p></li>
+<li><p><strong>stokes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Indicates if this is limited to Stokes I (‘I’) or include full polarization (‘full’). Default: ‘I’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_splined_raster.xcp">
+<code class="sig-name descname">xcp</code><a class="headerlink" href="#fisher.fisher_forecast.FF_splined_raster.xcp" title="Permalink to this definition">¶</a></dt>
+<dd><p>x-positions of raster control points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_splined_raster.ycp">
+<code class="sig-name descname">ycp</code><a class="headerlink" href="#fisher.fisher_forecast.FF_splined_raster.ycp" title="Permalink to this definition">¶</a></dt>
+<dd><p>y-positions of raster control points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_splined_raster.apx">
+<code class="sig-name descname">apx</code><a class="headerlink" href="#fisher.fisher_forecast.FF_splined_raster.apx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raster pixel size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_splined_raster.generate_parameter_list">
+<code class="sig-name descname">generate_parameter_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">glob</span></em>, <em class="sig-param"><span class="n">p</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_splined_raster.generate_parameter_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_splined_raster.generate_parameter_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function to quickly and easily generate a set of raster values
+associated with various potential initialization schemes. These include:
+an existing FisherForecast object, a FisherForecast class, or a FITS file
+name.</p>
+<p>TBD.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>glob</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Can be an existing FisherForecast child object, the name of a FisherForecast child class, or a string with a FITS file name.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – If glob is a FisherForecast child object or the name of a FisherForecast child class, a parameter list must be passed from which the image will be generated.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Approximate parameter list for associated splined raster object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>p (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_splined_raster.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_splined_raster.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_splined_raster.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter labels to be used in plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_splined_raster.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_splined_raster.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_splined_raster.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibilities associated with a splined raster model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_splined_raster.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_splined_raster.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_splined_raster.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibility gradients associated with a splined raster model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>gradV (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fisher.fisher_forecast.FF_sum">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FF_sum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ff_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stokes</span><span class="o">=</span><span class="default_value">'I'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_sum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>FisherForecast object constructed from the sum of multiple
+FisherForecast objects. For example, a binary might be generated from
+the sum of two Gaussians.</p>
+<p>The parameter vector is constructed from the concatenation of the parameter
+vectors from each individual object, with all objects after the first
+gaining a pair of offset parameters.  That is:</p>
+<blockquote>
+<div><p>p[0] ………… Obj1 p[0]
+p[1] ………… Obj1 p[1]</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+<p>p[n1] ……….. Obj2 p[0]
+p[n1+1] ……… Obj2 p[0]</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+<p>p[n1+n2] …….. Obj2 dx
+p[n1+n2+1] …… Obj2 dy
+p[n1+n2+2] …… Obj3 p[0]</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+<p>p[n1+n2+n3+2] … Obj3 dx
+p[n1+n2+n3+3] … Obj3 dy</p>
+<blockquote>
+<div><p>…</p>
+</div></blockquote>
+</div></blockquote>
+<p>Prior lists are constructed similarly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ff_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of FisherForecast objects to be summed. Additional objects can be added later. Default: None.</p></li>
+<li><p><strong>stokes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Indicates if this is limited to Stokes I (‘I’) or include full polarization (‘full’). Default: ‘I’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_sum.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ff</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_sum.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_sum.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a FisherForecast object to the sum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ff</strong> (<a class="reference internal" href="#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><em>FisherForecast</em></a>) – An existing FisherForecast object to add.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_sum.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_sum.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_sum.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter labels to be used in plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_sum.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_sum.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_sum.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibilities associated with the summed model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_sum.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_sum.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_sum.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibility gradients associated with the summed model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>gradV (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fisher.fisher_forecast.FF_symmetric_gaussian">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FF_symmetric_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stokes</span><span class="o">=</span><span class="default_value">'I'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_symmetric_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_symmetric_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>FisherForecast object for a circular Gaussian.
+Parameter vector is:</p>
+<blockquote>
+<div><p>p[0] … Total flux in Jy.
+p[1] … FWHM in uas.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>stokes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Indicates if this is limited to Stokes I (‘I’) or include full polarization (‘full’). Default: ‘I’.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_symmetric_gaussian.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_symmetric_gaussian.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_symmetric_gaussian.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter labels to be used in plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_symmetric_gaussian.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_symmetric_gaussian.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_symmetric_gaussian.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibilities associated with a circular Gaussian.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_symmetric_gaussian.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_symmetric_gaussian.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_symmetric_gaussian.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibility gradients associated with a circular Gaussian.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>gradV (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fisher.fisher_forecast.FF_thick_mring">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FF_thick_mring</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">mp</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mc</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stokes</span><span class="o">=</span><span class="default_value">'I'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_thick_mring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_thick_mring" title="Permalink to this definition">¶</a></dt>
+<dd><p>FisherForecast object for an m-ring model (based on ehtim).
+Parameter vector is:</p>
+<blockquote>
+<div><p>p[0] … DOM, PLEASE FILL THIS IN.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Stokes I azimuthal Fourier series order.</p></li>
+<li><p><strong>mp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Linear polarization azimuthal Fourier series order. Only used if stokes==’full’. Default: None.</p></li>
+<li><p><strong>mc</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Circular polarization azimuthal Fourier series order. Only used if stokes==’full’. Default: None.</p></li>
+<li><p><strong>stokes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Indicates if this is limited to Stokes I (‘I’) or include full polarization (‘full’). Default: ‘I’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_thick_mring.m">
+<code class="sig-name descname">m</code><a class="headerlink" href="#fisher.fisher_forecast.FF_thick_mring.m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stokes I azimuthal Fourier series order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_thick_mring.mp">
+<code class="sig-name descname">mp</code><a class="headerlink" href="#fisher.fisher_forecast.FF_thick_mring.mp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear polarization azimuthal Fourier series order. Only used if stokes==’full’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FF_thick_mring.mc">
+<code class="sig-name descname">mc</code><a class="headerlink" href="#fisher.fisher_forecast.FF_thick_mring.mc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Circular polarization azimuthal Fourier series order. Only used if stokes==’full’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_thick_mring.param_wrapper">
+<code class="sig-name descname">param_wrapper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_thick_mring.param_wrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_thick_mring.param_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts parameters from a flattened list to an ehtim-style dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameter list as used by FisherForecast.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary containing parameter values as used by ehtim.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>params (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_thick_mring.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_thick_mring.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_thick_mring.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter labels to be used in plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_thick_mring.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_thick_mring.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_thick_mring.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibilities associated with m-ring model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FF_thick_mring.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FF_thick_mring.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FF_thick_mring.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates visibility gradients associated with m-ring model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>ehtim.Obsdata</em>) – ehtim data object</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>gradV (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="fisher.fisher_forecast.FisherForecast">
+<em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FisherForecast</code><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that collects and contains information for making Fisher-matrix type
+forecasts for observations of various types.  Forms a base class for fully
+analytical versions that may be application specific.</p>
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FisherForecast.size">
+<code class="sig-name descname">size</code><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of parameters expected by this model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FisherForecast.stokes">
+<code class="sig-name descname">stokes</code><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.stokes" title="Permalink to this definition">¶</a></dt>
+<dd><p>If this is a Stokes I model (‘I’) or a polarized model (‘full’).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FisherForecast.prior_sigma_list">
+<code class="sig-name descname">prior_sigma_list</code><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.prior_sigma_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of standard deviations associated with the parameter priors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FisherForecast.covar">
+<code class="sig-name descname">covar</code><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.covar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal space for the computation of the covariance matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.fisher_forecast.FisherForecast.argument_hash">
+<code class="sig-name descname">argument_hash</code><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.argument_hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>MD5 hash object indicating last state of covariance computation. Used to determine if the covariance needs to be recomputed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.add_gaussian_prior">
+<code class="sig-name descname">add_gaussian_prior</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pindex</span></em>, <em class="sig-param"><span class="n">sigma</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.add_gaussian_prior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.add_gaussian_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a Gaussian prior on the parameter with the specified index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pindex</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Index of the parameter on which to place the prior.</p></li>
+<li><p><strong>sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Standard deviation of the Gaussian prior to apply.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.add_gaussian_prior_list">
+<code class="sig-name descname">add_gaussian_prior_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sigma_list</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.add_gaussian_prior_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.add_gaussian_prior_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a Gaussian priors on all of the model parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of standard deviations of the Gaussian priors to apply.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.check_gradients">
+<code class="sig-name descname">check_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.check_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.check_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Numerically evaluates the gradients using the visibilities function and
+compares them to the gradients returned by the visibility_gradients
+function.  Numerical differentiation is 2nd-order, centered finite
+differences.  Results are output to standard out.  For best results,
+the user should pass some option for the step size h to use for numerical
+differentiation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.) at which to check gradients..</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values.</p></li>
+<li><p><strong>h</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of small steps which define the finite differences.  If None, uses 1e-4*p.  If a float, uses h*p.  If a list, sets each step size separately.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.display_image">
+<code class="sig-name descname">display_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">limits</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">shape</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.display_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.display_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate and plot an image for the parent visibility model evaluated
+at a given set of parameter values.  The user is responsible for setting
+the plot limits and shape intelligently.  Note that this uses FFTs and
+assumes that the resolution and field of view are sufficient to adequately
+resolve model image features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values.</p></li>
+<li><p><strong>limits</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Limits on the field of view in which to construct the image in uas.  Either a single float, in which case the limits are symmetric and set to [-limits,limits,-limits,limits], or a list of floats. Default: 100.</p></li>
+<li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Dimensions of the image.  If an int, the dimensions are equal.  If a two-element list of ints, sets the dimensions to the two values. Default: 256.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Figure handle
+axs (matplotlib.pyplot.axes): Axes handle
+cb (matplotlib.pyplot.colorbar): Colorbar handle</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>fig (matplotlib.pyplot.figure)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.fisher_covar">
+<code class="sig-name descname">fisher_covar</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.fisher_covar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.fisher_covar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Fisher matrix M as defined in the accompanying documentation.
+Intelligently avoids recomputation if the observation and parameters are
+unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An Obsdata object containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of model parameters at which to compute the Fisher matrix.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The Fisher matrix M.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>M (np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.generate_image">
+<code class="sig-name descname">generate_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">limits</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">shape</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.generate_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.generate_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate and return an image for the parent visibility model evaluated
+at a given set of parameter values.  The user is responsible for setting
+the plot limits and shape intelligently.  Note that this uses FFTs and
+assumes that the resolution and field of view are sufficient to adequately
+resolve model image features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values.</p></li>
+<li><p><strong>limits</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Limits on the field of view in which to construct the image in uas.  Either a single float, in which case the limits are symmetric and set to [-limits,limits,-limits,limits], or a list of floats. Default: 100.</p></li>
+<li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Dimensions of the image.  If an int, the dimensions are equal.  If a two-element list of ints, sets the dimensions to the two values. Default: 256.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>x positions of the pixel centers in uas.
+y (np.ndarray): y positions of the pixel centers in uas.
+I (np.ndarray): Intensities at pixel centers in Jy/uas^2.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>x (np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.joint_biparameter_chisq">
+<code class="sig-name descname">joint_biparameter_chisq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">i1</span></em>, <em class="sig-param"><span class="n">i2</span></em>, <em class="sig-param"><span class="n">kind</span><span class="o">=</span><span class="default_value">'marginalized'</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.joint_biparameter_chisq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.joint_biparameter_chisq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the ensemble-averaged 2nd-order contribution to the chi-square
+for two parameters after fixing or marginalizing over all others.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An Obsdata object containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values at which to compute uncertainties.</p></li>
+<li><p><strong>i1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Index of first parameter.</p></li>
+<li><p><strong>i2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Index of second parameter.</p></li>
+<li><p><strong>kind</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Choice of what to do with other parameters. Choices are ‘marginalized’, ‘fixed’.  Default: ‘marginalized’.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Parameter uncertainty or list of marginalized uncertainties of desired parameters.
+SigmaM (float,list): Marginalized parameter uncertainty or list of marginalized uncertainties of desired parameters.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>SigmaF (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a>,<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.marginalized_covariance">
+<code class="sig-name descname">marginalized_covariance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">ilist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.marginalized_covariance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.marginalized_covariance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the covariance for a subset of model parameters, marginalized
+over all parameters outside of the subset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An Obsdata object containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values at which to compute uncertainties.</p></li>
+<li><p><strong>ilist</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Index or list of indicies for which to compute the marginalized uncertainties. If None will return a list of all marginalized uncertainties. Default: None.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Marginalized covariance for desired parameter subset.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>covar (np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.marginalized_uncertainties">
+<code class="sig-name descname">marginalized_uncertainties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">ilist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.marginalized_uncertainties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.marginalized_uncertainties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the uncertainties on a subset of model parameters, marginalized
+over all others. Note that this is not the marginalized covariance; each
+uncertainty is for a single parameter, marginalizing out all others.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An Obsdata object containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values at which to compute uncertainties.</p></li>
+<li><p><strong>ilist</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Index or list of indicies for which to compute the marginalized uncertainties. If None will return a list of all marginalized uncertainties. Default: None.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Marginalized parameter uncertainty or list of marginalized uncertainties of desired parameters.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Sigma (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a>,<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.parameter_labels">
+<code class="sig-name descname">parameter_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.parameter_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.parameter_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>User-defined function in child classes that returns a list of
+of parameter labels to be used in plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of strings with parameter labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plabels (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.plot_1d_forecast">
+<code class="sig-name descname">plot_1d_forecast</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">i1</span></em>, <em class="sig-param"><span class="n">kind</span><span class="o">=</span><span class="default_value">'marginalized'</span></em>, <em class="sig-param"><span class="n">labels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fig</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">axes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">colors</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alphas</span><span class="o">=</span><span class="default_value">0.25</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.plot_1d_forecast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.plot_1d_forecast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the marginalized posterior for a single parameter for a given observation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><em>Obsdata</em>) – An Obsdata object or list of Obsdata objects containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values at which to compute uncertainties.</p></li>
+<li><p><strong>i1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Index of parameter to be plotted.</p></li>
+<li><p><strong>kind</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Choice of what to do with other parameters. Choices are ‘marginalized’, ‘fixed’. Default: ‘marginalized’.</p></li>
+<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – A list of labels for each Obsdata object. When fewer labels than observations are provided, the first set of observations are labeled. Default: None.</p></li>
+<li><p><strong>fig</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)"><em>matplotlib.figure.Figure</em></a>) – Figure on which to place plot. If None, a new figure will be created. Default: None.</p></li>
+<li><p><strong>axes</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.5.2)"><em>matplotlib.axes.Axes</em></a>) – Axes on which to place plot. If None, a new axes will be created. Default: None.</p></li>
+<li><p><strong>colors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – A color or list of colors for the plots. When fewer colors than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.</p></li>
+<li><p><strong>alphas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – An alpha value or list of alpha values for the filled portion of the plots. Default: 0.25.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Handles to the figure and axes objects in the plot.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)">matplotlib.figure.Figure</a>, <a class="reference external" href="https://matplotlib.org/stable/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.5.2)">matplotlib.axes.Axes</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.plot_2d_forecast">
+<code class="sig-name descname">plot_2d_forecast</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">i1</span></em>, <em class="sig-param"><span class="n">i2</span></em>, <em class="sig-param"><span class="n">kind</span><span class="o">=</span><span class="default_value">'marginalized'</span></em>, <em class="sig-param"><span class="n">labels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fig</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">axes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">colors</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cmaps</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alphas</span><span class="o">=</span><span class="default_value">0.75</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.plot_2d_forecast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.plot_2d_forecast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the joint marginalized posterior for a pair of parameters for a given observation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><em>Obsdata</em>) – An Obsdata object or list of Obsdata objects containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values at which to compute uncertainties.</p></li>
+<li><p><strong>i1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Index of first parameter to be plotted.</p></li>
+<li><p><strong>i2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Index of second parameter to be plotted.</p></li>
+<li><p><strong>kind</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Choice of what to do with other parameters. Choices are ‘marginalized’, ‘fixed’. Default: ‘marginalized’.</p></li>
+<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – A list of labels for each Obsdata object. When fewer labels than observations are provided, the first set of observations are labeled. Default: None.</p></li>
+<li><p><strong>fig</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)"><em>matplotlib.figure.Figure</em></a>) – Figure on which to place plot. If None, a new figure will be created. Default: None.</p></li>
+<li><p><strong>axes</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.5.2)"><em>matplotlib.axes.Axes</em></a>) – Axes on which to place plot. If None, a new axes will be created. Default: None.</p></li>
+<li><p><strong>colors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – A color or list of colors for the plots. When fewer colors than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.</p></li>
+<li><p><strong>cmaps</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Colormap.html#matplotlib.colors.Colormap" title="(in Matplotlib v3.5.2)"><em>matplotlib.colors.Colormap</em></a>) – A colormap or list of colormaps for the plots. When fewer colormaps than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.</p></li>
+<li><p><strong>alphas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – An alpha value or list of alpha values for the filled portion of the plots. Default: 0.75.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Handles to the figure and axes objects in the plot.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)">matplotlib.figure.Figure</a>, <a class="reference external" href="https://matplotlib.org/stable/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.5.2)">matplotlib.axes.Axes</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.plot_triangle_forecast">
+<code class="sig-name descname">plot_triangle_forecast</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">ilist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kind</span><span class="o">=</span><span class="default_value">'marginalized'</span></em>, <em class="sig-param"><span class="n">labels</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">colors</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cmaps</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alphas</span><span class="o">=</span><span class="default_value">0.75</span></em>, <em class="sig-param"><span class="n">fig</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">axes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">axis_location</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.plot_triangle_forecast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.plot_triangle_forecast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a triangle plot of joint posteriors for a selected list of parameter indexes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><em>Obsdata</em>) – An Obsdata object or list of Obsdata objects containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values at which to compute uncertainties.</p></li>
+<li><p><strong>ilist</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of indicies of parameters to include in triangle plot. If None, includes all parameters. Default: None.</p></li>
+<li><p><strong>kind</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Choice of what to do with other parameters. Choices are ‘marginalized’, ‘fixed’. Default: ‘marginalized’.</p></li>
+<li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – A list of labels for each Obsdata object. When fewer labels than observations are provided, the first set of observations are labeled. Default: None.</p></li>
+<li><p><strong>colors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – A color or list of colors for the plots. When fewer colors than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.</p></li>
+<li><p><strong>cmaps</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Colormap.html#matplotlib.colors.Colormap" title="(in Matplotlib v3.5.2)"><em>matplotlib.colors.Colormap</em></a>) – A colormap or list of colormaps for the plots. When fewer colormaps than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.</p></li>
+<li><p><strong>alphas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – An alpha value or list of alpha values for the filled portion of the plots. Default: 0.75.</p></li>
+<li><p><strong>fig</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)"><em>matplotlib.figure.Figure</em></a>) – Figure on which to place plot. If None, a new figure will be created. Default: None.</p></li>
+<li><p><strong>axes</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.5.2)"><em>matplotlib.axes.Axes</em></a>) – Axes on which to place plot. If None, a new axes will be created. Default: None.</p></li>
+<li><p><strong>figsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Figure size in inches.  If None, attempts a guess. Default: None.</p></li>
+<li><p><strong>axis_location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Location parameters for triangle plot region. If None, attempts a guess. Default: None.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Handles to the figure and dictionary of axes objects in the plot.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)">matplotlib.figure.Figure</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.uncertainties">
+<code class="sig-name descname">uncertainties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">ilist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.uncertainties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.uncertainties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the uncertainties on a subset of model parameters, both fixing
+and marginalizing over all others.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An Obsdata object containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values at which to compute uncertainties.</p></li>
+<li><p><strong>ilist</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Index or list of indicies for which to compute the marginalized uncertainties. If None will return a list of all marginalized uncertainties. Default: None.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Parameter uncertainty or list of marginalized uncertainties of desired parameters.
+SigmaM (float,list): Marginalized parameter uncertainty or list of marginalized uncertainties of desired parameters.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>SigmaF (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a>,<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.uniparameter_uncertainties">
+<code class="sig-name descname">uniparameter_uncertainties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">ilist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.uniparameter_uncertainties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.uniparameter_uncertainties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the uncertainties on a subset of model parameters, fixing all
+others. Note that this is not a covariance; each uncertainty is for a
+single parameter, fixing all others.  This is probably not what is wanted
+for forecasting, see marginalized_uncertainties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An Obsdata object containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of parameter values at which to compute uncertainties.</p></li>
+<li><p><strong>ilist</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Index or list of indicies for which to compute the uncertainties. If None will return a list of all uncertainties. Default: None.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Parameter uncertainty or list of marginalized uncertainties of desired parameters.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Sigma (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a>,<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.visibilities">
+<code class="sig-name descname">visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>User-defined function in child classes that generates visibilities
+associated with a given model image object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>V (np.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.visibility_gradients">
+<code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.visibility_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>User-defined function in child classes that generates visibility gradients
+associated with a given model image object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>Obsdata</em>) – An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)</p></li>
+<li><p><strong>p</strong> (<em>np.array</em>) – list of parameters for the model image used to create object.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of complex visibilities gradients computed at observations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>gradV (np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="devel.html" title="Developer’s Guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="userguide.html" title="User’s Guide"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ngEHTforecast 0+untagged.60.g4c1ea66.dirty documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="userguide.html" >User’s Guide</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Avery E. Broderick.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.1.
+    </div>
+  </body>
+</html>
