@@ -723,7 +723,7 @@ class FisherForecast :
         return p1,p2,csq
 
 
-    def plot_1d_forecast(self,obs,p,i1,kind='marginalized',labels=None,fig=None,axs=None,colors=None,alphas=0.25,verbosity=0,**kwargs) :
+    def plot_1d_forecast(self,obs,p,i1,kind='marginalized',labels=None,fig=None,axes=None,colors=None,alphas=0.25,verbosity=0,**kwargs) :
         """
         Plot the marginalized posterior for a single parameter for a given observation.
         
@@ -734,13 +734,13 @@ class FisherForecast :
           kind (str): Choice of what to do with other parameters. Choices are 'marginalized', 'fixed'. Default: 'marginalized'.
           labels (list,str): A list of labels for each Obsdata object. When fewer labels than observations are provided, the first set of observations are labeled. Default: None.
           fig (matplotlib.figure.Figure): Figure on which to place plot. If None, a new figure will be created. Default: None.
-          axs (matplotlib.axes.Axes): Axes on which to place plot. If None, a new axes will be created. Default: None.
+          axes (matplotlib.axes.Axes): Axes on which to place plot. If None, a new axes will be created. Default: None.
           colors (list,str): A color or list of colors for the plots. When fewer colors than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.
           alphas (list,float): An alpha value or list of alpha values for the filled portion of the plots. Default: 0.25.
           verbosity (int): Verbosity level. Default: 0.
 
         Returns:
-          (matplotlib.figure.Figure, matplotlib.axes.Axes): Handles to the figure and array of axes objects in the plot.
+          (matplotlib.figure.Figure, matplotlib.axes.Axes): Handles to the figure and axes objects in the plot.
         """
 
         if (isinstance(obs,list)) :
@@ -755,12 +755,12 @@ class FisherForecast :
         if (len(labels)<len(obslist)) :
             raise(RuntimeError("Label list must have the same size as the observation list."))
 
-        if (axs is None) :
+        if (axes is None) :
             if (fig is None) :
                 plt.figure(figsize=(5,4))
             plt.axes([0.15,0.15,0.8,0.8])
         else :
-            plt.sca(axs)
+            plt.sca(axes)
 
         if (colors is None) :
             colors = self.default_color_list
@@ -777,13 +777,13 @@ class FisherForecast :
 
         for k,obs in enumerate(obslist) :
             if (kind=='marginalized') :
-                Sigma = self.marginalized_uncertainties(obs,p)
+                Sigma = self.marginalized_uncertainties(obs,p,ilist=i1)
             elif (kind=='fixed') :
-                Sigma = self.uniparameter_uncertainties(obs,p)
+                Sigma = self.uniparameter_uncertainties(obs,p,ilist=i1)
             else :
                 raise(RuntimeError("Received unexpected value for kind, %s. Allowed values are 'fixed' and 'marginalized'."))
-            x = np.linspace(-5*Sigma[i1],5*Sigma[i1],256)
-            y = np.exp(-x**2/(2.0*Sigma[i1]**2)) / np.sqrt(2.0*np.pi*Sigma[i1]**2)
+            x = np.linspace(-5*Sigma,5*Sigma,256)
+            y = np.exp(-x**2/(2.0*Sigma**2)) / np.sqrt(2.0*np.pi*Sigma**2)
             plt.fill_between(x,y,y2=0,alpha=self._choose_from_list(alphas,k),color=self._choose_from_list(colors,k))
             plt.plot(x,y,'-',color=self._choose_from_list(colors,k),label=labels[k])
 
@@ -797,7 +797,7 @@ class FisherForecast :
         return plt.gcf(),plt.gca()
 
 
-    def plot_2d_forecast(self,obs,p,i1,i2,kind='marginalized',labels=None,fig=None,axs=None,colors=None,cmaps=None,alphas=0.75,verbosity=0,**kwargs) :
+    def plot_2d_forecast(self,obs,p,i1,i2,kind='marginalized',labels=None,fig=None,axes=None,colors=None,cmaps=None,alphas=0.75,verbosity=0,**kwargs) :
         """
         Plot the joint marginalized posterior for a pair of parameters for a given observation.
         
@@ -805,18 +805,18 @@ class FisherForecast :
           obs (list,Obsdata): An Obsdata object or list of Obsdata objects containing the observation particulars.
           p (list): List of parameter values at which to compute uncertainties.
           i1 (int): Index of first parameter to be plotted.
-          i1 (int): Index of second parameter to be plotted.
+          i2 (int): Index of second parameter to be plotted.
           kind (str): Choice of what to do with other parameters. Choices are 'marginalized', 'fixed'. Default: 'marginalized'.
           labels (list,str): A list of labels for each Obsdata object. When fewer labels than observations are provided, the first set of observations are labeled. Default: None.
           fig (matplotlib.figure.Figure): Figure on which to place plot. If None, a new figure will be created. Default: None.
-          axs (matplotlib.axes.Axes): Axes on which to place plot. If None, a new axes will be created. Default: None.
+          axes (matplotlib.axes.Axes): Axes on which to place plot. If None, a new axes will be created. Default: None.
           colors (list,str): A color or list of colors for the plots. When fewer colors than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.
           cmaps (list,matplotlib.colors.Colormap): A colormap or list of colormaps for the plots. When fewer colormaps than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.
           alphas (list,float): An alpha value or list of alpha values for the filled portion of the plots. Default: 0.75.
           verbosity (int): Verbosity level. Default: 0.
 
         Returns:
-          (matplotlib.figure.Figure, matplotlib.axes.Axes): Handles to the figure and array of axes objects in the plot.
+          (matplotlib.figure.Figure, matplotlib.axes.Axes): Handles to the figure and axes objects in the plot.
         """
 
         if (isinstance(obs,list)) :
@@ -831,12 +831,12 @@ class FisherForecast :
         if (len(labels)<len(obslist)) :
             raise(RuntimeError("Label list must have the same size as the observation list."))
 
-        if (axs is None) :
+        if (axes is None) :
             if (fig is None) :
                 plt.figure(figsize=(5,5))
             plt.axes([0.2,0.2,0.75,0.75])
         else :
-            plt.sca(axs)
+            plt.sca(axes)
 
         if (colors is None) :
             colors = self.default_color_list
@@ -873,9 +873,72 @@ class FisherForecast :
         return plt.gcf(),plt.gca()
 
 
-    def plot_triangle_forecast(ff,p,ilist,obslist,labels=None, axis_location=None, axes=None, alpha=0.75) :
+    def plot_triangle_forecast(self,obs,p,ilist=None,kind='marginalized',labels=None,colors=None,cmaps=None,alphas=0.75,fig=None,axes=None,figsize=None,axis_location=None,verbosity=0,**kwargs) :
+        """
+        Generate a triangle plot of joint posteriors for a selected list of parameter indexes.
+        
+        Args:
+          obs (list,Obsdata): An Obsdata object or list of Obsdata objects containing the observation particulars.
+          p (list): List of parameter values at which to compute uncertainties.
+          ilist (list): List of indicies of parameters to include in triangle plot. If None, includes all parameters. Default: None.
+          kind (str): Choice of what to do with other parameters. Choices are 'marginalized', 'fixed'. Default: 'marginalized'.
+          labels (list,str): A list of labels for each Obsdata object. When fewer labels than observations are provided, the first set of observations are labeled. Default: None.
+          colors (list,str): A color or list of colors for the plots. When fewer colors than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.
+          cmaps (list,matplotlib.colors.Colormap): A colormap or list of colormaps for the plots. When fewer colormaps than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.
+          alphas (list,float): An alpha value or list of alpha values for the filled portion of the plots. Default: 0.75.
+          fig (matplotlib.figure.Figure): Figure on which to place plot. If None, a new figure will be created. Default: None.
+          axes (matplotlib.axes.Axes): Axes on which to place plot. If None, a new axes will be created. Default: None.
+          figsize (list): Figure size in inches.  If None, attempts a guess. Default: None.
+          axis_location (list): Location parameters for triangle plot region. If None, attempts a guess. Default: None.
+          verbosity (int): Verbosity level. Default: 0.
 
-        figsize = plt.gcf().get_size_inches()
+        Returns:
+          (matplotlib.figure.Figure, dict): Handles to the figure and dictionary of axes objects in the plot.
+        """
+
+        if (isinstance(obs,list)) :
+            obslist = obs
+        else :
+            obslist = [obs]
+
+        if (ilist is None) :
+            ilist = np.arange(self.size)
+            
+        if (labels is None) :
+            labels = len(obslist)*[None]
+        elif (not isinstance(labels,list)) :
+            labels = [labels]
+        if (len(labels)<len(obslist)) :
+            raise(RuntimeError("Label list must have the same size as the observation list."))
+
+        if (colors is None) :
+            colors = self.default_color_list
+        elif (isinstance(colors,list)) :
+            pass
+        else :
+            colors = [colors]
+
+        if (cmaps is None) :
+            cmaps = self.default_cmap_list
+        elif (isinstance(cmaps,list)) :
+            pass
+        else :
+            cmaps = [cmaps]
+            
+        if (isinstance(alphas,list)) :
+            pass
+        else :
+            alphas = [alphas]
+            
+        if (fig is None) :
+            plt.figure(figsize=(len(ilist)*2.5,len(ilist)*2.5))
+        else :
+            plt.scf(fig)
+
+        if (figsize is None) :
+            figsize = plt.gcf().get_size_inches()
+        else :
+            plg.gcf().set_size_inches(figsize)
 
         if (axis_location is None) :
             lmarg = 0.625 # Margin in inches
@@ -891,39 +954,45 @@ class FisherForecast :
         # Number of rows/columns
         nrow = len(ilist)
 
-        # Get window size details
-        gutter_size = 0.0625 # Gutter in inches
-        x_gutter = gutter_size/figsize[0]
-        y_gutter = gutter_size/figsize[1]
-        x_window_size = (axis_location[2] - (nrow-1)*x_gutter)/float(nrow)
-        y_window_size = (axis_location[3] - (nrow-1)*y_gutter)/float(nrow)
+        # Make axes dictionary if it doesn't exist already
+        if (axes is None) :
+            # Get window size details
+            gutter_size = 0.0625 # Gutter in inches
+            x_gutter = gutter_size/figsize[0]
+            y_gutter = gutter_size/figsize[1]
+            x_window_size = (axis_location[2] - (nrow-1)*x_gutter)/float(nrow)
+            y_window_size = (axis_location[3] - (nrow-1)*y_gutter)/float(nrow)
+            
+            axes = {}
+            for j in range(nrow) :
+                for i in range(j+1) :
+                    # Find axis location with various gutters, etc.
+                    x_window_start = axis_location[0] + i*(x_gutter+x_window_size)
+                    y_window_start = axis_location[1] + axis_location[3] - y_window_size - j*(y_gutter+y_window_size)
+                    axes[i,j] = plt.axes([x_window_start, y_window_start, x_window_size, y_window_size])
 
-
-        axs = {}
-        for j in range(nrow) :
-            for i in range(j+1) :
-                # Find axis location with various gutters, etc.
-                x_window_start = axis_location[0] + i*(x_gutter+x_window_size)
-                y_window_start = axis_location[1] + axis_location[3] - y_window_size - j*(y_gutter+y_window_size)
-
-                axs[i,j] = plt.axes([x_window_start, y_window_start, x_window_size, y_window_size])
-
+        # Run over panels and plot
         xlim_dict = {}
         for k,obs in enumerate(obslist) :
-            Sigm = ff.marginalized_uncertainties(obs,p)
+            if (kind=='marginalized') :
+                Sigma = self.marginalized_uncertainties(obs,p)
+            elif (kind=='fixed') :
+                Sigma = self.uniparameter_uncertainties(obs,p)
+            else :
+                raise(RuntimeError("Received unexpected value for kind, %s. Allowed values are 'fixed' and 'marginalized'."))
 
             for j in range(nrow) :
                 jj = ilist[j]
-                xtmp = np.linspace(-3.5*Sigm[jj],3.5*Sigm[jj],256)
-                ytmp = np.exp(-xtmp**2/(2.0*Sigm[jj]**2))/np.sqrt(2.0*np.pi*Sigm[jj]**2)
-                axs[j,j].fill_between(xtmp,ytmp,y2=0,color=_ff_color_list[k%_ff_color_size],alpha=0.25)
-                axs[j,j].plot(xtmp,ytmp,color=_ff_color_list[k%_ff_color_size])
+                xtmp = np.linspace(-3.5*Sigma[jj],3.5*Sigma[jj],256)
+                ytmp = np.exp(-xtmp**2/(2.0*Sigma[jj]**2))/np.sqrt(2.0*np.pi*Sigma[jj]**2)
+                axes[j,j].fill_between(xtmp,ytmp,y2=0,color=self._choose_from_list(colors,k),alpha=self._choose_from_list(alphas,k)/3.0)
+                axes[j,j].plot(xtmp,ytmp,color=self._choose_from_list(colors,k))
 
                 if (k==0) :
-                    xlim_dict[j] = (-3.5*Sigm[jj],3.5*Sigm[jj])
+                    xlim_dict[j] = (-3.5*Sigma[jj],3.5*Sigma[jj])
                 else :
-                    if (3.5*Sigm[jj]>xlim_dict[j][1]) :
-                        xlim_dict[j] = (-3.5*Sigm[jj],3.5*Sigm[jj])                    
+                    if (3.5*Sigma[jj]>xlim_dict[j][1]) :
+                        xlim_dict[j] = (-3.5*Sigma[jj],3.5*Sigma[jj])                    
 
             for j in range(nrow) :
                 for i in range(j) :
@@ -932,11 +1001,11 @@ class FisherForecast :
                     ii = ilist[i]
                     jj = ilist[j]
 
-                    plt.sca(axs[i,j])
+                    plt.sca(axes[i,j])
 
-                    p1,p2,mcsq = ff.joint_biparameter_chisq(obs,p,ii,jj)
-                    plt.contourf(p1,p2,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=alpha,levels=[0,1,2,3])
-                    plt.contour(p1,p2,np.sqrt(mcsq),colors=_ff_color_list[k%_ff_color_size],alpha=1,levels=[0,1,2,3])
+                    p1,p2,csq = self.joint_biparameter_chisq(obs,p,ii,jj,kind=kind,verbosity=verbosity)
+                    plt.contourf(p1,p2,np.sqrt(csq),cmap=self._choose_from_list(cmaps,k),alpha=self._choose_from_list(alphas,k),levels=[0,1,2,3])
+                    plt.contour(p1,p2,np.sqrt(csq),colors=self._choose_from_list(colors,k),alpha=1,levels=[0,1,2,3])
 
                     plt.xlim(xlim_dict[i])
                     plt.ylim(xlim_dict[j])
@@ -947,31 +1016,31 @@ class FisherForecast :
 
 
         for j in range(nrow) :
-            axs[j,j].set_xlim(xlim_dict[j])
-            axs[j,j].set_ylim(bottom=0)
-            axs[j,j].set_yticks([])
+            axes[j,j].set_xlim(xlim_dict[j])
+            axes[j,j].set_ylim(bottom=0)
+            axes[j,j].set_yticks([])
 
 
         for j in range(nrow-1) :
             for i in range(j+1) :
-                axs[i,j].set_xticklabels([])
+                axes[i,j].set_xticklabels([])
 
         for j in range(nrow) :
             for i in range(1,j+1) :
-                axs[i,j].set_yticklabels([])
+                axes[i,j].set_yticklabels([])
 
         for j in range(1,nrow) :
-            axs[0,j].set_ylabel(ff.parameter_labels()[ilist[j]])
+            axes[0,j].set_ylabel(self.parameter_labels()[ilist[j]])
 
         for i in range(nrow) :
-            axs[i,nrow-1].set_xlabel(ff.parameter_labels()[ilist[i]])
+            axes[i,nrow-1].set_xlabel(self.parameter_labels()[ilist[i]])
 
 
         # Make axis for labels
-        if (not labels is None) :
+        if (not (np.array(labels)==None).all()) :
             plt.axes([0.95,0.95,0.01,0.01])
             for k in range(len(obslist)) :
-                plt.plot([],[],_ff_color_list[k%_ff_color_size],label=labels[k])
+                plt.plot([],[],color=self._choose_from_list(colors,k),label=labels[k])
             plt.gca().spines.right.set_visible(False)
             plt.gca().spines.left.set_visible(False)
             plt.gca().spines.top.set_visible(False)
@@ -981,7 +1050,7 @@ class FisherForecast :
             plt.legend(loc='upper right',bbox_to_anchor=(0,0))
 
 
-        return plt.gcf(),axs
+        return plt.gcf(),axes
 
     
     def _condition_vM(self,v,M) :
