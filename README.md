@@ -11,7 +11,7 @@ Defines a base class, FisherForecast, containing an interface and helper functio
 
 ## Getting Started
 1. Clone the FisherForecast github repository:
-> $ git clone https://github.com/aeb/FisherForecast.git
+> $ git clone https://github.com/aeb/ngEHTforecast.git
 2. Descend into the python directory:
 > $ cd python
 3. Make some plots (or just look at examples!):
