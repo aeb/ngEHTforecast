@@ -1054,6 +1054,31 @@ class FisherForecast :
 
     
     def _condition_vM(self,v,M) :
+        """
+        A helper function that conditions the vector and matrix associated 
+        with marginalization.  This conditioning does not change v.M^{-1}.v,
+        but does ensure that all quantities in the matrix multiplication
+        and matrix inversion are of similar size.  It cannot address numerical
+        instability caused by strongly correlated or nearly degenerate M.
+        
+        The components of the marginalization process assume a structure for
+        the covariance that looks like:
+
+                 ( N v.T )
+                 ( v  M  )
+
+        So, if N is an nxn array and M is an mxm array, v should be an mxn array.
+
+        The conditioning procedure is equivalent to normalizing the parameters
+        that are being marginalized by the square roots of their variances.
+
+        Args:
+          v (nd.array): Vector or matrix associated with the correlations between the parameters to be marginalized over and those to be retained.
+          M (nd.array): Covariance of the marginalized parameters.
+
+        Returns:
+          (nd.array,nd.array): Conditioned v and M. 
+        """
         # Conditions v and M to improve inversion and double-dot product performance
         il = np.arange(M.shape[0])
         dd = 1.0/np.sqrt(M[il,il])
@@ -1070,6 +1095,16 @@ class FisherForecast :
         return v,M
 
     def _choose_from_list(self,v,i) :
+        """
+        A helper function to cyclicly select from a list.
+
+        Args:
+          v (list): A list.
+          i (int): An integer index.
+
+        Returns:
+          Element of v at index i%len(v).
+        """
         return v[i%len(v)]
 
     
