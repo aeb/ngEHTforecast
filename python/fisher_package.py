@@ -31,52 +31,6 @@ def _invert_matrix(a) :
     # I = np.identity(n)
     # return linalg.solve(a, I, sym_pos = True, overwrite_b = True)
 
-
-def _double_dot_product(v,M) :
-    # Computes v.M.v
-    return np.matmul(v,np.matmul(M,v))
-    # return np.trace(np.matmul(np.outer(v,v),M))
-    # sumval = 0;
-    # for i in range(len(v)) :
-    #     for j in range(len(v)) :
-    #         sumval += v[i]*M[i,j]*v[j]
-    # return sumval
-
-def _condition_vM(v,M) :
-    # Conditions v and M to improve inversion and double-dot product performance
-    il = np.arange(M.shape[0])
-    dd = 1.0/np.sqrt(M[il,il])
-    # print("dd:------")
-    # _print_vector(dd)
-    #print("M:",M)
-    # print("M:------")
-    # _print_matrix(M)
-
-    for i in il :
-        M[i,:] = M[i,:]*dd
-        M[:,i] = M[:,i]*dd
-        
-    # print("  ------")
-    # _print_matrix(M)
-
-    #print("v:",v)
-    # print("v:------")
-    
-    if (len(v.shape)==1) :
-        # _print_vector(v)
-        v = dd*v
-        # print("  ------")
-        # _print_vector(v)
-    else :
-        # _print_matrix(v)
-        for i in np.arange(v.shape[1]) :
-            v[:,i] = v[:,i]*dd
-        # print("  ------")
-        # _print_matrix(v)
-
-    return v,M
-            
-
     
 class FisherForecast :
     """
@@ -98,6 +52,10 @@ class FisherForecast :
         self.prior_sigma_list = []
         self.stokes = 'I'
         self.covar = None
+
+        self.default_color_list = ['r','b','g','orange','purple']
+        self.default_cmap_list = ['Reds_r','Blues_r','Greens_r','Oranges_r','Purples_r']
+
         
     def visibilities(self,obs,p,verbosity=0) :
         """
@@ -517,11 +475,10 @@ class FisherForecast :
             # Minv = _invert_matrix(M)
             # mN = N - np.matmul(v,np.matmul(Minv,v))
             # print("Before mN:",mN)
-            v,M = _condition_vM(v,M)
+            v,M = self._condition_vM(v,M)
             Minv = _invert_matrix(M)
             mN = (N - np.matmul(v,np.matmul(Minv,v)))
             # print("After mN:",mN)
-            # mN = N - _double_dot_product(v,Minv)
             Sig_marg = np.sqrt(2.0/mN)
 
         else :
@@ -539,11 +496,10 @@ class FisherForecast :
                 # Minv = _invert_matrix(M)
                 # mN = N - np.matmul(v,np.matmul(Minv,v))
                 # print("Before mN:",mN)
-                v,M = _condition_vM(v,M)
+                v,M = self._condition_vM(v,M)
                 Minv = _invert_matrix(M)
                 mN = N - np.matmul(v,np.matmul(Minv,v))
                 # print("After mN:",mN)
-                # mN = N - _double_dot_product(v,Minv)
                 Sig_marg[k] = np.sqrt(2.0/mN)
                 
         return Sig_marg
@@ -579,7 +535,7 @@ class FisherForecast :
             r = C[ini,:][:,ilist]
             m = C[ini,:][:,ini]
             # print("Before mN:",n - np.matmul(r.T,np.matmul(_invert_matrix(m),r)))
-            r,m = _condition_vM(r,m)
+            r,m = self._condition_vM(r,m)
             # print("After mN:",n - np.matmul(r.T,np.matmul(_invert_matrix(m),r)))
             # print("Shapes:",n.shape,r.shape,m.shape)
             return n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
@@ -619,10 +575,9 @@ class FisherForecast :
             M = C[ini,:][:,ini]
             v = C[i,ini]
             N = C[i][i]
-            v,M = _condition_vM(v,M)
+            v,M = self._condition_vM(v,M)
             Minv = _invert_matrix(M)
             mN = N - np.matmul(v,np.matmul(Minv,v))
-            # mN = N - _double_dot_product(v,Minv)
             Sig_uni[i] = np.sqrt(2.0/N)
             Sig_marg[i] = np.sqrt(2.0/mN)
         else :            
@@ -640,10 +595,9 @@ class FisherForecast :
                 M = C[ini,:][:,ini]
                 v = C[i,ini]
                 N = C[i][i]
-                v,M = _condition_vM(v,M)
+                v,M = self._condition_vM(v,M)
                 Minv = _invert_matrix(M)
                 mN = N - np.matmul(v,np.matmul(Minv,v))
-                # mN = N - _double_dot_product(v,Minv)
                 Sig_uni[i] = np.sqrt(2.0/N)
                 Sig_marg[i] = np.sqrt(2.0/mN)
 
@@ -716,7 +670,7 @@ class FisherForecast :
             # print(vv[:,0],v1)
             # print(vv[:,1],v2)
             # print("  =================")
-            vv,M = _condition_vM(vv,M)
+            vv,M = self._condition_vM(vv,M)
             # print("  =================")
             v1 = vv[:,0]
             v2 = vv[:,1]
@@ -769,6 +723,287 @@ class FisherForecast :
         return p1,p2,csq
 
 
+    def plot_1d_forecast(self,obs,p,i1,kind='marginalized',labels=None,fig=None,axs=None,colors=None,alphas=0.25,verbosity=0,**kwargs) :
+        """
+        Plot the marginalized posterior for a single parameter for a given observation.
+        
+        Args:
+          obs (list,Obsdata): An Obsdata object or list of Obsdata objects containing the observation particulars.
+          p (list): List of parameter values at which to compute uncertainties.
+          i1 (int): Index of parameter to be plotted.
+          kind (str): Choice of what to do with other parameters. Choices are 'marginalized', 'fixed'. Default: 'marginalized'.
+          labels (list,str): A list of labels for each Obsdata object. When fewer labels than observations are provided, the first set of observations are labeled. Default: None.
+          fig (matplotlib.figure.Figure): Figure on which to place plot. If None, a new figure will be created. Default: None.
+          axs (matplotlib.axes.Axes): Axes on which to place plot. If None, a new axes will be created. Default: None.
+          colors (list,str): A color or list of colors for the plots. When fewer colors than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.
+          alphas (list,float): An alpha value or list of alpha values for the filled portion of the plots. Default: 0.25.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          (matplotlib.figure.Figure, matplotlib.axes.Axes): Handles to the figure and array of axes objects in the plot.
+        """
+
+        if (isinstance(obs,list)) :
+            obslist = obs
+        else :
+            obslist = [obs]
+
+        if (labels is None) :
+            labels = len(obslist)*[None]
+        elif (not isinstance(labels,list)) :
+            labels = [labels]
+        if (len(labels)<len(obslist)) :
+            raise(RuntimeError("Label list must have the same size as the observation list."))
+
+        if (axs is None) :
+            if (fig is None) :
+                plt.figure(figsize=(5,4))
+            plt.axes([0.15,0.15,0.8,0.8])
+        else :
+            plt.sca(axs)
+
+        if (colors is None) :
+            colors = self.default_color_list
+        elif (isinstance(colors,list)) :
+            pass
+        else :
+            colors = [colors]
+
+        if (isinstance(alphas,list)) :
+            pass
+        else :
+            alphas = [alphas]
+            
+
+        for k,obs in enumerate(obslist) :
+            if (kind=='marginalized') :
+                Sigma = self.marginalized_uncertainties(obs,p)
+            elif (kind=='fixed') :
+                Sigma = self.uniparameter_uncertainties(obs,p)
+            else :
+                raise(RuntimeError("Received unexpected value for kind, %s. Allowed values are 'fixed' and 'marginalized'."))
+            x = np.linspace(-5*Sigma[i1],5*Sigma[i1],256)
+            y = np.exp(-x**2/(2.0*Sigma[i1]**2)) / np.sqrt(2.0*np.pi*Sigma[i1]**2)
+            plt.fill_between(x,y,y2=0,alpha=self._choose_from_list(alphas,k),color=self._choose_from_list(colors,k))
+            plt.plot(x,y,'-',color=self._choose_from_list(colors,k),label=labels[k])
+
+        plt.xlabel(self.parameter_labels()[i1])
+        plt.yticks([])
+        plt.ylim(bottom=0)
+
+        if (not (np.array(labels)==None).all()) :
+            plt.legend()
+
+        return plt.gcf(),plt.gca()
+
+
+    def plot_2d_forecast(self,obs,p,i1,i2,kind='marginalized',labels=None,fig=None,axs=None,colors=None,cmaps=None,alphas=0.75,verbosity=0,**kwargs) :
+        """
+        Plot the joint marginalized posterior for a pair of parameters for a given observation.
+        
+        Args:
+          obs (list,Obsdata): An Obsdata object or list of Obsdata objects containing the observation particulars.
+          p (list): List of parameter values at which to compute uncertainties.
+          i1 (int): Index of first parameter to be plotted.
+          i1 (int): Index of second parameter to be plotted.
+          kind (str): Choice of what to do with other parameters. Choices are 'marginalized', 'fixed'. Default: 'marginalized'.
+          labels (list,str): A list of labels for each Obsdata object. When fewer labels than observations are provided, the first set of observations are labeled. Default: None.
+          fig (matplotlib.figure.Figure): Figure on which to place plot. If None, a new figure will be created. Default: None.
+          axs (matplotlib.axes.Axes): Axes on which to place plot. If None, a new axes will be created. Default: None.
+          colors (list,str): A color or list of colors for the plots. When fewer colors than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.
+          cmaps (list,matplotlib.colors.Colormap): A colormap or list of colormaps for the plots. When fewer colormaps than observations are provided, they will be cycled through. If None, a default list will be used. Default: None.
+          alphas (list,float): An alpha value or list of alpha values for the filled portion of the plots. Default: 0.75.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          (matplotlib.figure.Figure, matplotlib.axes.Axes): Handles to the figure and array of axes objects in the plot.
+        """
+
+        if (isinstance(obs,list)) :
+            obslist = obs
+        else :
+            obslist = [obs]
+
+        if (labels is None) :
+            labels = len(obslist)*[None]
+        elif (not isinstance(labels,list)) :
+            labels = [labels]
+        if (len(labels)<len(obslist)) :
+            raise(RuntimeError("Label list must have the same size as the observation list."))
+
+        if (axs is None) :
+            if (fig is None) :
+                plt.figure(figsize=(5,5))
+            plt.axes([0.2,0.2,0.75,0.75])
+        else :
+            plt.sca(axs)
+
+        if (colors is None) :
+            colors = self.default_color_list
+        elif (isinstance(colors,list)) :
+            pass
+        else :
+            colors = [colors]
+
+        if (cmaps is None) :
+            cmaps = self.default_cmap_list
+        elif (isinstance(cmaps,list)) :
+            pass
+        else :
+            cmaps = [cmaps]
+            
+        if (isinstance(alphas,list)) :
+            pass
+        else :
+            alphas = [alphas]
+
+        for k,obs in enumerate(obslist) :
+            d,w,csq = self.joint_biparameter_chisq(obs,p,i1,i2,verbosity=verbosity,kind=kind,**kwargs)
+            plt.contourf(d,w,np.sqrt(csq),cmap=self._choose_from_list(cmaps,k),alpha=self._choose_from_list(alphas,k),levels=[0,1,2,3])
+            plt.contour(d,w,np.sqrt(csq),colors=self._choose_from_list(colors,k),alpha=1,levels=[0,1,2,3])
+            plt.plot([],[],'-',color=self._choose_from_list(colors,k),label=labels[k])
+
+        plt.xlabel(self.parameter_labels()[i1])
+        plt.ylabel(self.parameter_labels()[i2])
+        plt.grid(True,alpha=0.25)
+
+        if (not (np.array(labels)==None).all()) :
+            plt.legend()
+
+        return plt.gcf(),plt.gca()
+
+
+    def plot_triangle_forecast(ff,p,ilist,obslist,labels=None, axis_location=None, axes=None, alpha=0.75) :
+
+        figsize = plt.gcf().get_size_inches()
+
+        if (axis_location is None) :
+            lmarg = 0.625 # Margin in inches
+            rmarg = 0.625 # Margin in inches
+            tmarg = 0.625 # Margin in inches
+            bmarg = 0.625 # Margin in inches
+            ax0 = lmarg/figsize[0]
+            ay0 = bmarg/figsize[1]
+            axw = (figsize[0]-lmarg-rmarg)/figsize[0]
+            ayw = (figsize[1]-tmarg-bmarg)/figsize[1]
+            axis_location = [ax0, ay0, axw, ayw]
+
+        # Number of rows/columns
+        nrow = len(ilist)
+
+        # Get window size details
+        gutter_size = 0.0625 # Gutter in inches
+        x_gutter = gutter_size/figsize[0]
+        y_gutter = gutter_size/figsize[1]
+        x_window_size = (axis_location[2] - (nrow-1)*x_gutter)/float(nrow)
+        y_window_size = (axis_location[3] - (nrow-1)*y_gutter)/float(nrow)
+
+
+        axs = {}
+        for j in range(nrow) :
+            for i in range(j+1) :
+                # Find axis location with various gutters, etc.
+                x_window_start = axis_location[0] + i*(x_gutter+x_window_size)
+                y_window_start = axis_location[1] + axis_location[3] - y_window_size - j*(y_gutter+y_window_size)
+
+                axs[i,j] = plt.axes([x_window_start, y_window_start, x_window_size, y_window_size])
+
+        xlim_dict = {}
+        for k,obs in enumerate(obslist) :
+            Sigm = ff.marginalized_uncertainties(obs,p)
+
+            for j in range(nrow) :
+                jj = ilist[j]
+                xtmp = np.linspace(-3.5*Sigm[jj],3.5*Sigm[jj],256)
+                ytmp = np.exp(-xtmp**2/(2.0*Sigm[jj]**2))/np.sqrt(2.0*np.pi*Sigm[jj]**2)
+                axs[j,j].fill_between(xtmp,ytmp,y2=0,color=_ff_color_list[k%_ff_color_size],alpha=0.25)
+                axs[j,j].plot(xtmp,ytmp,color=_ff_color_list[k%_ff_color_size])
+
+                if (k==0) :
+                    xlim_dict[j] = (-3.5*Sigm[jj],3.5*Sigm[jj])
+                else :
+                    if (3.5*Sigm[jj]>xlim_dict[j][1]) :
+                        xlim_dict[j] = (-3.5*Sigm[jj],3.5*Sigm[jj])                    
+
+            for j in range(nrow) :
+                for i in range(j) :
+
+                    # ii = ilist[ni-i]
+                    ii = ilist[i]
+                    jj = ilist[j]
+
+                    plt.sca(axs[i,j])
+
+                    p1,p2,mcsq = ff.joint_biparameter_chisq(obs,p,ii,jj)
+                    plt.contourf(p1,p2,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=alpha,levels=[0,1,2,3])
+                    plt.contour(p1,p2,np.sqrt(mcsq),colors=_ff_color_list[k%_ff_color_size],alpha=1,levels=[0,1,2,3])
+
+                    plt.xlim(xlim_dict[i])
+                    plt.ylim(xlim_dict[j])
+
+                    plt.grid(True,alpha=0.25)
+
+                    # plt.text(0.05,0.05,'%i,%i / %i,%i'%(i,j,ii,jj),transform=plt.gca().transAxes)
+
+
+        for j in range(nrow) :
+            axs[j,j].set_xlim(xlim_dict[j])
+            axs[j,j].set_ylim(bottom=0)
+            axs[j,j].set_yticks([])
+
+
+        for j in range(nrow-1) :
+            for i in range(j+1) :
+                axs[i,j].set_xticklabels([])
+
+        for j in range(nrow) :
+            for i in range(1,j+1) :
+                axs[i,j].set_yticklabels([])
+
+        for j in range(1,nrow) :
+            axs[0,j].set_ylabel(ff.parameter_labels()[ilist[j]])
+
+        for i in range(nrow) :
+            axs[i,nrow-1].set_xlabel(ff.parameter_labels()[ilist[i]])
+
+
+        # Make axis for labels
+        if (not labels is None) :
+            plt.axes([0.95,0.95,0.01,0.01])
+            for k in range(len(obslist)) :
+                plt.plot([],[],_ff_color_list[k%_ff_color_size],label=labels[k])
+            plt.gca().spines.right.set_visible(False)
+            plt.gca().spines.left.set_visible(False)
+            plt.gca().spines.top.set_visible(False)
+            plt.gca().spines.bottom.set_visible(False)
+            plt.gca().set_xticks([])
+            plt.gca().set_yticks([])
+            plt.legend(loc='upper right',bbox_to_anchor=(0,0))
+
+
+        return plt.gcf(),axs
+
+    
+    def _condition_vM(self,v,M) :
+        # Conditions v and M to improve inversion and double-dot product performance
+        il = np.arange(M.shape[0])
+        dd = 1.0/np.sqrt(M[il,il])
+        for i in il :
+            M[i,:] = M[i,:]*dd
+            M[:,i] = M[:,i]*dd
+
+        if (len(v.shape)==1) :
+            v = dd*v
+        else :
+            for i in np.arange(v.shape[1]) :
+                v[:,i] = v[:,i]*dd
+
+        return v,M
+
+    def _choose_from_list(self,v,i) :
+        return v[i%len(v)]
+
+    
 class FF_complex_gains_single_epoch(FisherForecast) :
     """
     FisherForecast with complex gain reconstruction assuming a single epoch.
@@ -1351,7 +1586,7 @@ class FF_complex_gains(FisherForecast) :
                     n = covar_wgs[:self.ff.size,:self.ff.size]
                     r = covar_wgs[self.ff.size:,:self.ff.size]
                     m = covar_wgs[self.ff.size:,self.ff.size:]
-                    r,m = _condition_vM(r,m)
+                    r,m = self._condition_vM(r,m)
                     mn = n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
                     
                     if (verbosity>1) :
@@ -1420,7 +1655,7 @@ class FF_complex_gains(FisherForecast) :
                     n = covar_wgs[:self.ff.size,:self.ff.size]
                     r = covar_wgs[self.ff.size:,:self.ff.size]
                     m = covar_wgs[self.ff.size:,self.ff.size:]
-                    r,m = _condition_vM(r,m)
+                    r,m = self._condition_vM(r,m)
                     mn = n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
 
                     self.covar = self.covar + 0.5*(mn+mn.T)
@@ -2943,169 +3178,6 @@ class FF_sum(FisherForecast) :
     
 
 
-_ff_color_list = ['r','b','g','orange','purple']
-_ff_cmap_list = ['Reds_r','Blues_r','Greens_r','Oranges_r','Purples_r']
-_ff_color_size = 5
-    
-def plot_1d_forecast(ff,p,i1,obslist,labels=None) :
-    
-    if (labels is None) :
-        labels = len(obslist)*[None]
-    
-    plt.figure(figsize=(5,4))
-    plt.axes([0.15,0.15,0.8,0.8])
-    
-    n = 256
-    
-    sigdict = {}
-    for k,obs in enumerate(obslist) :
-        _,Sigm = ff.uncertainties(obs,p)
-
-        x = np.linspace(-5*Sigm[i1],5*Sigm[i1],n)
-        y = np.exp(-x**2/(2.0*Sigm[i1]**2)) / np.sqrt(2.0*np.pi*Sigm[i1]**2)
-
-        plt.fill_between(x,y,y2=0,alpha=0.25,color=_ff_color_list[k%_ff_color_size])
-        plt.plot(x,y,'-',color=_ff_color_list[k%_ff_color_size],label=labels[k])
-
-    plt.xlabel(ff.parameter_labels()[i1])
-    plt.yticks([])
-    plt.ylim(bottom=0)
-    plt.legend()
-
-    return plt.gcf(),plt.gca()
-
-
-def plot_2d_forecast(ff,p,i1,i2,obslist,labels=None,verbosity=0,**kwargs) :
-    
-    if (labels is None) :
-        labels = len(obslist)*[None]
-
-    plt.figure(figsize=(5,5))
-    plt.axes([0.2,0.2,0.75,0.75])
-
-    for k,obs in enumerate(obslist) :
-        d,w,mcsq = ff.joint_biparameter_chisq(obs,p,i1,i2,verbosity=verbosity,**kwargs)
-        plt.contourf(d,w,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=0.75,levels=[0,1,2,3])
-        plt.contour(d,w,np.sqrt(mcsq),colors=_ff_color_list[k%_ff_color_size],alpha=1,levels=[0,1,2,3])
-        plt.plot([],[],'-',color=_ff_color_list[k%_ff_color_size],label=labels[k])
-    
-    plt.xlabel(ff.parameter_labels()[i1])
-    plt.ylabel(ff.parameter_labels()[i2])
-    plt.grid(True,alpha=0.25)
-    plt.legend()
-
-    return plt.gcf(),plt.gca()
-
-
-def plot_triangle_forecast(ff,p,ilist,obslist,labels=None, axis_location=None, axes=None, alpha=0.75) :
-
-    figsize = plt.gcf().get_size_inches()
-    
-    if (axis_location is None) :
-        lmarg = 0.625 # Margin in inches
-        rmarg = 0.625 # Margin in inches
-        tmarg = 0.625 # Margin in inches
-        bmarg = 0.625 # Margin in inches
-        ax0 = lmarg/figsize[0]
-        ay0 = bmarg/figsize[1]
-        axw = (figsize[0]-lmarg-rmarg)/figsize[0]
-        ayw = (figsize[1]-tmarg-bmarg)/figsize[1]
-        axis_location = [ax0, ay0, axw, ayw]
-
-    # Number of rows/columns
-    nrow = len(ilist)
-
-    # Get window size details
-    gutter_size = 0.0625 # Gutter in inches
-    x_gutter = gutter_size/figsize[0]
-    y_gutter = gutter_size/figsize[1]
-    x_window_size = (axis_location[2] - (nrow-1)*x_gutter)/float(nrow)
-    y_window_size = (axis_location[3] - (nrow-1)*y_gutter)/float(nrow)
-
-
-    axs = {}
-    for j in range(nrow) :
-        for i in range(j+1) :
-            # Find axis location with various gutters, etc.
-            x_window_start = axis_location[0] + i*(x_gutter+x_window_size)
-            y_window_start = axis_location[1] + axis_location[3] - y_window_size - j*(y_gutter+y_window_size)
-            
-            axs[i,j] = plt.axes([x_window_start, y_window_start, x_window_size, y_window_size])
-
-    xlim_dict = {}
-    for k,obs in enumerate(obslist) :
-        Sigm = ff.marginalized_uncertainties(obs,p)
-
-        for j in range(nrow) :
-            jj = ilist[j]
-            xtmp = np.linspace(-3.5*Sigm[jj],3.5*Sigm[jj],256)
-            ytmp = np.exp(-xtmp**2/(2.0*Sigm[jj]**2))/np.sqrt(2.0*np.pi*Sigm[jj]**2)
-            axs[j,j].fill_between(xtmp,ytmp,y2=0,color=_ff_color_list[k%_ff_color_size],alpha=0.25)
-            axs[j,j].plot(xtmp,ytmp,color=_ff_color_list[k%_ff_color_size])
-
-            if (k==0) :
-                xlim_dict[j] = (-3.5*Sigm[jj],3.5*Sigm[jj])
-            else :
-                if (3.5*Sigm[jj]>xlim_dict[j][1]) :
-                    xlim_dict[j] = (-3.5*Sigm[jj],3.5*Sigm[jj])                    
-
-        for j in range(nrow) :
-            for i in range(j) :
-                
-                # ii = ilist[ni-i]
-                ii = ilist[i]
-                jj = ilist[j]
-
-                plt.sca(axs[i,j])
-        
-                p1,p2,mcsq = ff.joint_biparameter_chisq(obs,p,ii,jj)
-                plt.contourf(p1,p2,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=alpha,levels=[0,1,2,3])
-                plt.contour(p1,p2,np.sqrt(mcsq),colors=_ff_color_list[k%_ff_color_size],alpha=1,levels=[0,1,2,3])
-
-                plt.xlim(xlim_dict[i])
-                plt.ylim(xlim_dict[j])
-
-                plt.grid(True,alpha=0.25)
-
-                # plt.text(0.05,0.05,'%i,%i / %i,%i'%(i,j,ii,jj),transform=plt.gca().transAxes)
-
-                
-    for j in range(nrow) :
-        axs[j,j].set_xlim(xlim_dict[j])
-        axs[j,j].set_ylim(bottom=0)
-        axs[j,j].set_yticks([])
-
-        
-    for j in range(nrow-1) :
-        for i in range(j+1) :
-            axs[i,j].set_xticklabels([])
-            
-    for j in range(nrow) :
-        for i in range(1,j+1) :
-            axs[i,j].set_yticklabels([])
-
-    for j in range(1,nrow) :
-        axs[0,j].set_ylabel(ff.parameter_labels()[ilist[j]])
-        
-    for i in range(nrow) :
-        axs[i,nrow-1].set_xlabel(ff.parameter_labels()[ilist[i]])
-
-
-    # Make axis for labels
-    if (not labels is None) :
-        plt.axes([0.95,0.95,0.01,0.01])
-        for k in range(len(obslist)) :
-            plt.plot([],[],_ff_color_list[k%_ff_color_size],label=labels[k])
-        plt.gca().spines.right.set_visible(False)
-        plt.gca().spines.left.set_visible(False)
-        plt.gca().spines.top.set_visible(False)
-        plt.gca().spines.bottom.set_visible(False)
-        plt.gca().set_xticks([])
-        plt.gca().set_yticks([])
-        plt.legend(loc='upper right',bbox_to_anchor=(0,0))
-
-        
-    return plt.gcf(),axs
 
 
 if __name__ == "__main__" :
