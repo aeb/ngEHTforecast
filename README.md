@@ -1,24 +1,5 @@
-# FisherForecast
-A small library of useful functions for making Fisher matrix-type estimates of the precision for various observation/model combinations.
+# ngEHTforecast
+A set of tools written in Python for rapid forecasting of the science capabilities of the next-generation Event Horizon Telescope (ngEHT).
 
-- [Summary Description](#Summary-Description)
-- [Getting Started](#Getting-Started)
-
-
-## Summary Description
-Defines a base class, FisherForecast, containing an interface and helper functions for making forecasts of the ability of ngEHT to constrain parameterized models.
-
-
-## Getting Started
-1. Clone the FisherForecast github repository:
-> $ git clone https://github.com/aeb/ngEHTforecast.git
-2. Descend into the python directory:
-> $ cd python
-3. Make some plots (or just look at examples!):
-> $ python fisher_package.py
-
-> $ python ring_example.py
-
-> $ python binary_example.py
-
-
+# Documentation
+Information about installation, usage, and development advice can be found in the [online documentation](https://aeb.github.io/ngEHTforecast).
