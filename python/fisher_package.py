@@ -718,8 +718,8 @@ class FisherForecast :
             # print("  =================")
             vv,M = _condition_vM(vv,M)
             # print("  =================")
-            # v1 = vv[:,0]
-            # v2 = vv[:,1]
+            v1 = vv[:,0]
+            v2 = vv[:,1]
             # print(v1.shape,v2.shape)
             
             Minv = _invert_matrix(M)
