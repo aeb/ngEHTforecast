@@ -42,6 +42,42 @@ def _double_dot_product(v,M) :
     #         sumval += v[i]*M[i,j]*v[j]
     # return sumval
 
+def _condition_vM(v,M) :
+    # Conditions v and M to improve inversion and double-dot product performance
+    il = np.arange(M.shape[0])
+    dd = 1.0/np.sqrt(M[il,il])
+    # print("dd:------")
+    # _print_vector(dd)
+    #print("M:",M)
+    # print("M:------")
+    # _print_matrix(M)
+
+    for i in il :
+        M[i,:] = M[i,:]*dd
+        M[:,i] = M[:,i]*dd
+        
+    # print("  ------")
+    # _print_matrix(M)
+
+    #print("v:",v)
+    # print("v:------")
+    
+    if (len(v.shape)==1) :
+        # _print_vector(v)
+        v = dd*v
+        # print("  ------")
+        # _print_vector(v)
+    else :
+        # _print_matrix(v)
+        for i in np.arange(v.shape[1]) :
+            v[:,i] = v[:,i]*dd
+        # print("  ------")
+        # _print_matrix(v)
+
+    return v,M
+            
+
+    
 class FisherForecast :
     """
     Class that collects and contains information for making Fisher-matrix type
@@ -478,8 +514,13 @@ class FisherForecast :
             M = C[ini,:][:,ini]
             v = C[i,ini]
             N = C[i][i]
+            # Minv = _invert_matrix(M)
+            # mN = N - np.matmul(v,np.matmul(Minv,v))
+            # print("Before mN:",mN)
+            v,M = _condition_vM(v,M)
             Minv = _invert_matrix(M)
-            mN = N - np.matmul(v,np.matmul(Minv,v))
+            mN = (N - np.matmul(v,np.matmul(Minv,v)))
+            # print("After mN:",mN)
             # mN = N - _double_dot_product(v,Minv)
             Sig_marg = np.sqrt(2.0/mN)
 
@@ -495,8 +536,13 @@ class FisherForecast :
                 M = C[ini,:][:,ini]
                 v = C[ini,i]
                 N = C[i][i]
+                # Minv = _invert_matrix(M)
+                # mN = N - np.matmul(v,np.matmul(Minv,v))
+                # print("Before mN:",mN)
+                v,M = _condition_vM(v,M)
                 Minv = _invert_matrix(M)
                 mN = N - np.matmul(v,np.matmul(Minv,v))
+                # print("After mN:",mN)
                 # mN = N - _double_dot_product(v,Minv)
                 Sig_marg[k] = np.sqrt(2.0/mN)
                 
@@ -532,8 +578,10 @@ class FisherForecast :
             n = C[ilist,:][:,ilist]
             r = C[ini,:][:,ilist]
             m = C[ini,:][:,ini]
-
-            print("Shapes:",n.shape,r.shape,m.shape)
+            # print("Before mN:",n - np.matmul(r.T,np.matmul(_invert_matrix(m),r)))
+            r,m = _condition_vM(r,m)
+            # print("After mN:",n - np.matmul(r.T,np.matmul(_invert_matrix(m),r)))
+            # print("Shapes:",n.shape,r.shape,m.shape)
             return n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
             
     
@@ -571,6 +619,7 @@ class FisherForecast :
             M = C[ini,:][:,ini]
             v = C[i,ini]
             N = C[i][i]
+            v,M = _condition_vM(v,M)
             Minv = _invert_matrix(M)
             mN = N - np.matmul(v,np.matmul(Minv,v))
             # mN = N - _double_dot_product(v,Minv)
@@ -591,6 +640,7 @@ class FisherForecast :
                 M = C[ini,:][:,ini]
                 v = C[i,ini]
                 N = C[i][i]
+                v,M = _condition_vM(v,M)
                 Minv = _invert_matrix(M)
                 mN = N - np.matmul(v,np.matmul(Minv,v))
                 # mN = N - _double_dot_product(v,Minv)
@@ -642,7 +692,7 @@ class FisherForecast :
         N2 = C[i2][i2]
         C12 = C[i1][i2]
 
-        if (kind.lower()=='marginalized') :
+        if (kind.lower()=='fixed') :
             pass
         
         elif (kind.lower()=='marginalized') :
@@ -655,7 +705,23 @@ class FisherForecast :
                 _print_vector(v1)
                 print("Subvectors v2:")
                 _print_vector(v2)
-        
+
+            # print("i1,i2:",i1,i2)
+            # print(v1.shape,v2.shape)
+            # print(v1)
+            # print(v2)
+            vv = np.vstack([v1,v2]).T
+            # print(vv.shape)
+            # print(vv)
+            # print(vv[:,0],v1)
+            # print(vv[:,1],v2)
+            # print("  =================")
+            vv,M = _condition_vM(vv,M)
+            # print("  =================")
+            # v1 = vv[:,0]
+            # v2 = vv[:,1]
+            # print(v1.shape,v2.shape)
+            
             Minv = _invert_matrix(M)
             N1 = N1 - np.matmul(v1.T,np.matmul(Minv,v1))
             N2 = N2 - np.matmul(v2.T,np.matmul(Minv,v2))
@@ -1285,7 +1351,7 @@ class FF_complex_gains(FisherForecast) :
                     n = covar_wgs[:self.ff.size,:self.ff.size]
                     r = covar_wgs[self.ff.size:,:self.ff.size]
                     m = covar_wgs[self.ff.size:,self.ff.size:]
-
+                    r,m = _condition_vM(r,m)
                     mn = n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
                     
                     if (verbosity>1) :
@@ -1354,7 +1420,7 @@ class FF_complex_gains(FisherForecast) :
                     n = covar_wgs[:self.ff.size,:self.ff.size]
                     r = covar_wgs[self.ff.size:,:self.ff.size]
                     m = covar_wgs[self.ff.size:,self.ff.size:]
-
+                    r,m = _condition_vM(r,m)
                     mn = n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
 
                     self.covar = self.covar + 0.5*(mn+mn.T)
@@ -2882,7 +2948,7 @@ _ff_cmap_list = ['Reds_r','Blues_r','Greens_r','Oranges_r','Purples_r']
 _ff_color_size = 5
     
 def plot_1d_forecast(ff,p,i1,obslist,labels=None) :
-
+    
     if (labels is None) :
         labels = len(obslist)*[None]
     
@@ -2918,7 +2984,7 @@ def plot_2d_forecast(ff,p,i1,i2,obslist,labels=None,verbosity=0,**kwargs) :
     plt.axes([0.2,0.2,0.75,0.75])
 
     for k,obs in enumerate(obslist) :
-        d,w,csq,mcsq = ff.joint_biparameter_chisq(obs,p,i1,i2,verbosity=verbosity,**kwargs)
+        d,w,mcsq = ff.joint_biparameter_chisq(obs,p,i1,i2,verbosity=verbosity,**kwargs)
         plt.contourf(d,w,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=0.75,levels=[0,1,2,3])
         plt.contour(d,w,np.sqrt(mcsq),colors=_ff_color_list[k%_ff_color_size],alpha=1,levels=[0,1,2,3])
         plt.plot([],[],'-',color=_ff_color_list[k%_ff_color_size],label=labels[k])
@@ -2968,7 +3034,7 @@ def plot_triangle_forecast(ff,p,ilist,obslist,labels=None, axis_location=None, a
 
     xlim_dict = {}
     for k,obs in enumerate(obslist) :
-        _,Sigm = ff.uncertainties(obs,p)
+        Sigm = ff.marginalized_uncertainties(obs,p)
 
         for j in range(nrow) :
             jj = ilist[j]
@@ -2992,7 +3058,7 @@ def plot_triangle_forecast(ff,p,ilist,obslist,labels=None, axis_location=None, a
 
                 plt.sca(axs[i,j])
         
-                p1,p2,csq,mcsq = ff.joint_biparameter_chisq(obs,p,ii,jj)
+                p1,p2,mcsq = ff.joint_biparameter_chisq(obs,p,ii,jj)
                 plt.contourf(p1,p2,np.sqrt(mcsq),cmap=_ff_cmap_list[k%_ff_color_size],alpha=alpha,levels=[0,1,2,3])
                 plt.contour(p1,p2,np.sqrt(mcsq),colors=_ff_color_list[k%_ff_color_size],alpha=1,levels=[0,1,2,3])
 
