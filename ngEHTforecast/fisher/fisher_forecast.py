@@ -26,6 +26,11 @@ def _invert_matrix(a) :
     # I = np.identity(n)
     # return linalg.solve(a, I, sym_pos = True, overwrite_b = True)
 
+# Some constants
+uas2rad = np.pi/180./3600e6            
+rad2uas = 1.0/(uas2rad)
+sig2fwhm = np.sqrt(8.0*np.log(2.0))
+fwhm2sig = 1.0/sig2fwhm    
     
 class FisherForecast :
     """
@@ -199,7 +204,7 @@ class FisherForecast :
         x1d = np.fft.fftshift(np.fft.fftfreq(I.shape[0],np.abs(u[1,1]-u[0,0])))
         y1d = np.fft.fftshift(np.fft.fftfreq(I.shape[1],np.abs(v[1,1]-v[0,0])))
 
-        x,y = np.meshgrid(x1d,y1d)
+        x,y = np.meshgrid(x1d,y1d,indexing='ij')
         x = x/uas2rad
         y = y/uas2rad
 
@@ -258,6 +263,8 @@ class FisherForecast :
         plt.xlabel(r'$\Delta{\rm RA}~(\mu{\rm as})$')
         plt.ylabel(r'$\Delta{\rm Dec}~(\mu{\rm as})$')
 
+        plt.gca().invert_xaxis()
+        
         cbax = plt.axes([0.8*5/6.5+0.05+0.15,0.15,0.05,0.8])
         plt.colorbar(cax=cbax)
         cbax.set_ylabel(fu,rotation=-90,ha='center',va='bottom')

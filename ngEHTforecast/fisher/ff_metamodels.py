@@ -128,7 +128,7 @@ class FF_sum(ff.FisherForecast) :
                 else :
                     dx = p[k+ff.size]
                     dy = p[k+ff.size+1]
-                    shift_factor = np.exp( -2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
+                    shift_factor = np.exp( 2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
                     k += ff.size + 2
                     
                 V = V + ff.visibilities(obs,q,verbosity=verbosity) * shift_factor
@@ -148,7 +148,7 @@ class FF_sum(ff.FisherForecast) :
                 else :
                     dx = p[k+ff.size]
                     dy = p[k+ff.size+1]
-                    shift_factor = np.exp( -2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
+                    shift_factor = np.exp( 2.0j*np.pi*(obs.data['u']*dx+obs.data['v']*dy)*uas2rad )
                     k += ff.size + 2
                     
                 RR_prev, LL_prev, RL_prev, LR_prev = ff.visibilities(obs,q,verbosity=verbosity)
@@ -189,7 +189,7 @@ class FF_sum(ff.FisherForecast) :
                     dx = p[k+ff.size]
                     dy = p[k+ff.size+1]
                     V = ff.visibilities(obs,q,verbosity=verbosity)
-                    shift_factor = np.exp( -2.0j*np.pi*(u*dx+v*dy)*uas2rad )
+                    shift_factor = np.exp( 2.0j*np.pi*(u*dx+v*dy)*uas2rad )
                     k += ff.size + 2
                 
                 for gV in ff.visibility_gradients(obs,q,verbosity=verbosity).T :
@@ -219,7 +219,7 @@ class FF_sum(ff.FisherForecast) :
                     dx = p[k+ff.size]
                     dy = p[k+ff.size+1]
                     RR,LL,RL,LR = ff.visibilities(obs,q,verbosity=verbosity)
-                    shift_factor = np.exp( -2.0j*np.pi*(u*dx+v*dy)*uas2rad )
+                    shift_factor = np.exp( 2.0j*np.pi*(u*dx+v*dy)*uas2rad )
                     k += ff.size + 2
                 
                 gradRR_prev, gradLL_prev, gradRL_prev, gradLR_prev = ff.visibility_gradients(obs,q,verbosity=verbosity)
