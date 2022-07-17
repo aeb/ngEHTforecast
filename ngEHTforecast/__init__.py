@@ -18,10 +18,10 @@ __bibtex__ = r"""@Article{Broderick \& Pesce, 2022,
   %%% Fill in from ADS!
 }"""
 
-
 __all__=['fisher', 'data']
+print("FOO")
 from . import *
-
+print("BAR")
 
 from ._version import get_versions
 __version__ = get_versions()['version']

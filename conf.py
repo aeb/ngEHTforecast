@@ -14,7 +14,8 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('./ngEHTforecast/'))
-#sys.path.insert(0, os.path.abspath('./scripts/'))
+sys.path.insert(0, os.path.abspath('./examples/'))
+# sys.path.insert(0, os.path.abspath('./scripts/'))
 print("Documentation generation searching",sys.path)
 
 # -- Project information -----------------------------------------------------

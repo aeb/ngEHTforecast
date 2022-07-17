@@ -35,5 +35,5 @@ latexpdf:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 
 %: Makefile
-#	cd scripts; ./write_scripts_docs.py; cp scripts.rst.autogen ../src/scripts.rst
+	cd scripts; ./write_examples_docs.py; cp examples.rst.autogen ../src/examples.rst
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

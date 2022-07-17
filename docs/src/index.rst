@@ -25,6 +25,7 @@ Contents
    ./userguide
    ./devel
 
+   ./examples
 	     
 Indices and tables
 ===========================================
