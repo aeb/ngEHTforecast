@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation Guide &mdash; ngEHTforecast 0+untagged.77.gc3f8281 documentation</title>
+  <title>Examples &mdash; ngEHTforecast 0+untagged.77.gc3f8281 documentation</title>
   
 
   
@@ -36,8 +36,7 @@
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
     <link rel="top" title="ngEHTforecast 0+untagged.77.gc3f8281 documentation" href="../../index.html"/>
-        <link rel="next" title="User’s Guide" href="userguide.html"/>
-        <link rel="prev" title="Welcome to ngEHTforecast’s documentation!" href="index.html"/> 
+        <link rel="prev" title="Developer’s Guide" href="devel.html"/> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
@@ -91,15 +90,14 @@
             
             
                 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#getting-ngehtforecast">Getting ngEHTforecast</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installing-with-pip">Installing with pip</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="userguide.html">User’s Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="devel.html">Developer’s Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-examples.binary_example">examples/binary_example.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-examples.ring_example">examples/ring_example.py</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -141,13 +139,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Installation Guide</li>
+      <li>Examples</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../_sources/docs/src/installation.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/docs/src/examples.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -158,35 +156,48 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="installation-guide">
-<h1>Installation Guide<a class="headerlink" href="#installation-guide" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="getting-ngehtforecast">
-<h2>Getting ngEHTforecast<a class="headerlink" href="#getting-ngehtforecast" title="Permalink to this headline">¶</a></h2>
-<p>The latest version of ngEHTforecast can be obtained from <a class="reference external" href="https://github.com/aeb/ngEHTforecast">https://github.com/aeb/ngEHTforecast</a>.</p>
-</div>
-<div class="section" id="installing-with-pip">
-<h2>Installing with pip<a class="headerlink" href="#installing-with-pip" title="Permalink to this headline">¶</a></h2>
-<p>To install ngEHTforecast, in the ngEHTforecast directory,</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install [--upgrade] . [--user]
+  <span class="target" id="module-examples"></span><div class="section" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<p>Some example analyses based on ngEHTforecast illustrating its capabilities and
+how to make use of them are contained in the “examples” folder.  If you generate
+an analysis, we encourage you to upload it with a short description of what it
+does in the docstring for other ngEHTforecast users!  Please ensure that your
+analysis is behind the standard __name__ check, i.e.,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Short description of your analysis that will appear in documentation.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="p">[</span><span class="n">Top</span> <span class="n">level</span> <span class="kn">import</span> <span class="nn">statements</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span> <span class="p">:</span>
+    <span class="p">[</span><span class="n">The</span> <span class="n">bulk</span> <span class="n">of</span> <span class="n">your</span> <span class="n">analysis</span> <span class="n">code</span><span class="p">,</span> <span class="n">including</span> <span class="nb">any</span> <span class="n">outputs</span> <span class="ow">and</span>
+    <span class="n">anything</span> <span class="n">that</span> <span class="n">takes</span> <span class="n">more</span> <span class="n">than</span> <span class="n">a</span> <span class="n">few</span> <span class="n">seconds</span> <span class="n">to</span> <span class="n">run</span><span class="o">.</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>See pip help for more information.</p>
+<p>All Python scripts in the examples folder conforming to the above will appear in
+the documentation the next time it is made!</p>
+<div class="section" id="module-examples.binary_example">
+<span id="examples-binary-example-py"></span><h2>examples/binary_example.py<a class="headerlink" href="#module-examples.binary_example" title="Permalink to this headline">¶</a></h2>
+<p>Analysis of precision with which a binary can be characterized.  The model being
+tested has two symmetric Gaussians with 20 uas FWHMs and includes station gains
+with a 10% amplitude uncertainties.  Two figures are generated:</p>
+<ol class="arabic simple">
+<li><p>A triangle plot of all parameters for a default set of fluxes and orientation.</p></li>
+<li><p>A plot of the separation uncertatinty as a function of flux ratio for fixed total flux.</p></li>
+</ol>
+<p>Data sets with and without the new ngEHT stations are used.</p>
 </div>
-<div class="section" id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>ngEHTforecast requires with the following packages:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://www.python.org/downloads">python</a> &gt;=3.3</p></li>
-<li><p><a class="reference external" href="https://www.scipy.org">scipy</a> (pip install scipy)</p></li>
-<li><p><a class="reference external" href="https://numpy.org">numpy</a> (pip install numpy)</p></li>
-<li><p><a class="reference external" href="https://matplotlib.org">matplotlib</a> (pip install matplotlib)</p></li>
-<li><p><a class="reference external" href="https://github.com/achael/eht-imaging">ehtim</a></p></li>
-</ul>
-<p>Generating local version of the documation for ngEHTforecast requires:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://www.sphinx-doc.org">Sphinx</a> (pip install sphinx)</p></li>
-<li><p><a class="reference external" href="https://sphinx-argparse.readthedocs.io">Sphinx-argparse</a> (pip install sphinx-argparse)</p></li>
-</ul>
+<div class="section" id="module-examples.ring_example">
+<span id="examples-ring-example-py"></span><h2>examples/ring_example.py<a class="headerlink" href="#module-examples.ring_example" title="Permalink to this headline">¶</a></h2>
+<p>Analysis of precision with which the properties of a ring can be characterized
+in light of a diffuse background and in the presence of station gain uncertainties.
+Three figures are generated, comparing various ring parameters for data sets
+appropriate for ngEHT at 230 GHz, 345 GHz, and combining both frequencies:</p>
+<ol class="arabic simple">
+<li><p>A single-parameter forecast of the diameter precision for each data set.</p></li>
+<li><p>A two-parameter forecast of the diameter and width precisions for each data set.</p></li>
+<li><p>A triangle plot of all ring parameters for reach data set.</p></li>
+</ol>
 </div>
 </div>
 
@@ -197,10 +208,8 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="userguide.html" class="btn btn-neutral float-right" title="User’s Guide" accesskey="n">Next →</a>
       
-      
-        <a href="index.html" class="btn btn-neutral" title="Welcome to ngEHTforecast’s documentation!" accesskey="p">← Previous</a>
+        <a href="devel.html" class="btn btn-neutral" title="Developer’s Guide" accesskey="p">← Previous</a>
       
     </div>
   
