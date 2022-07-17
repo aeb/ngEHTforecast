@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fisher &mdash; ngEHTforecast 0+untagged.70.g61b689c.dirty documentation</title>
+  <title>Fisher &mdash; ngEHTforecast 0+untagged.72.gd76b3a7 documentation</title>
   
 
   
@@ -35,9 +35,9 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.70.g61b689c.dirty documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.72.gd76b3a7 documentation" href="../../index.html"/>
         <link rel="up" title="User’s Guide" href="userguide.html"/>
-        <link rel="next" title="Developer’s Guide" href="devel.html"/>
+        <link rel="next" title="Data" href="data.html"/>
         <link rel="prev" title="User’s Guide" href="userguide.html"/> 
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                0+untagged.70.g61b689c.dirty
+                0+untagged.72.gd76b3a7
               </div>
             
           
@@ -97,12 +97,13 @@
 <li class="toctree-l2"><a class="reference internal" href="userguide.html#structure-and-philosphy">Structure and philosphy</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="userguide.html#packages">Packages</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Fisher</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#module-fisher.fisher_forecast">Base Class</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-fisher.ff_complex_gains">Station Gain Mitigation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-fisher.ff_models">Models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-fisher.ff_metamodels">Model Combinations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#base-class">Base Class</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#station-gain-mitigation">Station Gain Mitigation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#models">Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model-combinations">Model Combinations</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="data.html">Data</a></li>
 </ul>
 </li>
 </ul>
@@ -170,9 +171,10 @@
             
   <span class="target" id="module-fisher"></span><div class="section" id="fisher">
 <span id="id1"></span><h1>Fisher<a class="headerlink" href="#fisher" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-fisher.fisher_forecast">
-<span id="base-class"></span><h2>Base Class<a class="headerlink" href="#module-fisher.fisher_forecast" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
+<div class="section" id="base-class">
+<h2>Base Class<a class="headerlink" href="#base-class" title="Permalink to this headline">¶</a></h2>
+<p>Definition of the FisherForecast interface and a number of general utility functions.</p>
+<span class="target" id="module-fisher.fisher_forecast"></span><dl class="py class">
 <dt id="fisher.fisher_forecast.FisherForecast">
 <em class="property">class </em><code class="sig-prename descclassname">fisher.fisher_forecast.</code><code class="sig-name descname">FisherForecast</code><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class that collects and contains information for making Fisher-matrix type
@@ -632,9 +634,10 @@ associated with a given model image object.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-fisher.ff_complex_gains">
-<span id="station-gain-mitigation"></span><h2>Station Gain Mitigation<a class="headerlink" href="#module-fisher.ff_complex_gains" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
+<div class="section" id="station-gain-mitigation">
+<h2>Station Gain Mitigation<a class="headerlink" href="#station-gain-mitigation" title="Permalink to this headline">¶</a></h2>
+<p>A set of FisherForecast childe classes that facilitate including gain uncertainties.</p>
+<span class="target" id="module-fisher.ff_complex_gains"></span><dl class="py class">
 <dt id="fisher.ff_complex_gains.FF_complex_gains">
 <em class="property">class </em><code class="sig-prename descclassname">fisher.ff_complex_gains.</code><code class="sig-name descname">FF_complex_gains</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ff</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/ff_complex_gains.html#FF_complex_gains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.ff_complex_gains.FF_complex_gains" title="Permalink to this definition">¶</a></dt>
 <dd><p>FisherForecast with complex gain reconstruction with multiple epochs.
@@ -1094,9 +1097,10 @@ phase differences.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-fisher.ff_models">
-<span id="models"></span><h2>Models<a class="headerlink" href="#module-fisher.ff_models" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
+<div class="section" id="models">
+<h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
+<p>Specific models implemented in ngEHTforecast as FisherForecast child classes.  Each inherits all of the functionality of FisherForecast, and may be used anywhere a FisherForecast object is required.</p>
+<span class="target" id="module-fisher.ff_models"></span><dl class="py class">
 <dt id="fisher.ff_models.FF_asymmetric_gaussian">
 <em class="property">class </em><code class="sig-prename descclassname">fisher.ff_models.</code><code class="sig-name descname">FF_asymmetric_gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stokes</span><span class="o">=</span><span class="default_value">'I'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/ff_models.html#FF_asymmetric_gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.ff_models.FF_asymmetric_gaussian" title="Permalink to this definition">¶</a></dt>
 <dd><p>FisherForecast object for a noncircular Gaussian.
@@ -1835,9 +1839,10 @@ Useful for the splined raster image classes.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-fisher.ff_metamodels">
-<span id="model-combinations"></span><h2>Model Combinations<a class="headerlink" href="#module-fisher.ff_metamodels" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
+<div class="section" id="model-combinations">
+<h2>Model Combinations<a class="headerlink" href="#model-combinations" title="Permalink to this headline">¶</a></h2>
+<p>Classes that can be used to construct new FisherForecast objects from others.  The prototypical example is <code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.ff_metamodels.FF_Sum</span></code>, which constructs a new model by directly summing the intensity maps of many previous models.</p>
+<span class="target" id="module-fisher.ff_metamodels"></span><dl class="py class">
 <dt id="fisher.ff_metamodels.FF_sum">
 <em class="property">class </em><code class="sig-prename descclassname">fisher.ff_metamodels.</code><code class="sig-name descname">FF_sum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ff_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stokes</span><span class="o">=</span><span class="default_value">'I'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/ff_metamodels.html#FF_sum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.ff_metamodels.FF_sum" title="Permalink to this definition">¶</a></dt>
 <dd><p>FisherForecast object constructed from the sum of multiple
@@ -1952,7 +1957,7 @@ gaining a pair of offset parameters.  That is:</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="devel.html" class="btn btn-neutral float-right" title="Developer’s Guide" accesskey="n">Next →</a>
+        <a href="data.html" class="btn btn-neutral float-right" title="Data" accesskey="n">Next →</a>
       
       
         <a href="userguide.html" class="btn btn-neutral" title="User’s Guide" accesskey="p">← Previous</a>
@@ -1986,7 +1991,7 @@ gaining a pair of offset parameters.  That is:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.70.g61b689c.dirty',
+            VERSION:'0+untagged.72.gd76b3a7',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 

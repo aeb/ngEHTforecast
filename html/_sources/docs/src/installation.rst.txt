@@ -25,7 +25,6 @@ ngEHTforecast requires with the following packages:
 * `numpy <https://numpy.org>`_ (pip install numpy)
 * `matplotlib <https://matplotlib.org>`_ (pip install matplotlib)
 * `ehtim <https://github.com/achael/eht-imaging>`_
-.. * `astropy <https://www.astropy.org>`_ (pip install astropy)
 
 Generating local version of the documation for ngEHTforecast requires:
 
