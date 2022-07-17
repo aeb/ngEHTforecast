@@ -1,0 +1,504 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fisher.ff_metamodels &mdash; ngEHTforecast 0+untagged.70.g61b689c documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/ngeht_construction.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.70.g61b689c documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../docs/src/index.html" class="icon icon-home"> ngEHTforecast
+          
+
+          
+            
+            <img src="../../_static/ngeht_construction.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0+untagged.70.g61b689c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/src/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/src/userguide.html">User’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/src/devel.html">Developer’s Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../docs/src/index.html">ngEHTforecast</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../docs/src/index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>fisher.ff_metamodels</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for fisher.ff_metamodels</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">import</span> <span class="nn">ngEHTforecast.fisher.fisher_forecast</span> <span class="k">as</span> <span class="nn">ff</span>
+
+<span class="c1"># Some constants</span>
+<span class="n">uas2rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">180.</span><span class="o">/</span><span class="mf">3600e6</span>            
+<span class="n">rad2uas</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="n">uas2rad</span><span class="p">)</span>
+<span class="n">sig2fwhm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">8.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span>
+<span class="n">fwhm2sig</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">sig2fwhm</span>
+
+<div class="viewcode-block" id="FF_sum"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_metamodels.FF_sum">[docs]</a><span class="k">class</span> <span class="nc">FF_sum</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">FisherForecast</span><span class="p">)</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    FisherForecast object constructed from the sum of multiple </span>
+<span class="sd">    FisherForecast objects. For example, a binary might be generated from</span>
+<span class="sd">    the sum of two Gaussians.  </span>
+
+<span class="sd">    The parameter vector is constructed from the concatenation of the parameter</span>
+<span class="sd">    vectors from each individual object, with all objects after the first</span>
+<span class="sd">    gaining a pair of offset parameters.  That is:</span>
+
+<span class="sd">    * p[0] ............ Obj1 p[0]</span>
+<span class="sd">    * p[1] ............ Obj1 p[1]</span>
+<span class="sd">    * ...</span>
+<span class="sd">    * p[n1] ........... Obj2 p[0]</span>
+<span class="sd">    * p[n1+1] ......... Obj2 p[0]</span>
+<span class="sd">    * ...</span>
+<span class="sd">    * p[n1+n2] ........ Obj2 dx</span>
+<span class="sd">    * p[n1+n2+1] ...... Obj2 dy</span>
+<span class="sd">    * p[n1+n2+2] ...... Obj3 p[0]</span>
+<span class="sd">    * ...</span>
+<span class="sd">    * p[n1+n2+n3+2] ... Obj3 dx</span>
+<span class="sd">    * p[n1+n2+n3+3] ... Obj3 dy</span>
+<span class="sd">    *  ...</span>
+
+<span class="sd">    Prior lists are constructed similarly.</span>
+<span class="sd">    </span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      ff_list (list): List of FisherForecast objects to be summed. Additional objects can be added later. Default: None.</span>
+<span class="sd">      stokes (str): Indicates if this is limited to Stokes I (&#39;I&#39;) or include full polarization (&#39;full&#39;). Default: &#39;I&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ff_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">stokes</span><span class="o">=</span><span class="s1">&#39;I&#39;</span><span class="p">)</span> <span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stokes</span> <span class="o">=</span> <span class="n">stokes</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">ff_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">ff_list</span><span class="p">)</span> <span class="c1"># This is a SHALLOW copy</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">ff_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">ff_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+            <span class="k">for</span> <span class="n">ff</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">2</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">ff_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ff_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">ff_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">*</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+            <span class="k">else</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ff_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ff</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+                <span class="k">else</span> <span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">+</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">ff_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ff_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stokes</span> <span class="o">=</span> <span class="n">ff_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stokes</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ff_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">ff</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">stokes</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stokes</span><span class="p">):</span>
+                            <span class="k">raise</span><span class="p">(</span><span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;The model components in FF_sum do not have the same stokes type!&#39;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="FF_sum.add"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_metamodels.FF_sum.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ff</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a FisherForecast object to the sum.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          ff (FisherForecast): An existing FisherForecast object to add.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ff</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">2</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+            <span class="k">else</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">)</span>
+            <span class="k">else</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">+</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">])</span></div>
+                
+            
+            
+<div class="viewcode-block" id="FF_sum.visibilities"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_metamodels.FF_sum.visibilities">[docs]</a>    <span class="k">def</span> <span class="nf">visibilities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates visibilities associated with the summed model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          obs (ehtim.Obsdata): ehtim data object</span>
+<span class="sd">          p (numpy.ndarray): list of parameters for the model image used to create object.</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (numpy.ndarray): List of complex visibilities computed at observations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># uas2rad = np.pi/180./3600e6</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stokes</span> <span class="o">==</span> <span class="s1">&#39;I&#39;</span><span class="p">):</span>
+            <span class="n">V</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">ff</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">)</span> <span class="p">:</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">:(</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+                    <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span>
+                <span class="k">else</span> <span class="p">:</span>
+                    <span class="n">dx</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+                    <span class="n">dy</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
+                    <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">2</span>
+                    
+                <span class="n">V</span> <span class="o">=</span> <span class="n">V</span> <span class="o">+</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span> <span class="o">*</span> <span class="n">shift_factor</span>
+            <span class="k">return</span> <span class="n">V</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">RR</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span>
+            <span class="n">LL</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span>
+            <span class="n">RL</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span>
+            <span class="n">LR</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">ff</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">)</span> <span class="p">:</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">:(</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+                    <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span>
+                <span class="k">else</span> <span class="p">:</span>
+                    <span class="n">dx</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+                    <span class="n">dy</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
+                    <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">2</span>
+                    
+                <span class="n">RR_prev</span><span class="p">,</span> <span class="n">LL_prev</span><span class="p">,</span> <span class="n">RL_prev</span><span class="p">,</span> <span class="n">LR_prev</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+                <span class="n">RR</span> <span class="o">+=</span> <span class="n">RR_prev</span> <span class="o">*</span> <span class="n">shift_factor</span>
+                <span class="n">LL</span> <span class="o">+=</span> <span class="n">LL_prev</span> <span class="o">*</span> <span class="n">shift_factor</span>
+                <span class="n">RL</span> <span class="o">+=</span> <span class="n">RL_prev</span> <span class="o">*</span> <span class="n">shift_factor</span>
+                <span class="n">LR</span> <span class="o">+=</span> <span class="n">LR_prev</span> <span class="o">*</span> <span class="n">shift_factor</span>
+
+            <span class="k">return</span> <span class="n">RR</span><span class="p">,</span> <span class="n">LL</span><span class="p">,</span> <span class="n">RL</span><span class="p">,</span> <span class="n">LR</span></div>
+
+<div class="viewcode-block" id="FF_sum.visibility_gradients"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_metamodels.FF_sum.visibility_gradients">[docs]</a>    <span class="k">def</span> <span class="nf">visibility_gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates visibility gradients associated with the summed model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          obs (ehtim.Obsdata): ehtim data object</span>
+<span class="sd">          p (numpy.ndarray): list of parameters for the model image used to create object.</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (numpy.ndarray): List of complex visibilities computed at observations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">u</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span>
+        <span class="c1"># uas2rad = np.pi/180./3600e6</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stokes</span> <span class="o">==</span> <span class="s1">&#39;I&#39;</span><span class="p">):</span>
+            <span class="n">gradV</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">ff</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">)</span> <span class="p">:</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">:(</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+                    <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span>
+                <span class="k">else</span> <span class="p">:</span>
+                    <span class="n">dx</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+                    <span class="n">dy</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">V</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">v</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
+                    <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">2</span>
+                
+                <span class="k">for</span> <span class="n">gV</span> <span class="ow">in</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibility_gradients</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="p">:</span>
+                    <span class="n">gradV</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">gV</span><span class="o">*</span><span class="n">shift_factor</span> <span class="p">)</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="n">gradV</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">shift_factor</span><span class="o">*</span><span class="n">V</span><span class="o">*</span><span class="n">uas2rad</span><span class="p">)</span>
+                    <span class="n">gradV</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">shift_factor</span><span class="o">*</span><span class="n">V</span><span class="o">*</span><span class="n">uas2rad</span><span class="p">)</span>
+
+            <span class="n">gradV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradV</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">gradV</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gradRR</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">gradLL</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">gradRL</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">gradLR</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">ff</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">)</span> <span class="p">:</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">:(</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">)]</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+                    <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span>
+                <span class="k">else</span> <span class="p">:</span>
+                    <span class="n">dx</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+                    <span class="n">dy</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">RR</span><span class="p">,</span><span class="n">LL</span><span class="p">,</span><span class="n">RL</span><span class="p">,</span><span class="n">LR</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">v</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
+                    <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">2</span>
+                
+                <span class="n">gradRR_prev</span><span class="p">,</span> <span class="n">gradLL_prev</span><span class="p">,</span> <span class="n">gradRL_prev</span><span class="p">,</span> <span class="n">gradLR_prev</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibility_gradients</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+                
+                <span class="c1"># gradRR = gradRR_prev.T*shift_factor</span>
+                <span class="c1"># gradLL = gradLL_prev.T*shift_factor</span>
+                <span class="c1"># gradRL = gradRL_prev.T*shift_factor</span>
+                <span class="c1"># gradLR = gradLR_prev.T*shift_factor</span>
+
+                <span class="k">for</span> <span class="n">gRR</span> <span class="ow">in</span> <span class="n">gradRR_prev</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
+                    <span class="n">gradRR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gRR</span><span class="o">*</span><span class="n">shift_factor</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">gLL</span> <span class="ow">in</span> <span class="n">gradLL_prev</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
+                    <span class="n">gradLL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gLL</span><span class="o">*</span><span class="n">shift_factor</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">gRL</span> <span class="ow">in</span> <span class="n">gradRL_prev</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
+                    <span class="n">gradRL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gRL</span><span class="o">*</span><span class="n">shift_factor</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">gLR</span> <span class="ow">in</span> <span class="n">gradLR_prev</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
+                    <span class="n">gradLR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gLR</span><span class="o">*</span><span class="n">shift_factor</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="c1"># gRR_shift = np.array([-2.0j*np.pi*u*shift_factor*RR*uas2rad,-2.0j*np.pi*v*shift_factor*RR*uas2rad])</span>
+                    <span class="c1"># gLL_shift = np.array([-2.0j*np.pi*u*shift_factor*LL*uas2rad,-2.0j*np.pi*v*shift_factor*LL*uas2rad])</span>
+                    <span class="c1"># gRL_shift = np.array([-2.0j*np.pi*u*shift_factor*RL*uas2rad,-2.0j*np.pi*v*shift_factor*RL*uas2rad])</span>
+                    <span class="c1"># gLR_shift = np.array([-2.0j*np.pi*u*shift_factor*LR*uas2rad,-2.0j*np.pi*v*shift_factor*LR*uas2rad])</span>
+
+                    <span class="c1"># gradRR = np.concatenate((gradRR,gRR_shift))</span>
+                    <span class="c1"># gradLL = np.concatenate((gradLL,gLL_shift))</span>
+                    <span class="c1"># gradRL = np.concatenate((gradRL,gRL_shift))</span>
+                    <span class="c1"># gradLR = np.concatenate((gradLR,gLR_shift))</span>
+
+                    <span class="n">gradRR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">shift_factor</span><span class="o">*</span><span class="n">RR</span><span class="o">*</span><span class="n">uas2rad</span><span class="p">)</span>
+                    <span class="n">gradRR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">shift_factor</span><span class="o">*</span><span class="n">RR</span><span class="o">*</span><span class="n">uas2rad</span><span class="p">)</span>
+                    <span class="n">gradLL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">shift_factor</span><span class="o">*</span><span class="n">LL</span><span class="o">*</span><span class="n">uas2rad</span><span class="p">)</span>
+                    <span class="n">gradLL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">shift_factor</span><span class="o">*</span><span class="n">LL</span><span class="o">*</span><span class="n">uas2rad</span><span class="p">)</span>
+                    <span class="n">gradRL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">shift_factor</span><span class="o">*</span><span class="n">RL</span><span class="o">*</span><span class="n">uas2rad</span><span class="p">)</span>
+                    <span class="n">gradRL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">shift_factor</span><span class="o">*</span><span class="n">RL</span><span class="o">*</span><span class="n">uas2rad</span><span class="p">)</span>
+                    <span class="n">gradLR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">shift_factor</span><span class="o">*</span><span class="n">LR</span><span class="o">*</span><span class="n">uas2rad</span><span class="p">)</span>
+                    <span class="n">gradLR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">shift_factor</span><span class="o">*</span><span class="n">LR</span><span class="o">*</span><span class="n">uas2rad</span><span class="p">)</span>
+
+            <span class="n">gradRR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradRR</span><span class="p">)</span>
+            <span class="n">gradLL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradLL</span><span class="p">)</span>
+            <span class="n">gradRL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradRL</span><span class="p">)</span>
+            <span class="n">gradLR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradLR</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">gradRR</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">gradLL</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">gradRL</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">gradLR</span><span class="o">.</span><span class="n">T</span></div>
+                
+<div class="viewcode-block" id="FF_sum.parameter_labels"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_metamodels.FF_sum.parameter_labels">[docs]</a>    <span class="k">def</span> <span class="nf">parameter_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameter labels to be used in plotting.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (list): List of strings with parameter labels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">pll</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">ff</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_list</span><span class="p">)</span> <span class="p">:</span>
+            <span class="k">for</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="n">ff</span><span class="o">.</span><span class="n">parameter_labels</span><span class="p">()</span> <span class="p">:</span>
+                <span class="n">pll</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lbl</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                <span class="n">pll</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\delta\Delta x~(\mu{\rm as})$&#39;</span><span class="p">)</span>
+                <span class="n">pll</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\delta\Delta y~(\mu{\rm as})$&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">pll</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Avery E. Broderick.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0+untagged.70.g61b689c',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            LINK_SUFFIX:'.html', 
+            HAS_SOURCE: 'true'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

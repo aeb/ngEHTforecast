@@ -1,0 +1,977 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fisher.ff_complex_gains &mdash; ngEHTforecast 0+untagged.70.g61b689c documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/ngeht_construction.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.70.g61b689c documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../docs/src/index.html" class="icon icon-home"> ngEHTforecast
+          
+
+          
+            
+            <img src="../../_static/ngeht_construction.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0+untagged.70.g61b689c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/src/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/src/userguide.html">User’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/src/devel.html">Developer’s Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../docs/src/index.html">ngEHTforecast</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../docs/src/index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>fisher.ff_complex_gains</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for fisher.ff_complex_gains</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">ehtim.parloop</span> <span class="k">as</span> <span class="nn">ploop</span>
+
+<span class="kn">import</span> <span class="nn">ngEHTforecast.fisher.fisher_forecast</span> <span class="k">as</span> <span class="nn">ff</span>
+
+<div class="viewcode-block" id="FF_complex_gains_single_epoch"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains_single_epoch">[docs]</a><span class="k">class</span> <span class="nc">FF_complex_gains_single_epoch</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">FisherForecast</span><span class="p">)</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    FisherForecast with complex gain reconstruction assuming a single epoch.</span>
+<span class="sd">    This is a helper class, and probably not the FisherForecast object that</span>
+<span class="sd">    should be used to study the impact of gains.  See FF_complex_gains.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      ff (FisherForecast): A FisherForecast object to which we wish to add gains.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      ff (FisherForecast): The FisherForecast object before gain reconstruction.</span>
+<span class="sd">      plbls (list): List of parameter labels (str) including gains parameter names.</span>
+<span class="sd">      gain_amplitude_priors (list): list of standard deviations of the log-normal priors on the gain amplitudes. Default: 10.</span>
+<span class="sd">      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 100.</span>
+<span class="sd">      gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.</span>
+<span class="sd">      gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ff</span><span class="p">)</span> <span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ff</span> <span class="o">=</span> <span class="n">ff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stokes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">stokes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scans</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plbls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">parameter_labels</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">prior_sigma_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span> <span class="o">=</span> <span class="p">{}</span>
+        
+<div class="viewcode-block" id="FF_complex_gains_single_epoch.visibilities"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains_single_epoch.visibilities">[docs]</a>    <span class="k">def</span> <span class="nf">visibilities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Complex visibilities associated with the underlying FisherForecast object</span>
+<span class="sd">        evaluated at the data points in the given Obsdata object for the model with</span>
+<span class="sd">        the given parameter values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          obs (ehtim.obsdata.Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)</span>
+<span class="sd">          p (numpy.ndarray): list of parameters for the model at which visiblities are desired.</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (numpy.ndarray): List of complex visibilities computed at observations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains_single_epoch.visibility_gradients"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains_single_epoch.visibility_gradients">[docs]</a>    <span class="k">def</span> <span class="nf">visibility_gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gradients of the complex visibilities associated with the underlying </span>
+<span class="sd">        FisherForecast object with respect to the model pararmeters evaluated at </span>
+<span class="sd">        the data points in the given Obsdata object for the model with the given </span>
+<span class="sd">        parameter values, including gradients with respect to the gain amplitudes,</span>
+<span class="sd">        phases, and if this is a polarized model, R/L gain amplitude ratios and </span>
+<span class="sd">        phase differences.  </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          obs (ehtim.obsdata.Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)</span>
+<span class="sd">          p (numpy.ndarray): list of parameters for the model image used to create object.</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (numpy.ndarray): List of complex visibility gradients computed at observations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Generate the gain epochs and update the size</span>
+        <span class="n">station_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">],</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t2&#39;</span><span class="p">])))</span>
+        <span class="n">nt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">station_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plbls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">parameter_labels</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span> <span class="o">==</span> <span class="p">[])</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stokes</span> <span class="o">==</span> <span class="s1">&#39;I&#39;</span><span class="p">):</span>
+
+            <span class="n">V_pg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">gradV_pg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">visibility_gradients</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="c1"># Start with model parameters</span>
+            <span class="n">gradV</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">gradV_pg</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+            <span class="c1"># Now add gains</span>
+            <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">station_list</span> <span class="p">:</span>
+                <span class="n">dVda</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">V_pg</span>
+                <span class="n">dVdp</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">V_pg</span>
+
+                <span class="c1"># G</span>
+                <span class="n">inget1</span> <span class="o">=</span> <span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">station</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inget1</span><span class="p">))</span> <span class="p">:</span>
+                    <span class="n">dVda</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="n">V_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dVdp</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">V_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+
+                <span class="c1"># G*</span>
+                <span class="n">inget2</span> <span class="o">=</span> <span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t2&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">station</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inget2</span><span class="p">))</span> <span class="p">:</span>
+                    <span class="n">dVda</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="n">V_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dVdp</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">V_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+
+                <span class="c1"># Check if any cases</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inget1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inget2</span><span class="p">))</span> <span class="p">:</span>
+
+                    <span class="n">gradV</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dVda</span><span class="p">)</span>
+                    <span class="n">gradV</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dVdp</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+=</span><span class="mi">2</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">plbls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\ln(|G|_{</span><span class="si">%s</span><span class="s1">})$&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">station</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">plbls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;${\rm arg}(G_{</span><span class="si">%s</span><span class="s1">})$&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">station</span><span class="p">))</span>
+
+                    <span class="k">if</span> <span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                        
+                        <span class="c1"># Set amplitude priors</span>
+                        <span class="k">if</span> <span class="p">(</span> <span class="n">station</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">[</span><span class="n">station</span><span class="p">])</span>
+                        <span class="k">elif</span> <span class="p">(</span> <span class="s1">&#39;All&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">[</span><span class="s1">&#39;All&#39;</span><span class="p">])</span>
+                        <span class="k">else</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span> <span class="c1"># Big amplitude</span>
+
+                        <span class="c1"># Set phase priors</span>
+                        <span class="k">if</span> <span class="p">(</span> <span class="n">station</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">[</span><span class="n">station</span><span class="p">])</span>
+                        <span class="k">elif</span> <span class="p">(</span> <span class="s1">&#39;All&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">[</span><span class="s1">&#39;All&#39;</span><span class="p">])</span>
+                        <span class="k">else</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
+
+                    <span class="k">else</span> <span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span> <span class="c1"># Big amplitude</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
+
+            <span class="n">gradV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradV</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="n">gradV</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;SEG gradV: </span><span class="si">%10.3g</span><span class="s2"> </span><span class="si">%10.3g</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">],</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gradV</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">:</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; </span><span class="si">%8.3g</span><span class="s2"> + </span><span class="si">%8.3g</span><span class="s2">i&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">gradV</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span><span class="n">gradV</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">gradV</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">RR_pg</span><span class="p">,</span> <span class="n">LL_pg</span><span class="p">,</span> <span class="n">RL_pg</span><span class="p">,</span> <span class="n">LR_pg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">gradRR_pg</span><span class="p">,</span> <span class="n">gradLL_pg</span><span class="p">,</span> <span class="n">gradRL_pg</span><span class="p">,</span> <span class="n">gradLR_pg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">visibility_gradients</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="c1"># start with the current list of model parameters</span>
+            <span class="n">gradRR</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">gradRR_pg</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">gradLL</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">gradLL_pg</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">gradRL</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">gradRL_pg</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">gradLR</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">gradLR_pg</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+            <span class="c1"># add gains</span>
+            <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">station_list</span> <span class="p">:</span>
+                
+                <span class="n">dRRda</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">RR_pg</span>
+                <span class="n">dRRdp</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">RR_pg</span>
+                <span class="n">dRRdr</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">RR_pg</span>
+                <span class="n">dRRdt</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">RR_pg</span>
+
+                <span class="n">dLLda</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">LL_pg</span>
+                <span class="n">dLLdp</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">LL_pg</span>
+                <span class="n">dLLdr</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">LL_pg</span>
+                <span class="n">dLLdt</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">LL_pg</span>
+
+                <span class="n">dRLda</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">RL_pg</span>
+                <span class="n">dRLdp</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">RL_pg</span>
+                <span class="n">dRLdr</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">RL_pg</span>
+                <span class="n">dRLdt</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">RL_pg</span>
+
+                <span class="n">dLRda</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">LR_pg</span>
+                <span class="n">dLRdp</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">LR_pg</span>
+                <span class="n">dLRdr</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">LR_pg</span>
+                <span class="n">dLRdt</span> <span class="o">=</span> <span class="mf">0.0</span><span class="n">j</span><span class="o">*</span><span class="n">LR_pg</span>
+
+                <span class="c1"># G</span>
+                <span class="n">inget1</span> <span class="o">=</span> <span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">station</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inget1</span><span class="p">))</span> <span class="p">:</span>
+
+                    <span class="n">dRRda</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="n">RR_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dRRdp</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">RR_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dRRdr</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">RR_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dRRdt</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="n">j</span> <span class="o">*</span> <span class="n">RR_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+
+                    <span class="n">dLLda</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="n">LL_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dLLdp</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">LL_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dLLdr</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">LL_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dLLdt</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="n">j</span> <span class="o">*</span> <span class="n">LL_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+
+                    <span class="n">dRLda</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="n">RL_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dRLdp</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">RL_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dRLdr</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">RL_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dRLdt</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="n">j</span> <span class="o">*</span> <span class="n">RL_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+
+                    <span class="n">dLRda</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="n">LR_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dLRdp</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">LR_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dLRdr</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">LR_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+                    <span class="n">dLRdt</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="n">j</span> <span class="o">*</span> <span class="n">LR_pg</span><span class="p">[</span><span class="n">inget1</span><span class="p">]</span>
+
+                <span class="c1"># G*</span>
+                <span class="n">inget2</span> <span class="o">=</span> <span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t2&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">station</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inget2</span><span class="p">))</span> <span class="p">:</span>
+
+                    <span class="n">dRRda</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="n">RR_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dRRdp</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">RR_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dRRdr</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">RR_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dRRdt</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="n">j</span> <span class="o">*</span> <span class="n">RR_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+
+                    <span class="n">dLLda</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="n">LL_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dLLdp</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">LL_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dLLdr</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">LL_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dLLdt</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="n">j</span> <span class="o">*</span> <span class="n">LL_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+
+                    <span class="n">dRLda</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="n">RL_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dRLdp</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">RL_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dRLdr</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">RL_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dRLdt</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="n">j</span> <span class="o">*</span> <span class="n">RL_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+
+                    <span class="n">dLRda</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="n">LR_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dLRdp</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">LR_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dLRdr</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">LR_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+                    <span class="n">dLRdt</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span><span class="n">j</span> <span class="o">*</span> <span class="n">LR_pg</span><span class="p">[</span><span class="n">inget2</span><span class="p">]</span>
+
+                <span class="c1"># check if any cases</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inget1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inget2</span><span class="p">))</span> <span class="p">:</span>
+
+                    <span class="n">gradRR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dRRda</span><span class="p">)</span>
+                    <span class="n">gradRR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dRRdp</span><span class="p">)</span>
+                    <span class="n">gradRR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dRRdr</span><span class="p">)</span>
+                    <span class="n">gradRR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dRRdt</span><span class="p">)</span>
+
+                    <span class="n">gradLL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dLLda</span><span class="p">)</span>
+                    <span class="n">gradLL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dLLdp</span><span class="p">)</span>
+                    <span class="n">gradLL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dLLdr</span><span class="p">)</span>
+                    <span class="n">gradLL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dLLdt</span><span class="p">)</span>
+
+                    <span class="n">gradRL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dRLda</span><span class="p">)</span>
+                    <span class="n">gradRL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dRLdp</span><span class="p">)</span>
+                    <span class="n">gradRL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dRLdr</span><span class="p">)</span>
+                    <span class="n">gradRL</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dRLdt</span><span class="p">)</span>
+
+                    <span class="n">gradLR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dLRda</span><span class="p">)</span>
+                    <span class="n">gradLR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dLRdp</span><span class="p">)</span>
+                    <span class="n">gradLR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dLRdr</span><span class="p">)</span>
+                    <span class="n">gradLR</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dLRdt</span><span class="p">)</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+=</span> <span class="mi">4</span>
+
+                    <span class="c1"># gain geometric mean labels</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">plbls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\ln(|G|_{</span><span class="si">%s</span><span class="s1">})$&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">station</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">plbls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;${\rm arg}(G_{</span><span class="si">%s</span><span class="s1">})$&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">station</span><span class="p">))</span>
+
+                    <span class="c1"># gain ratio labels</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">plbls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\ln(|R|_{</span><span class="si">%s</span><span class="s1">})$&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">station</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">plbls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;${\rm arg}(R_{</span><span class="si">%s</span><span class="s1">})$&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">station</span><span class="p">))</span>
+
+                    <span class="c1"># complex gain priors</span>
+                    <span class="k">if</span> <span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                        
+                        <span class="c1"># Set amplitude priors</span>
+                        <span class="k">if</span> <span class="p">(</span> <span class="n">station</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">[</span><span class="n">station</span><span class="p">])</span>
+                        <span class="k">elif</span> <span class="p">(</span> <span class="s1">&#39;All&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">[</span><span class="s1">&#39;All&#39;</span><span class="p">])</span>
+                        <span class="k">else</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span> <span class="c1"># Big amplitude</span>
+
+                        <span class="c1"># Set phase priors</span>
+                        <span class="k">if</span> <span class="p">(</span> <span class="n">station</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">[</span><span class="n">station</span><span class="p">])</span>
+                        <span class="k">elif</span> <span class="p">(</span> <span class="s1">&#39;All&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">[</span><span class="s1">&#39;All&#39;</span><span class="p">])</span>
+                        <span class="k">else</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
+
+                    <span class="k">else</span> <span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span> <span class="c1"># Big amplitude</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
+
+                    <span class="c1"># complex gain ratio priors</span>
+                    <span class="k">if</span> <span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+
+                        <span class="c1"># Set gain ratio amplitude priors</span>
+                        <span class="k">if</span> <span class="p">(</span> <span class="n">station</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="p">[</span><span class="n">station</span><span class="p">])</span>
+                        <span class="k">elif</span> <span class="p">(</span> <span class="s1">&#39;All&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="p">[</span><span class="s1">&#39;All&#39;</span><span class="p">])</span>
+                        <span class="k">else</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">)</span> <span class="c1"># small amplitude</span>
+
+                        <span class="c1"># Set gain ratio phase priors</span>
+                        <span class="k">if</span> <span class="p">(</span> <span class="n">station</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="p">[</span><span class="n">station</span><span class="p">])</span>
+                        <span class="k">elif</span> <span class="p">(</span> <span class="s1">&#39;All&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="p">[</span><span class="s1">&#39;All&#39;</span><span class="p">])</span>
+                        <span class="k">else</span> <span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">)</span> <span class="c1"># small phase</span>
+
+                    <span class="k">else</span> <span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">)</span> <span class="c1"># small amplitude</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">)</span> <span class="c1"># small phase</span>
+
+            <span class="n">gradRR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradRR</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">gradLL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradLL</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">gradRL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradRL</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">gradLR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradLR</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="n">gradRR</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;SEG gradRR: </span><span class="si">%10.3g</span><span class="s2"> </span><span class="si">%10.3g</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">],</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gradRR</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">:</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; </span><span class="si">%8.3g</span><span class="s2"> + </span><span class="si">%8.3g</span><span class="s2">i&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">gradRR</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span><span class="n">gradRR</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="n">gradLL</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;SEG gradLL: </span><span class="si">%10.3g</span><span class="s2"> </span><span class="si">%10.3g</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">],</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gradLL</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">:</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; </span><span class="si">%8.3g</span><span class="s2"> + </span><span class="si">%8.3g</span><span class="s2">i&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">gradLL</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span><span class="n">gradLL</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="n">gradRL</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;SEG gradRL: </span><span class="si">%10.3g</span><span class="s2"> </span><span class="si">%10.3g</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">],</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gradRL</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">:</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; </span><span class="si">%8.3g</span><span class="s2"> + </span><span class="si">%8.3g</span><span class="s2">i&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">gradRL</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span><span class="n">gradRL</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="n">gradLR</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;SEG gradLR: </span><span class="si">%10.3g</span><span class="s2"> </span><span class="si">%10.3g</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">],</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gradLR</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">:</span>
+                        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; </span><span class="si">%8.3g</span><span class="s2"> + </span><span class="si">%8.3g</span><span class="s2">i&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">gradLR</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span><span class="n">gradLR</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+
+            <span class="c1"># print(&#39;Prior sigma list:&#39;,self.prior_sigma_list)</span>
+
+            <span class="k">return</span> <span class="n">gradRR</span><span class="p">,</span> <span class="n">gradLL</span><span class="p">,</span> <span class="n">gradRL</span><span class="p">,</span> <span class="n">gradLR</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains_single_epoch.parameter_labels"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains_single_epoch.parameter_labels">[docs]</a>    <span class="k">def</span> <span class="nf">parameter_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameter labels to be used in plotting, including those associated</span>
+<span class="sd">        with the gains.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (list): List of strings with parameter labels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">plbls</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains_single_epoch.set_gain_amplitude_prior"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains_single_epoch.set_gain_amplitude_prior">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain_amplitude_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the log-normal priors on the gain amplitudes, either for a</span>
+<span class="sd">        specified station or for all stations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          sigma (float): Standard deviation of the log-amplitude.</span>
+<span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">10.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">station</span><span class="p">,</span><span class="nb">list</span><span class="p">))</span> <span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">station</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">[</span><span class="n">station</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains_single_epoch.set_gain_phase_prior"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains_single_epoch.set_gain_phase_prior">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain_phase_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the normal priors on the gain phases, either for a specified </span>
+<span class="sd">        station or for all stations. Usually, this should be the default</span>
+<span class="sd">        (uniformative).  </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          sigma (float): Standard deviation of the phase.</span>
+<span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">station</span><span class="p">,</span><span class="nb">list</span><span class="p">))</span> <span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">station</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">[</span><span class="n">station</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains_single_epoch.set_gain_ratio_amplitude_prior"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains_single_epoch.set_gain_ratio_amplitude_prior">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain_ratio_amplitude_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the log-normal priors on the R/L gain amplitude ratios, either </span>
+<span class="sd">        for a specified station or for all stations. Only relevant for</span>
+<span class="sd">        polarized models. Default: 1e-10 for all stations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          sigma (float): Standard deviation of the log-amplitude ratio.</span>
+<span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="p">[</span><span class="n">station</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains_single_epoch.set_gain_ratio_phase_prior"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains_single_epoch.set_gain_ratio_phase_prior">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain_ratio_phase_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the normal priors on the R/L gain phase differences, either </span>
+<span class="sd">        for a specified station or for all stations. Only relevant for</span>
+<span class="sd">        polarized models. Default: 1e-10 for all stations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          sigma (float): Standard deviation of the phase.</span>
+<span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="p">[</span><span class="n">station</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span></div></div>
+        
+
+<div class="viewcode-block" id="FF_complex_gains"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains">[docs]</a><span class="k">class</span> <span class="nc">FF_complex_gains</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">FisherForecast</span><span class="p">)</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    FisherForecast with complex gain reconstruction with multiple epochs.</span>
+<span class="sd">    This is usually the FisherForecast object that should be used to investigate</span>
+<span class="sd">    the impact of uncertain station gains.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      ff (FisherForecast): A FisherForecast object to which we wish to add gains.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">      ff (FisherForecast): The FisherForecast object before gain reconstruction.</span>
+<span class="sd">      gain_epochs (numpy.ndarray): 2D array containing the start and end times for each gain solution epoch.</span>
+<span class="sd">      gain_amplitude_priors (list): list of standard deviations of the log-normal priors on the gain amplitudes. Default: 10.</span>
+<span class="sd">      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 100.</span>
+<span class="sd">      gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.</span>
+<span class="sd">      gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ff</span><span class="p">)</span> <span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ff</span> <span class="o">=</span> <span class="n">ff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stokes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">stokes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scans</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_epochs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">prior_sigma_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span> <span class="o">=</span> <span class="n">FF_complex_gains_single_epoch</span><span class="p">(</span><span class="n">ff</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">covar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        
+<div class="viewcode-block" id="FF_complex_gains.set_gain_epochs"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains.set_gain_epochs">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">scans</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">gain_epochs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the gain solution intervals (gain epochs) to be used. If neither</span>
+<span class="sd">        scans nor gain_epochs selected, will solve for gains on each unique</span>
+<span class="sd">        timestamp in the data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          scans (bool): If True, solves for independent gains by scan. Overrides explicit specification of gain solution intervals. Default: False.</span>
+<span class="sd">          gain_epochs (nd.array): 2D array containing the start and end times for each gain solution epoch. Default: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">scans</span> <span class="o">=</span> <span class="n">scans</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_epochs</span> <span class="o">=</span> <span class="n">gain_epochs</span></div>
+        
+    <span class="k">def</span> <span class="nf">generate_gain_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">)</span> <span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scans</span><span class="o">==</span><span class="kc">True</span><span class="p">)</span> <span class="p">:</span>
+            <span class="n">obs</span><span class="o">.</span><span class="n">add_scans</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_epochs</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">scans</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_epochs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="n">tu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">])</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="n">tu</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">-</span><span class="n">tu</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">dt</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">+</span><span class="nb">list</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span><span class="o">+</span><span class="p">[</span><span class="n">dt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_epochs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">tu</span><span class="p">),</span><span class="mi">2</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_epochs</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">tu</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_epochs</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">tu</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    
+<div class="viewcode-block" id="FF_complex_gains.visibilities"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains.visibilities">[docs]</a>    <span class="k">def</span> <span class="nf">visibilities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Complex visibilities associated with the underlying FisherForecast object</span>
+<span class="sd">        evaluated at the data points in the given Obsdata object for the model with</span>
+<span class="sd">        the given parameter values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          obs (ehtim.obsdata.Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)</span>
+<span class="sd">          p (numpy.ndarray): list of parameters for the model at which visiblities are desired.</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (numpy.ndarray): List of complex visibilities computed at observations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains.visibility_gradients"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains.visibility_gradients">[docs]</a>    <span class="k">def</span> <span class="nf">visibility_gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gradients of the complex visibilities associated with the underlying </span>
+<span class="sd">        FisherForecast object with respect to the model pararmeters evaluated at </span>
+<span class="sd">        the data points in the given Obsdata object for the model with the given </span>
+<span class="sd">        parameter values.  </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          obs (ehtim.obsdata.Obsdata): An ehtim Obsdata object with a particular set of observation details (u,v positions, times, etc.)</span>
+<span class="sd">          p (numpy.ndarray): list of parameters for the model image used to create object.</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (numpy.ndarray): List of complex visibility gradients computed at observations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">visibility_gradients</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains.fisher_covar"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains.fisher_covar">[docs]</a>    <span class="k">def</span> <span class="nf">fisher_covar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the Fisher matrix as defined in the accompanying documentation,</span>
+<span class="sd">        marginalized over the complex station gains. Intelligently avoids </span>
+<span class="sd">        recomputation if the observation and parameters are unchanged.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          obs (ehtim.obsdata.Obsdata): An Obsdata object containing the observation particulars.</span>
+<span class="sd">          p (list): List of model parameters at which to compute the Fisher matrix.</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (numpy.ndarray): The Fisher matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># Get the fisher covariance </span>
+        <span class="n">new_argument_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">),</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span> <span class="n">new_argument_hash</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="p">)</span> <span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">covar</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="n">new_argument_hash</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">covar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stokes</span> <span class="o">==</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span>
+                <span class="n">obs</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">switch_polrep</span><span class="p">(</span><span class="s1">&#39;stokes&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">generate_gain_epochs</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_amplitude_priors</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_phase_priors</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain amplitude dicts -- global:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain amplitude dicts -- local: &quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">)</span>
+                    
+                
+                <span class="k">for</span> <span class="n">ige</span><span class="p">,</span><span class="n">ge</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_epochs</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="k">with</span> <span class="n">ploop</span><span class="o">.</span><span class="n">HiddenPrints</span><span class="p">():</span>
+                        <span class="n">obs_ge</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">flag_UT_range</span><span class="p">(</span><span class="n">UT_start_hour</span><span class="o">=</span><span class="n">ge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">UT_stop_hour</span><span class="o">=</span><span class="n">ge</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">output</span><span class="o">=</span><span class="s1">&#39;flagged&#39;</span><span class="p">)</span>
+
+                    <span class="n">gradV_wgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">visibility_gradients</span><span class="p">(</span><span class="n">obs_ge</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="n">covar_wgs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+                    
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="p">:</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="p">:</span>
+                            <span class="n">covar_wgs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">gradV_wgs</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="n">gradV_wgs</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">gradV_wgs</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">gradV_wgs</span><span class="p">[:,</span><span class="n">j</span><span class="p">])</span><span class="o">/</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+                            <span class="n">covar_wgs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">2.0</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+                            
+                    <span class="n">n</span> <span class="o">=</span> <span class="n">covar_wgs</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">,:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+                    <span class="n">r</span> <span class="o">=</span> <span class="n">covar_wgs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+                    <span class="n">m</span> <span class="o">=</span> <span class="n">covar_wgs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">:,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">:]</span>
+                    <span class="n">r</span><span class="p">,</span><span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_vM</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">m</span><span class="p">)</span>
+                    <span class="n">mn</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">_invert_matrix</span><span class="p">(</span><span class="n">m</span><span class="p">),</span><span class="n">r</span><span class="p">))</span>
+                    
+                    <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain epoch </span><span class="si">%g</span><span class="s2"> of </span><span class="si">%g</span><span class="s2"> ----------------------&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">ige</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_epochs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;obs stations:&quot;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">])</span><span class="o">+</span><span class="nb">list</span><span class="p">(</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t2&#39;</span><span class="p">])))</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;obs times:&quot;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]))</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;obs data:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gradV gains:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">gradV_wgs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">:])</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;covar:&quot;</span><span class="p">)</span>
+                        <span class="n">_print_matrix</span><span class="p">(</span><span class="n">covar_wgs</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;n:&quot;</span><span class="p">)</span>
+                        <span class="n">_print_matrix</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;r:&quot;</span><span class="p">)</span>
+                        <span class="n">_print_matrix</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;m:&quot;</span><span class="p">)</span>
+                        <span class="n">_print_matrix</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;minv:&quot;</span><span class="p">)</span>
+                        <span class="n">_print_matrix</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">_invert_matrix</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;marginalized n:&quot;</span><span class="p">)</span>
+                        <span class="n">_print_matrix</span><span class="p">(</span><span class="n">mn</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;marginalized/symmetrized n:&quot;</span><span class="p">)</span>
+                        <span class="n">_print_matrix</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">mn</span><span class="o">+</span><span class="n">mn</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+
+                    <span class="c1">#quit()</span>
+
+                    
+                    <span class="bp">self</span><span class="o">.</span><span class="n">covar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">covar</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">mn</span><span class="o">+</span><span class="n">mn</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">obs</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">switch_polrep</span><span class="p">(</span><span class="s1">&#39;circ&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">generate_gain_epochs</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_amplitude_priors</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_phase_priors</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain amplitude dicts -- global:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain amplitude dicts -- local: &quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain phase dicts -- global:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain phase dicts -- local: &quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain ratio amplitude dicts -- global:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain ratio amplitude dicts -- local: &quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain ratio phase dicts -- global:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gain ratio phase dicts -- local: &quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">ige</span><span class="p">,</span><span class="n">ge</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_epochs</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="k">with</span> <span class="n">ploop</span><span class="o">.</span><span class="n">HiddenPrints</span><span class="p">():</span>
+                        <span class="n">obs_ge</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">flag_UT_range</span><span class="p">(</span><span class="n">UT_start_hour</span><span class="o">=</span><span class="n">ge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">UT_stop_hour</span><span class="o">=</span><span class="n">ge</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">output</span><span class="o">=</span><span class="s1">&#39;flagged&#39;</span><span class="p">)</span>
+
+                    <span class="n">gradRR_wgs</span><span class="p">,</span> <span class="n">gradLL_wgs</span><span class="p">,</span> <span class="n">gradRL_wgs</span><span class="p">,</span> <span class="n">gradLR_wgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">visibility_gradients</span><span class="p">(</span><span class="n">obs_ge</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                    <span class="n">covar_wgs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="p">:</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="p">:</span>
+                            <span class="n">covar_wgs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">gradRR_wgs</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="n">gradRR_wgs</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;rrsigma&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">gradRR_wgs</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">gradRR_wgs</span><span class="p">[:,</span><span class="n">j</span><span class="p">])</span><span class="o">/</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;rrsigma&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                            <span class="n">covar_wgs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">gradLL_wgs</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="n">gradLL_wgs</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;llsigma&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">gradLL_wgs</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">gradLL_wgs</span><span class="p">[:,</span><span class="n">j</span><span class="p">])</span><span class="o">/</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;llsigma&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                            <span class="n">covar_wgs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">gradRL_wgs</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="n">gradRL_wgs</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;rlsigma&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">gradRL_wgs</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">gradRL_wgs</span><span class="p">[:,</span><span class="n">j</span><span class="p">])</span><span class="o">/</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;rlsigma&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                            <span class="n">covar_wgs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">gradLR_wgs</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="n">gradLR_wgs</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">/</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;lrsigma&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">gradLR_wgs</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">gradLR_wgs</span><span class="p">[:,</span><span class="n">j</span><span class="p">])</span><span class="o">/</span><span class="n">obs_ge</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;lrsigma&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+                            <span class="n">covar_wgs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">2.0</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+
+                    <span class="n">n</span> <span class="o">=</span> <span class="n">covar_wgs</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">,:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+                    <span class="n">r</span> <span class="o">=</span> <span class="n">covar_wgs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+                    <span class="n">m</span> <span class="o">=</span> <span class="n">covar_wgs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">:,</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">:]</span>
+                    <span class="n">r</span><span class="p">,</span><span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_vM</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">m</span><span class="p">)</span>
+                    <span class="n">mn</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">_invert_matrix</span><span class="p">(</span><span class="n">m</span><span class="p">),</span><span class="n">r</span><span class="p">))</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">covar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">covar</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">mn</span><span class="o">+</span><span class="n">mn</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">covar</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">2.0</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="c1"># Why factor of 2?</span>
+                    
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">covar</span></div>
+    
+<div class="viewcode-block" id="FF_complex_gains.parameter_labels"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains.parameter_labels">[docs]</a>    <span class="k">def</span> <span class="nf">parameter_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameter labels to be used in plotting.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (list): List of strings with parameter labels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">parameter_labels</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains.set_gain_amplitude_prior"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains.set_gain_amplitude_prior">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain_amplitude_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the log-normal priors on the gain amplitudes, either for a</span>
+<span class="sd">        specified station or for all stations. Identical priors are </span>
+<span class="sd">        assummed across the entire observation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          sigma (float): Standard deviation of the log-amplitude.</span>
+<span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">10.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">[</span><span class="n">station</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+            
+        <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gain amplitude dict:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_amplitude_priors</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains.set_gain_phase_prior"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains.set_gain_phase_prior">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain_phase_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the normal priors on the gain phases, either for a specified </span>
+<span class="sd">        station or for all stations. Usually, this should be the default</span>
+<span class="sd">        (uniformative). Identical priors are assummed across the entire </span>
+<span class="sd">        observation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          sigma (float): Standard deviation of the phase.</span>
+<span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">[</span><span class="n">station</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+            
+        <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gain phase dict:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains.set_gain_ratio_amplitude_prior"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains.set_gain_ratio_amplitude_prior">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain_ratio_amplitude_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the log-normal priors on the R/L gain amplitude ratios, either </span>
+<span class="sd">        for a specified station or for all stations. Only relevant for</span>
+<span class="sd">        polarized models. Default: 1e-10 for all stations. Identical priors </span>
+<span class="sd">        are assummed across the entire observation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          sigma (float): Standard deviation of the log-amplitude ratio.</span>
+<span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="p">[</span><span class="n">station</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+            
+        <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gain ratio amplitude dict:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FF_complex_gains.set_gain_ratio_phase_prior"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.ff_complex_gains.FF_complex_gains.set_gain_ratio_phase_prior">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain_ratio_phase_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">station</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the normal priors on the R/L gain phase differences, either </span>
+<span class="sd">        for a specified station or for all stations. Only relevant for</span>
+<span class="sd">        polarized models. Default: 1e-10 for all stations. Identical priors </span>
+<span class="sd">        are assummed across the entire observation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          sigma (float): Standard deviation of the phase.</span>
+<span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="p">[</span><span class="n">station</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+            
+        <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gain ratio phase dict:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Avery E. Broderick.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0+untagged.70.g61b689c',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            LINK_SUFFIX:'.html', 
+            HAS_SOURCE: 'true'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
