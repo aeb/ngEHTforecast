@@ -3,34 +3,30 @@ Developer's Guide
 
 Getting the latest version
 ------------------------------
-The latest version of ThemisPy can be obtained from https://github.com/aeb/ThemisPy.
+The latest version of ngEHTforecast can be obtained from https://github.com/aeb/ngEHTforecast.
 
-ThemisPy uses the git-flow_ extensions to facilitate development.
+..
+   ThemisPy uses the git-flow_ extensions to facilitate development.
 
 
 Scope and goals
 ------------------------------
-ThemisPy seeks to organize and structure postprocessing functions for Themis_ analyses.
-As such, it is closely related to and dependent on the structure and development of
-the Themis_ analysis framework.  Importantly, it is not intended to produce analyses
-of its own.  If such an analysis is necessary, consider generating a separate script
-and submit it to the `Themis repository`_.
+ngEHTforecast seeks to collect and distribute tools for performing science forecasts
+for the ngEHT_.  It is dependent on the ability to specify an observation (i.e., a
+UVFITS file), and is therefore closely integrated with the existing software infrastructure
+for performing data simulation.
 
 
 Backward compatibility
 ------------------------------
-ThemisPy follows the `Semantic Versioning 2.0`_ versioning system.  There is no current
-plan to pursue additional major versions after 1.0.0.  Thus, ThemisPy must strictly
-maintain backwards compatability.  If you add a feature, remember that you will be
-responsible for ensuring its continued functionality.  Thus, think carefully about
-the existing structure and how to build durable additions.
+ngEHTforecast follows the `Semantic Versioning 2.0`_ versioning system.
 
 
 Portability
 ------------------------------
-ThemisPy aspires to be as universally portable as possible.  While library
-interdependencies are neither unavoidable nor always undesirable, and ThemisPy does
-depend on Numpy, SciPy, and Matplotlib, such dependencies should be kept to a
+ngEHTforecast aspires to be as universally portable as possible.  While library
+interdependencies are neither unavoidable nor always undesirable, and ngEHTforecast does
+depend on Numpy, SciPy, Matplotlib, and ehtim_, such dependencies should be kept to a
 minimum.  No absolute rules are possible for this.  Nevertheless:
 
 1. Consider if additional libraries are required, or if the goal can be
@@ -39,18 +35,20 @@ minimum.  No absolute rules are possible for this.  Nevertheless:
    consider wrapping the necessary import statements in ``try``, ``except``
    blocks with warnings.
 
-For example, ehtim_ is not included as a dependency, though some functionality is
-dependent upon it.  Where such functions are present, the following import block is
-included:
+For example, imagine that the python package foo is not included as a dependency, though
+some functionality is dependent upon it.  In source files where such functions are present,
+the following import block should be included,
 
 ::
 
    try:
-       import ehtim as eh
-       ehtim_found = True
+       import foo
+       foo_found = True
    except:
        warnings.warn("foo not found.", Warning)
-       ehtim_found = False
+       foo_found = False
+
+with attendant checks around the functions themselves.       
 
 
 Documenting with autodoc
@@ -104,7 +102,7 @@ file in docs/src, e.g.,
 
 ::
 
-   .. automodule:: chain.mcmc_chain
+   .. automodule:: fisher.fisher_forecast
    :members:
 
 
@@ -117,8 +115,7 @@ file in docs/src, e.g.,
 
  
 
-.. _Themis: https://perimeterinstitute.github.io/Themis
-.. _`Themis repository`: https://github.com/PerimeterInstitute/Themis
 .. _ehtim: https://achael.github.io/eht-imaging/array.html      
 .. _`Semantic Versioning 2.0`: https://semver.org/
 .. _git-flow: https://danielkummer.github.io/git-flow-cheatsheet/
+.. _ngEHT: https://www.ngeht.org
