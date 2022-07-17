@@ -20,7 +20,7 @@ print("Documentation generation searching",sys.path)
 # -- Project information -----------------------------------------------------
 
 project = 'ngEHTforecast'
-copyright = '2020, Avery E. Broderick'
+copyright = '2022, Avery E. Broderick'
 author = 'Avery E. Broderick'
 
 
