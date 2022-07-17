@@ -36,6 +36,6 @@ $(window).resize(function(){
         $("li.nav-item-0 a").text("Top");
     }
     else {
-        $("li.nav-item-0 a").text("ngEHTforecast 0+untagged.60.g4c1ea66.dirty documentation");
+        $("li.nav-item-0 a").text("ngEHTforecast 0+untagged.63.g94a6842.dirty documentation");
     }
 });
