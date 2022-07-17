@@ -5,6 +5,6 @@
 Data
 ================
 
-.. automodule:: data.data
+.. automodule:: data.processing
    :members:
       
