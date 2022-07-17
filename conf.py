@@ -72,9 +72,13 @@ master_doc = 'docs/src/index'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "bizstyle"
-# html_theme = "rtcat_sphinx_theme"
-# html_theme_path = ["./docs/_themes"]
+# html_theme = "bizstyle"
+# html_theme = "pyramid"
+html_theme = "rtcat_sphinx_theme"
+html_theme_path = ["./docs/_themes"]
+# html_theme_options = {
+#     "rightsidebar": "true",
+# }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -82,6 +86,33 @@ html_theme = "bizstyle"
 html_static_path = ['docs/_static']
 
 
+# Theme options are theme-specific and customize the look and feel of a theme
+# further.  For a list of options available for each theme, see the
+# documentation.
+# html_theme_options = {
+#     # 'sticky_navigation': True  # Set to False to disable the sticky nav while scrolling.
+#     # 'logo_only': True,  # if we have a html_logo below, this shows /only/ the logo with no title text
+# }
+
+# Add any paths that contain custom themes here, relative to this directory.
+# html_theme_path = ["../.."]
+
+# The name for this set of Sphinx documents.  If None, it defaults to
+# "<project> v<release> documentation".
+#html_title = None
+
+# A shorter title for the navigation bar.  Default is the same as html_title.
+#html_short_title = None
+
+# The name of an image file (relative to this directory) to place at the top
+# of the sidebar.
+# html_logo = "./docs/icons/ngeht_medallion_white_on_white_small_512x512.png"
+html_logo = "./docs/icons/ngeht_construction.png"
+
+# The name of an image file (within the static path) to use as favicon of the
+# docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
+# pixels large.
+html_favicon ="./docs/icons/ngeht_construction.ico"
 
 
 # Example configuration for intersphinx: refer to the Python standard library.

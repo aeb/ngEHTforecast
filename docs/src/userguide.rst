@@ -24,7 +24,6 @@ Individual package documentation organized by area.
    :maxdepth: 3
 
    ./fisher
-   ./data
 
    
 .. _Python: https://www.python.org/
