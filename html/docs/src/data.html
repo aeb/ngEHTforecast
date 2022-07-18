@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Data &mdash; ngEHTforecast 0+untagged.87.g3fa2b00 documentation</title>
+  <title>Data &mdash; ngEHTforecast 0+untagged.88.gaed9d1e documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.87.g3fa2b00 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.88.gaed9d1e documentation" href="../../index.html"/>
         <link rel="up" title="User’s Guide" href="userguide.html"/>
         <link rel="next" title="Developer’s Guide" href="devel.html"/>
         <link rel="prev" title="Fisher" href="fisher.html"/> 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                0+untagged.87.g3fa2b00
+                0+untagged.88.gaed9d1e
               </div>
             
           
@@ -172,6 +172,22 @@
             
   <span class="target" id="module-data"></span><div class="section" id="data">
 <h1>Data<a class="headerlink" href="#data" title="Permalink to this headline">¶</a></h1>
+<p>A handful of UVFITS files are supplied with the package, collected in the the
+<strong>uvfits</strong> folder.  Currently, these include:</p>
+<ul class="simple">
+<li><p>M87_230GHz.uvfits – A simulated <a class="reference external" href="https://www.ngeht.org/">ngEHT</a> data set generated from a GRMHD
+simulation image located at M87, viewed at 230 GHz.  Courtesy of Dom Pesece.</p></li>
+<li><p>M87_345GHz.uvfits – A simulated <a class="reference external" href="https://www.ngeht.org/">ngEHT</a> data set generated from a GRMHD
+simulation image located at M87, viewed at 345 GHz.  Courtesy of Dom Pesece.</p></li>
+<li><p>circ_gauss_x2_F0=3.0_FWHM=2.0_sep=5.0_angle=0_230GHz_ngeht_ref1.uvfits – A
+simulated <a class="reference external" href="https://www.ngeht.org/">ngEHT</a> data set generated for a binary Gaussian as described in the
+<a class="reference external" href="https://challenge.ngeht.org/challenge1/">ngEHT first analysis challenge</a>. Courtesy of Freek Roelofs.</p></li>
+</ul>
+<p>Beyond loading these, there are many other ways to generate and/or modify an
+<a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object.  Here are some functions for doing so,
+some of which are implemented in ngEHTforecast (and its dependencies), while
+others depend on external libraries designed to generate simulation data sets
+for <a class="reference external" href="https://www.ngeht.org/">ngEHT</a>.</p>
 <div class="section" id="module-data.processing">
 <span id="processing"></span><h2>Processing<a class="headerlink" href="#module-data.processing" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -221,7 +237,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.87.g3fa2b00',
+            VERSION:'0+untagged.88.gaed9d1e',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
