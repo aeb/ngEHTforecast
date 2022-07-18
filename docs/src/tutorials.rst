@@ -29,7 +29,7 @@ We begin by importing ehtim_, and loading a data file.  The most common saved
 data format is UVFITS files.  Some examples are contained in the `uvfits/`
 directory.
 
-::
+.. code-block:: python
    
    import ehtim as eh
 
@@ -40,7 +40,7 @@ ngEHTforecast analyses.  However, we might want to perform some typical
 preprocessing steps.  First, we will average the data over observation scans,
 reducing the data volume.
 
-::
+.. code-block:: python
    
    obs.add_scans()
    obs = obs.avg_coherent(0,scan_avg=True)
@@ -52,7 +52,7 @@ We can see which stations are in the data set by looking at the **obs.data**
 entries directly.  In order to select only unique entries we will make use
 of Numpy_ functions.
 
-::
+.. code-block:: python
    
    import numpy as np
    
@@ -76,7 +76,7 @@ A common characterization of non-closing systematic errors is an additional
 fractional error contribution.  For example, many EHT_ analyses assume a 1%
 systematic uncertainty.  This may be included via
 
-::
+.. code-block:: python
 
    obs = obs.add_fractional_noise(0.01)
 
@@ -84,7 +84,7 @@ Finally, we will flag a subset of stations, creating a second observation
 associated with a smaller array.  This is easily done using the
 :meth:`ehtim.obsdata.Obsdata.flag_sites` function:
 
-::
+.. code-block:: python
 
    obs2 = obs.flag_sites(['ALMA','JCMT','SMT','SPT','PV','PDB'])
 
@@ -121,7 +121,7 @@ We begin by importing the :ref:`fisher` functionality from ngEHTforecast
 and generating :class:`fisher.fisher_forecast.FisherForecast` objects for each
 of the two components.
 
-::
+.. code-block:: python
 
    import ngEHTforecast.fisher as fp
 
@@ -147,7 +147,7 @@ A binary, consisting of the primary and secondary separated by some
 displacement, may be constructed using :class:`fisher.ff_metamodels.FF_sum`, which takes a
 list of the :class:`fisher.fisher_forecast.FisherForecast` to be summed.
 
-::
+.. code-block:: python
 
    ff = fp.FF_sum([ff1,ff2])
 
@@ -171,7 +171,7 @@ using :class:`fisher.ff_complex_gains.FF_complex_gains`, which takes a
 :class:`fisher.fisher_forecast.FisherForecast` object that marginalizes over the
 desired complex station gains.
 
-::
+.. code-block:: python
    
    ffg = fp.FF_complex_gains(ff)
 
@@ -242,7 +242,8 @@ This corresponds to the following parameter list.
 To check that this looks the way we expect it to, we can plot the image with the
 :meth:`fisher.fisher_forecast.FisherForecast.display_image` function.
 
-::
+.. code-block:: python
+   :emphasize-lines: 3
    
    import matplotlib.pyplot as plt
    
@@ -267,7 +268,7 @@ marginalizing over all others.  We specify the observation for which to
 compute the uncertainties and the indices of the parameters for which we
 would like uncertainty estimates.
 
-::
+.. code-block:: python
 
    Sigma_obs = ffg.marginalized_uncertainties(obs,p,ilist=[0,2,6,7])
    Sigma_obs2 = ffg.marginalized_uncertainties(obs2,p,ilist=[0,2,6,7])
@@ -296,7 +297,8 @@ parameter, and therefore index 6 due to the zero-offset indexing), and may
 optionally set some clarifying labels to indicate which observation details the
 two different curves correspond.
 
-::
+.. code-block:: python
+   :emphasize-lines: 1
 
    ffg.plot_1d_forecast([obs2,obs],p,6,labels=['ngEHT','Reduced ngEHT'])
    plt.savefig('tutorial_1d.png',dpi=300)
@@ -319,7 +321,8 @@ syntax is very similar to the
 :meth:`fisher.fisher_forecast.FisherForecast.plot_1d_forecast` function, with
 the exception that now we must specify two parameter indices.
 
-::
+.. code-block:: python
+   :emphasize-lines: 1
 
    ffg.plot_2d_forecast([obs2,obs],p,6,7,labels=['ngEHT','Reduced ngEHT'])
    plt.savefig('tutorial_2d.png',dpi=300)
@@ -341,7 +344,8 @@ indices are specified.  By default, all parameters are included.  It is helpful
 to also include some guidance on the location relative to the figure to ensure
 labels are visible.
 
-::
+.. code-block:: python
+   :emphasize-lines: 1
 
    ffg.plot_triangle_forecast([obs2,obs],p,labels=['ngEHT','Reduced ngEHT'],axis_location=[0.075,0.075,0.9,0.9])
    plt.savefig('tutorial_tri.png',dpi=300)
@@ -375,7 +379,8 @@ included.  The only ngEHTforecast function that we are using is the same
 described in :ref:`Forecasting Uncertainties`.  However, now it is embedded
 in a loop which varies the "truth" parameters:
       
-::
+.. code-block:: python
+   :emphasize-lines: 1-5
 
    secondary_flux = np.logspace(-3,0,16)
    Sigma_list = 0*secondary_flux
@@ -423,7 +428,8 @@ distribution of individual computations to the cores (here set to 4), we must
 only define a single function to return the desired marginalized uncertainty at
 each new point in the parameter space.  
 
-::
+.. code-block:: python
+   :emphasize-lines: 1,3-5,8
 
    from joblib import Parallel, delayed
 
@@ -453,8 +459,9 @@ Alternatively, we can make use of the Python_ multiprocessing_ library.  Again,
 the primary difference is that part we wish to parallelize is most conveniently
 contained in a single function.  To parallelize across 4 processes:
 
-::
-
+.. code-block:: python
+   :emphasize-lines: 1,3-5,7,10-11
+		     
    import multiprocessing as mp
    
    def get_sigma(flux) :
@@ -468,12 +475,7 @@ contained in a single function.  To parallelize across 4 processes:
            Sigma_list = mpp.map(get_sigma,secondary_flux)
 
        plt.plot(secondary_flux,Sigma_list,'-ob')
-       plt.xscale('log')
-       plt.yscale('log')
-       plt.xlabel(r'Flux of Secondary (Jy)')
-       plt.ylabel(r'$\sigma_{\rm RA}~(\mu{\rm as})$')
-       plt.grid(True,alpha=0.25)
-
+       ...
        plt.savefig('tutorial_sep_multiproc.png',dpi=300)
 
 To avoid repeating the initialization steps (loading the UVFITS file, creating
