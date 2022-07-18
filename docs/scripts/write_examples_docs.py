@@ -33,7 +33,7 @@ out.write(
 Examples
 ==========================================================
 Some example analyses based on ngEHTforecast illustrating its capabilities and
-how to make use of them are contained in the "examples" folder.  If you generate
+how to make use of them are contained in the **examples** folder.  If you generate
 an analysis, we encourage you to upload it with a short description of what it
 does in the docstring for other ngEHTforecast users!  Please ensure that your
 analysis is behind the standard __name__ check, i.e.,
@@ -50,8 +50,8 @@ analysis is behind the standard __name__ check, i.e.,
        [The bulk of your analysis code, including any outputs and
        anything that takes more than a few seconds to run.]
 
-All Python scripts in the examples folder conforming to the above will appear in
-the documentation the next time it is made!
+All Python scripts in **examples** conforming to the above will appear in the
+documentation the next time it is made!
 """ + "\n\n\n"
 )
 

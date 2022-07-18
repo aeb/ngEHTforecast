@@ -27,6 +27,8 @@ Contents
 
    ./examples
    ./tutorials
+   ./validation
+   
 	     
 Indices and tables
 ===========================================

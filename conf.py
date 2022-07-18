@@ -125,6 +125,7 @@ intersphinx_mapping = {'python': ('https://docs.python.org', None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
                        'matplotlib': ('https://matplotlib.org/', None),
                        'ehtim': ('https://achael.github.io/eht-imaging/', None),
+                       'joblib':('https://joblib.readthedocs.io/en/latest/',None),
 #                       'Themis': ('https://perimeterinstitute.github.io/Themis/html/', None)
 #                       'Themis': ('/Users/abroderick/Research/Themis/Themis/docs/html',None)
                    }
