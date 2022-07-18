@@ -1,6 +1,5 @@
 .. module:: fisher
 
-.. _fisher:
 
 Fisher
 =========================

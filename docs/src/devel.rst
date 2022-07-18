@@ -115,7 +115,7 @@ file in docs/src, e.g.,
 
  
 
-.. _ehtim: https://achael.github.io/eht-imaging/array.html      
+.. _ehtim: https://achael.github.io/eht-imaging/
 .. _`Semantic Versioning 2.0`: https://semver.org/
 .. _git-flow: https://danielkummer.github.io/git-flow-cheatsheet/
 .. _ngEHT: https://www.ngeht.org

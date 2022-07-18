@@ -41,7 +41,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.githubpages',
               'sphinx.ext.napoleon',
-              'sphinxarg.ext']
+              'sphinxarg.ext',
+              'sphinx.ext.autosectionlabel']
 
 #source_suffix = {'.rst': 'restructuredtext', '.txt': 'restructuredtext'} #, '.md': 'markdown'}
 #source_suffix = {'.rst': 'restructuredtext'} #, '.txt': 'restructuredtext'} #, '.md': 'markdown'}
@@ -108,13 +109,14 @@ html_static_path = ['docs/_static']
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 # html_logo = "./docs/icons/ngeht_medallion_white_on_white_small_512x512.png"
-html_logo = "./docs/icons/ngeht_construction.png"
+# html_logo = "./docs/icons/ngeht_construction.png"
+html_logo = "./docs/icons/ngEHTforecast_logo_transparent.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon ="./docs/icons/ngeht_construction.ico"
-
+# html_favicon = "./docs/icons/ngeht_construction.ico"
+html_favicon = "./docs/icons/ngeht_blue2.ico"
 
 # Example configuration for intersphinx: refer to the Python standard library.
 #intersphinx_mapping = {'https://docs.python.org/': None}
