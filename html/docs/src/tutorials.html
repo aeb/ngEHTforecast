@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorials &mdash; ngEHTforecast 0+untagged.86.g8c8193e documentation</title>
+  <title>Tutorials &mdash; ngEHTforecast 0+untagged.86.g8c8193e.dirty documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.86.g8c8193e documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.86.g8c8193e.dirty documentation" href="../../index.html"/>
         <link rel="next" title="Validation" href="validation.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0+untagged.86.g8c8193e
+                0+untagged.86.g8c8193e.dirty
               </div>
             
           
@@ -183,7 +183,7 @@ ngEHTforecast analyses.</p>
 <p>We begin by importing <a class="reference external" href="https://achael.github.io/eht-imaging/">ehtim</a>, and loading a data file.  The most common saved
 data format is UVFITS files.  Some examples are contained in the <cite>uvfits/</cite>
 directory.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ehtim</span> <span class="k">as</span> <span class="nn">eh</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ehtim</span> <span class="k">as</span> <span class="nn">eh</span>
 
 <span class="n">obs</span> <span class="o">=</span> <span class="n">eh</span><span class="o">.</span><span class="n">obsdata</span><span class="o">.</span><span class="n">load_uvfits</span><span class="p">(</span><span class="s1">&#39;../uvfits/M87_230GHz.uvfits&#39;</span><span class="p">)</span>
 </pre></div>
@@ -192,7 +192,7 @@ directory.</p>
 ngEHTforecast analyses.  However, we might want to perform some typical
 preprocessing steps.  First, we will average the data over observation scans,
 reducing the data volume.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span><span class="o">.</span><span class="n">add_scans</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span><span class="o">.</span><span class="n">add_scans</span><span class="p">()</span>
 <span class="n">obs</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">avg_coherent</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">scan_avg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -201,7 +201,7 @@ could give this another name, keeping the original should we desire to do so.</p
 <p>We can see which stations are in the data set by looking at the <strong>obs.data</strong>
 entries directly.  In order to select only unique entries we will make use
 of <a class="reference external" href="https://numpy.org">Numpy</a> functions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Unique stations:&quot;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">((</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">],</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t2&#39;</span><span class="p">]))</span> <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Unique scan times:&quot;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">])</span> <span class="p">)</span>
@@ -219,13 +219,13 @@ closely related to what an ngEHTforercast analysis will find in the data.</p>
 <p>A common characterization of non-closing systematic errors is an additional
 fractional error contribution.  For example, many <a class="reference external" href="https://www.eht.org">EHT</a> analyses assume a 1%
 systematic uncertainty.  This may be included via</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">add_fractional_noise</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">add_fractional_noise</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Finally, we will flag a subset of stations, creating a second observation
 associated with a smaller array.  This is easily done using the
 <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata.flag_sites" title="(in ehtim v1.2)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata.flag_sites()</span></code></a> function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">obs2</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">flag_sites</span><span class="p">([</span><span class="s1">&#39;ALMA&#39;</span><span class="p">,</span><span class="s1">&#39;JCMT&#39;</span><span class="p">,</span><span class="s1">&#39;SMT&#39;</span><span class="p">,</span><span class="s1">&#39;SPT&#39;</span><span class="p">,</span><span class="s1">&#39;PV&#39;</span><span class="p">,</span><span class="s1">&#39;PDB&#39;</span><span class="p">])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">obs2</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">flag_sites</span><span class="p">([</span><span class="s1">&#39;ALMA&#39;</span><span class="p">,</span><span class="s1">&#39;JCMT&#39;</span><span class="p">,</span><span class="s1">&#39;SMT&#39;</span><span class="p">,</span><span class="s1">&#39;SPT&#39;</span><span class="p">,</span><span class="s1">&#39;PV&#39;</span><span class="p">,</span><span class="s1">&#39;PDB&#39;</span><span class="p">])</span>
 
 <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Unique stations after flagging:&quot;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">((</span><span class="n">obs2</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">],</span><span class="n">obs2</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t2&#39;</span><span class="p">]))</span> <span class="p">)</span>
 </pre></div>
@@ -254,7 +254,7 @@ forecasts given a data set contained in an <a class="reference external" href="h
 <p>We begin by importing the <a class="reference internal" href="fisher.html#fisher"><span class="std std-ref">Fisher</span></a> functionality from ngEHTforecast
 and generating <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> objects for each
 of the two components.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ngEHTforecast.fisher</span> <span class="k">as</span> <span class="nn">fp</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ngEHTforecast.fisher</span> <span class="k">as</span> <span class="nn">fp</span>
 
 <span class="n">ff1</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_symmetric_gaussian</span><span class="p">()</span>
 <span class="n">ff2</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_asymmetric_gaussian</span><span class="p">()</span>
@@ -275,7 +275,7 @@ has four parameters.</p>
 <p>A binary, consisting of the primary and secondary separated by some
 displacement, may be constructed using <a class="reference internal" href="fisher.html#fisher.ff_metamodels.FF_sum" title="fisher.ff_metamodels.FF_sum"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.ff_metamodels.FF_sum</span></code></a>, which takes a
 list of the <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> to be summed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ff</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_sum</span><span class="p">([</span><span class="n">ff1</span><span class="p">,</span><span class="n">ff2</span><span class="p">])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ff</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_sum</span><span class="p">([</span><span class="n">ff1</span><span class="p">,</span><span class="n">ff2</span><span class="p">])</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Binary parameters:&quot;</span><span class="p">,</span><span class="n">ff</span><span class="o">.</span><span class="n">parameter_labels</span><span class="p">())</span>
 </pre></div>
@@ -294,7 +294,7 @@ using <a class="reference internal" href="fisher.html#fisher.ff_complex_gains.FF
 <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> object and constructs another
 <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> object that marginalizes over the
 desired complex station gains.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ffg</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_complex_gains</span><span class="p">(</span><span class="n">ff</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ffg</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_complex_gains</span><span class="p">(</span><span class="n">ff</span><span class="p">)</span>
 
 <span class="n">ffg</span><span class="o">.</span><span class="n">set_gain_epochs</span><span class="p">(</span><span class="n">scans</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">ffg</span><span class="o">.</span><span class="n">set_gain_amplitude_prior</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
@@ -353,10 +353,10 @@ asymmery parameter of 0.5, and a position angle of 0.3 radians E of N,</p></li>
 </div>
 <p>To check that this looks the way we expect it to, we can plot the image with the
 <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast.display_image" title="fisher.fisher_forecast.FisherForecast.display_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.display_image()</span></code></a> function.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-<span class="n">ffg</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_image.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="hll"><span class="n">ffg</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</span><span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_image.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>where we have now imported <a class="reference external" href="https://matplotlib.org">Matplotlib</a> to use its plotting functionality.  The
@@ -373,7 +373,7 @@ function, which computes the uncertainties for each parameter after
 marginalizing over all others.  We specify the observation for which to
 compute the uncertainties and the indices of the parameters for which we
 would like uncertainty estimates.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sigma_obs</span> <span class="o">=</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Sigma_obs</span> <span class="o">=</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
 <span class="n">Sigma_obs2</span> <span class="o">=</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs2</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sigma&#39;s for obs:&quot;</span><span class="p">,</span><span class="n">Sigma_obs</span><span class="p">)</span>
@@ -397,8 +397,8 @@ index of the parameter that we wish to plot (the RA offset is the seventh
 parameter, and therefore index 6 due to the zero-offset indexing), and may
 optionally set some clarifying labels to indicate which observation details the
 two different curves correspond.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ffg</span><span class="o">.</span><span class="n">plot_1d_forecast</span><span class="p">([</span><span class="n">obs2</span><span class="p">,</span><span class="n">obs</span><span class="p">],</span><span class="n">p</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ngEHT&#39;</span><span class="p">,</span><span class="s1">&#39;Reduced ngEHT&#39;</span><span class="p">])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_1d.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"><span class="n">ffg</span><span class="o">.</span><span class="n">plot_1d_forecast</span><span class="p">([</span><span class="n">obs2</span><span class="p">,</span><span class="n">obs</span><span class="p">],</span><span class="n">p</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ngEHT&#39;</span><span class="p">,</span><span class="s1">&#39;Reduced ngEHT&#39;</span><span class="p">])</span>
+</span><span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_1d.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that we have ensured that the typically more constraining case is plotted
@@ -416,8 +416,8 @@ marginalized over all other parameters using the
 syntax is very similar to the
 <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast.plot_1d_forecast" title="fisher.fisher_forecast.FisherForecast.plot_1d_forecast"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.plot_1d_forecast()</span></code></a> function, with
 the exception that now we must specify two parameter indices.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ffg</span><span class="o">.</span><span class="n">plot_2d_forecast</span><span class="p">([</span><span class="n">obs2</span><span class="p">,</span><span class="n">obs</span><span class="p">],</span><span class="n">p</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ngEHT&#39;</span><span class="p">,</span><span class="s1">&#39;Reduced ngEHT&#39;</span><span class="p">])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_2d.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"><span class="n">ffg</span><span class="o">.</span><span class="n">plot_2d_forecast</span><span class="p">([</span><span class="n">obs2</span><span class="p">,</span><span class="n">obs</span><span class="p">],</span><span class="n">p</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ngEHT&#39;</span><span class="p">,</span><span class="s1">&#39;Reduced ngEHT&#39;</span><span class="p">])</span>
+</span><span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_2d.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="figure align-default" id="id3">
@@ -435,8 +435,8 @@ Again, the syntax is very similar, the only difference being the manner in which
 indices are specified.  By default, all parameters are included.  It is helpful
 to also include some guidance on the location relative to the figure to ensure
 labels are visible.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ffg</span><span class="o">.</span><span class="n">plot_triangle_forecast</span><span class="p">([</span><span class="n">obs2</span><span class="p">,</span><span class="n">obs</span><span class="p">],</span><span class="n">p</span><span class="p">,</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ngEHT&#39;</span><span class="p">,</span><span class="s1">&#39;Reduced ngEHT&#39;</span><span class="p">],</span><span class="n">axis_location</span><span class="o">=</span><span class="p">[</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.9</span><span class="p">])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_tri.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"><span class="n">ffg</span><span class="o">.</span><span class="n">plot_triangle_forecast</span><span class="p">([</span><span class="n">obs2</span><span class="p">,</span><span class="n">obs</span><span class="p">],</span><span class="n">p</span><span class="p">,</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ngEHT&#39;</span><span class="p">,</span><span class="s1">&#39;Reduced ngEHT&#39;</span><span class="p">],</span><span class="n">axis_location</span><span class="o">=</span><span class="p">[</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.9</span><span class="p">])</span>
+</span><span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_tri.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="figure align-default" id="id4">
@@ -464,12 +464,12 @@ included.  The only ngEHTforecast function that we are using is the same
 <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast.marginalized_uncertainties" title="fisher.fisher_forecast.FisherForecast.marginalized_uncertainties"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.marginalized_uncertainties()</span></code></a>
 described in <a class="reference internal" href="#forecasting-uncertainties"><span class="std std-ref">Forecasting Uncertainties</span></a>.  However, now it is embedded
 in a loop which varies the “truth” parameters:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">secondary_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">)</span>
-<span class="n">Sigma_list</span> <span class="o">=</span> <span class="mi">0</span><span class="o">*</span><span class="n">secondary_flux</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">secondary_flux</span><span class="p">))</span> <span class="p">:</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="n">secondary_flux</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
-    <span class="n">Sigma_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
-
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"><span class="n">secondary_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">)</span>
+</span><span class="hll"><span class="n">Sigma_list</span> <span class="o">=</span> <span class="mi">0</span><span class="o">*</span><span class="n">secondary_flux</span>
+</span><span class="hll"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">secondary_flux</span><span class="p">))</span> <span class="p">:</span>
+</span><span class="hll">    <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="n">secondary_flux</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+</span><span class="hll">    <span class="n">Sigma_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">secondary_flux</span><span class="p">,</span><span class="n">Sigma_list</span><span class="p">,</span><span class="s1">&#39;-ob&#39;</span><span class="p">)</span>
@@ -505,15 +505,15 @@ documentation for why the latter is useful).  <a class="reference external" href
 distribution of individual computations to the cores (here set to 4), we must
 only define a single function to return the desired marginalized uncertainty at
 each new point in the parameter space.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
-
-<span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span> <span class="p">:</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
-
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"><span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+</span>
+<span class="hll"><span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span> <span class="p">:</span>
+</span><span class="hll">    <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+</span><span class="hll">    <span class="k">return</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+</span>
 <span class="n">secondary_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">)</span>
-<span class="n">Sigma_list</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)(</span><span class="n">delayed</span><span class="p">(</span><span class="n">get_sigma</span><span class="p">)(</span><span class="n">flux</span><span class="p">)</span> <span class="k">for</span> <span class="n">flux</span> <span class="ow">in</span> <span class="n">secondary_flux</span><span class="p">)</span>
-
+<span class="hll"><span class="n">Sigma_list</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)(</span><span class="n">delayed</span><span class="p">(</span><span class="n">get_sigma</span><span class="p">)(</span><span class="n">flux</span><span class="p">)</span> <span class="k">for</span> <span class="n">flux</span> <span class="ow">in</span> <span class="n">secondary_flux</span><span class="p">)</span>
+</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="o">...</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_sep_joblib.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
@@ -531,25 +531,20 @@ separation may be found in the <a class="reference external" href="https://www.p
 <p>Alternatively, we can make use of the <a class="reference external" href="https://www.python.org/">Python</a> <a class="reference external" href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing</a> library.  Again,
 the primary difference is that part we wish to parallelize is most conveniently
 contained in a single function.  To parallelize across 4 processes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"><span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+</span>
+<span class="hll"><span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span> <span class="p">:</span>
+</span><span class="hll">    <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+</span><span class="hll">    <span class="k">return</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+</span>
+<span class="hll"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span> <span class="p">:</span>
+</span>    <span class="n">secondary_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span> <span class="p">:</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span> <span class="p">:</span>
-    <span class="n">secondary_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">)</span>
-
-    <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="k">as</span> <span class="n">mpp</span> <span class="p">:</span>
-        <span class="n">Sigma_list</span> <span class="o">=</span> <span class="n">mpp</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">get_sigma</span><span class="p">,</span><span class="n">secondary_flux</span><span class="p">)</span>
-
+<span class="hll">    <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="k">as</span> <span class="n">mpp</span> <span class="p">:</span>
+</span><span class="hll">        <span class="n">Sigma_list</span> <span class="o">=</span> <span class="n">mpp</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">get_sigma</span><span class="p">,</span><span class="n">secondary_flux</span><span class="p">)</span>
+</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">secondary_flux</span><span class="p">,</span><span class="n">Sigma_list</span><span class="p">,</span><span class="s1">&#39;-ob&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Flux of Secondary (Jy)&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma_{\rm RA}~(\mu{\rm as})$&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
-
+    <span class="o">...</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_sep_multiproc.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -603,7 +598,7 @@ of the binary separation may be found in the <a class="reference external" href=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.86.g8c8193e',
+            VERSION:'0+untagged.86.g8c8193e.dirty',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
