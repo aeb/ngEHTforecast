@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>fisher.ff_models &mdash; ngEHTforecast 0+untagged.77.gc3f8281 documentation</title>
+  <title>fisher.ff_models &mdash; ngEHTforecast 0+untagged.83.g030f41b documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="../../_static/ngeht_construction.ico"/>
+    <link rel="shortcut icon" href="../../_static/ngeht_blue2.ico"/>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.77.gc3f8281 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.83.g030f41b documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -60,7 +60,7 @@
 
           
             
-            <img src="../../_static/ngeht_construction.png" class="logo" />
+            <img src="../../_static/ngEHTforecast_logo_transparent.png" class="logo" />
           
           </a>
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0+untagged.77.gc3f8281
+                0+untagged.83.g030f41b
               </div>
             
           
@@ -94,6 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../docs/src/userguide.html">User’s Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../docs/src/devel.html">Developer’s Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../docs/src/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/src/tutorials.html">Tutorials</a></li>
 </ul>
 
             
@@ -524,7 +525,7 @@
 <span class="sd">    * p[0] ... Total flux in Jy.</span>
 <span class="sd">    * p[1] ... Symmetrized mean of the FHWM in the major and minor axes in uas: :math:`{\\rm FWHM}^{-2} = {\\rm FMHM}_{\\rm min}^{-2}+{\\rm FWHM}_{\\rm max}^{-2}`</span>
 <span class="sd">    * p[2] ... Asymmetry parameter, :math:`A`, expected to be in the range [0,1).</span>
-<span class="sd">    * p[3] ... Position angle in radians.</span>
+<span class="sd">    * p[3] ... Position angle in radians of the major axis E of N.</span>
 
 <span class="sd">    In terms of these, :math:`{\\rm FWHM}_{\\rm maj}={\\rm FWHM}/\\sqrt{1-A}` and :math:`{\\rm FWHM}_{\\rm min}={\\rm FWHM}/\\sqrt{1-A}`.</span>
 
@@ -568,8 +569,8 @@
         <span class="n">sig</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">uas2rad</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">8.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span>
         <span class="n">A</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
-        <span class="n">cpa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-        <span class="n">spa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">cpa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">spa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
         <span class="n">ur</span> <span class="o">=</span> <span class="n">cpa</span><span class="o">*</span><span class="n">u</span> <span class="o">+</span> <span class="n">spa</span><span class="o">*</span><span class="n">v</span>
         <span class="n">vr</span> <span class="o">=</span> <span class="o">-</span><span class="n">spa</span><span class="o">*</span><span class="n">u</span> <span class="o">+</span> <span class="n">cpa</span><span class="o">*</span><span class="n">v</span>
 
@@ -618,8 +619,8 @@
         <span class="n">sig</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">A</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
-        <span class="n">cpa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-        <span class="n">spa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">cpa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">spa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
         <span class="n">ur</span> <span class="o">=</span> <span class="n">cpa</span><span class="o">*</span><span class="n">u</span> <span class="o">+</span> <span class="n">spa</span><span class="o">*</span><span class="n">v</span>
         <span class="n">vr</span> <span class="o">=</span> <span class="o">-</span><span class="n">spa</span><span class="o">*</span><span class="n">u</span> <span class="o">+</span> <span class="n">cpa</span><span class="o">*</span><span class="n">v</span>
 
@@ -637,7 +638,7 @@
         <span class="n">gradV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">ey2</span><span class="p">,</span> <span class="c1"># dV/dF</span>
                            <span class="o">-</span><span class="n">F</span><span class="o">*</span><span class="n">ey2</span><span class="o">*</span><span class="p">(</span> <span class="n">pimaj</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">sig</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">A</span><span class="p">)</span> <span class="o">+</span> <span class="n">pimin</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">sig</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">A</span><span class="p">)</span> <span class="p">),</span> <span class="c1"># dV/dd</span>
                            <span class="o">-</span><span class="n">F</span><span class="o">*</span><span class="n">ey2</span><span class="o">*</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span> <span class="p">(</span><span class="n">pimaj</span><span class="o">*</span><span class="n">sig</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">A</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">pimin</span><span class="o">*</span><span class="n">sig</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">A</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="p">),</span> <span class="c1"># dV/dA</span>
-                           <span class="o">-</span><span class="n">F</span><span class="o">*</span><span class="n">ey2</span><span class="o">*</span> <span class="n">pimaj</span><span class="o">*</span><span class="n">pimin</span> <span class="o">*</span> <span class="p">(</span> <span class="n">sigmaj</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">sigmin</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="p">])</span>
+                           <span class="n">F</span><span class="o">*</span><span class="n">ey2</span><span class="o">*</span> <span class="n">pimaj</span><span class="o">*</span><span class="n">pimin</span> <span class="o">*</span> <span class="p">(</span> <span class="n">sigmaj</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">sigmin</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="p">])</span>
         
         
         <span class="k">return</span> <span class="n">gradV</span><span class="o">.</span><span class="n">T</span></div>
@@ -1354,7 +1355,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.77.gc3f8281',
+            VERSION:'0+untagged.83.g030f41b',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 

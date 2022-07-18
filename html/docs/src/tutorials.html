@@ -1,0 +1,630 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorials &mdash; ngEHTforecast 0+untagged.83.g030f41b documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/ngeht_blue2.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.83.g030f41b documentation" href="../../index.html"/>
+        <link rel="prev" title="Examples" href="examples.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ngEHTforecast
+          
+
+          
+            
+            <img src="../../_static/ngEHTforecast_logo_transparent.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0+untagged.83.g030f41b
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguide.html">User’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devel.html">Developer’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-an-obsdata-object">Creating an Obsdata object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-fisherforecast-object">Creating a FisherForecast object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#forecasting-uncertainties">Forecasting Uncertainties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#exploring-parallelization">Exploring &amp; Parallelization</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ngEHTforecast</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Tutorials</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/docs/src/tutorials.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <span class="target" id="module-tutorials"></span><div class="section" id="tutorials">
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
+<p>Having trouble knowing where to start?  These tutorials cover key functionality
+in bitesized chuncks.  You can jump to any specific tutorial in the navigation
+bar or go through them all!  As functionality is added, new tutorials will
+appear (on a best effort basis!).  If you would like to help generate tutorials,
+especially for new features that you have written, please contact us!  For help
+on getting ngEHTforecast, see the <a class="reference internal" href="installation.html#installation-guide"><span class="std std-ref">Installation Guide</span></a>.</p>
+<div class="section" id="creating-an-obsdata-object">
+<h2>Creating an Obsdata object<a class="headerlink" href="#creating-an-obsdata-object" title="Permalink to this headline">¶</a></h2>
+<p>Data within ngEHTforecast is handled using the <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a>
+objects.  These encapsulate the <span class="math notranslate nohighlight">\((u,v)\)</span>-positions, scan times, station
+names, among many other elements (see the <a class="reference external" href="https://achael.github.io/eht-imaging/">ehtim</a> documentation for full
+details!).  They also come with convenient functions for generating, loading,
+and manipulating data sets.</p>
+<p>In this tutorial we will read data from disk, scan average it, flag a subset of
+stations, and add a systematic error.  The result will be an
+<a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object suitable for paassing to subsequent
+ngEHTforecast analyses.</p>
+<p>We begin by importing <a class="reference external" href="https://achael.github.io/eht-imaging/">ehtim</a>, and loading a data file.  The most common saved
+data format is UVFITS files.  Some examples are contained in the <cite>uvfits/</cite>
+directory.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ehtim</span> <span class="k">as</span> <span class="nn">eh</span>
+
+<span class="n">obs</span> <span class="o">=</span> <span class="n">eh</span><span class="o">.</span><span class="n">obsdata</span><span class="o">.</span><span class="n">load_uvfits</span><span class="p">(</span><span class="s1">&#39;../uvfits/M87_230GHz.uvfits&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object can already be passed to subsequent
+ngEHTforecast analyses.  However, we might want to perform some typical
+preprocessing steps.  First, we will average the data over observation scans,
+reducing the data volume.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span><span class="o">.</span><span class="n">add_scans</span><span class="p">()</span>
+<span class="n">obs</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">avg_coherent</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">scan_avg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that we have over-written our <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object.  We
+could give this another name, keeping the original should we desire to do so.</p>
+<p>We can see which stations are in the data set by looking at the <code class="docutils literal notranslate"><span class="pre">obs.data</span></code>
+entries directly.  In order to select only unique entries we will make use
+of <a class="reference external" href="https://numpy.org">Numpy</a> functions.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Unique stations:&quot;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">((</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">],</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t2&#39;</span><span class="p">]))</span> <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Unique scan times:&quot;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">])</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>which produces</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Unique</span> <span class="n">stations</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ALMA&#39;</span> <span class="s1">&#39;APEX&#39;</span> <span class="s1">&#39;BAJA&#39;</span> <span class="s1">&#39;CAT&#39;</span> <span class="s1">&#39;CNI&#39;</span> <span class="s1">&#39;GAM&#39;</span> <span class="s1">&#39;GARS&#39;</span> <span class="s1">&#39;GLT&#39;</span> <span class="s1">&#39;HAY&#39;</span> <span class="s1">&#39;JCMT&#39;</span> <span class="s1">&#39;KP&#39;</span> <span class="s1">&#39;LMT&#39;</span> <span class="s1">&#39;NZ&#39;</span> <span class="s1">&#39;OVRO&#39;</span> <span class="s1">&#39;PDB&#39;</span> <span class="s1">&#39;PV&#39;</span> <span class="s1">&#39;SGO&#39;</span> <span class="s1">&#39;SMA&#39;</span> <span class="s1">&#39;SMT&#39;</span><span class="p">]</span>
+<span class="n">Unique</span> <span class="n">scan</span> <span class="n">times</span><span class="p">:</span> <span class="p">[</span> <span class="mf">0.66666667</span>  <span class="mf">0.83333337</span>  <span class="mf">1.00000003</span>  <span class="o">...</span> <span class="mf">21.66666698</span> <span class="mf">21.83333302</span> <span class="mf">22.00000048</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>While it is possible to get a list of stations from the telescope array
+specification in <code class="docutils literal notranslate"><span class="pre">obs.tarr</span></code>, ngEHTforecast functions make use of the stations
+that appear explicitly in the <code class="docutils literal notranslate"><span class="pre">obs.data</span></code> object.  Thus, the above is more
+closely related to what an ngEHTforercast analysis will find in the data.</p>
+<p>A common characterization of non-closing systematic errors is an additional
+fractional error contribution.  For example, many <a class="reference external" href="https://www.eht.org">EHT</a> analyses assume a 1%
+systematic uncertainty.  This may be included via</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">add_fractional_noise</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, we will flag a subset of stations, creating a second observation
+associated with a smaller array.  This is easily done using the
+<a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata.flag_sites" title="(in ehtim v1.2)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata.flag_sites()</span></code></a> function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">obs2</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">flag_sites</span><span class="p">([</span><span class="s1">&#39;ALMA&#39;</span><span class="p">,</span><span class="s1">&#39;JCMT&#39;</span><span class="p">,</span><span class="s1">&#39;SMT&#39;</span><span class="p">,</span><span class="s1">&#39;SPT&#39;</span><span class="p">,</span><span class="s1">&#39;PV&#39;</span><span class="p">,</span><span class="s1">&#39;PDB&#39;</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Unique stations after flagging:&quot;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">((</span><span class="n">obs2</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">],</span><span class="n">obs2</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;t2&#39;</span><span class="p">]))</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>where we have removed ALMA, JCMT, SMA, SPT, PV, and PDB.  We have now saved
+this to a second <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object, and thus can make
+predictions for both.  The list of sites is now those except the ones we
+removed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Unique</span> <span class="n">stations</span> <span class="n">after</span> <span class="n">flagging</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;APEX&#39;</span> <span class="s1">&#39;BAJA&#39;</span> <span class="s1">&#39;CAT&#39;</span> <span class="s1">&#39;CNI&#39;</span> <span class="s1">&#39;GAM&#39;</span> <span class="s1">&#39;GARS&#39;</span> <span class="s1">&#39;GLT&#39;</span> <span class="s1">&#39;HAY&#39;</span> <span class="s1">&#39;KP&#39;</span> <span class="s1">&#39;LMT&#39;</span> <span class="s1">&#39;NZ&#39;</span> <span class="s1">&#39;OVRO&#39;</span> <span class="s1">&#39;SGO&#39;</span> <span class="s1">&#39;SMA&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>You are ready to begin forecasting!  All of the above may be found in the
+<a class="reference external" href="https://www.python.org/">Python</a> script <code class="docutils literal notranslate"><span class="pre">tutorials/obsdata.py</span></code>.</p>
+</div>
+<div class="section" id="creating-a-fisherforecast-object">
+<h2>Creating a FisherForecast object<a class="headerlink" href="#creating-a-fisherforecast-object" title="Permalink to this headline">¶</a></h2>
+<p>Fisher-matrix based analyses begin with the specification of an underlying model
+that we imagine will be fit the simulate data set.  In ngEHTforecast, we specify
+this model via the creation of a <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a>
+object.  This encapsulates both the model definition and provides a number of
+useful forecasting functions.</p>
+<p>In this tutorial we will create a binary consisting of a symmetric and
+asymmetric Gaussian, and incorporate complex station gains.  The result will
+be a <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> object suitable for making
+forecasts given a data set contained in an <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object.</p>
+<p>We begin by importing the <a class="reference internal" href="fisher.html#fisher"><span class="std std-ref">Fisher</span></a> functionality from ngEHTforecast
+and generating <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> objects for each
+of the two components.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ngEHTforecast.fisher</span> <span class="k">as</span> <span class="nn">fp</span>
+
+<span class="n">ff1</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_symmetric_gaussian</span><span class="p">()</span>
+<span class="n">ff2</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_asymmetric_gaussian</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Primary parameters:&quot;</span><span class="p">,</span><span class="n">ff1</span><span class="o">.</span><span class="n">parameter_labels</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Secondary parameters:&quot;</span><span class="p">,</span><span class="n">ff2</span><span class="o">.</span><span class="n">parameter_labels</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Both <code class="docutils literal notranslate"><span class="pre">ff1</span></code> and <code class="docutils literal notranslate"><span class="pre">ff2</span></code> are <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a>
+objects, either of which could be used to forecast <a class="reference external" href="https://www.ngeht.org/">ngEHT</a> science capabilities.
+We also have printed the names of the parameters of each object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Primary</span> <span class="n">parameters</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta F~({</span><span class="se">\\</span><span class="s1">rm Jy})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta FWHM~(</span><span class="se">\\</span><span class="s1">mu{</span><span class="se">\\</span><span class="s1">rm as})$&#39;</span><span class="p">]</span>
+<span class="n">Secondary</span> <span class="n">parameters</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta F~({</span><span class="se">\\</span><span class="s1">rm Jy})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta FWHM~(</span><span class="se">\\</span><span class="s1">mu{</span><span class="se">\\</span><span class="s1">rm as})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta A$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta {</span><span class="se">\\</span><span class="s1">rm PA}~({</span><span class="se">\\</span><span class="s1">rm rad})$&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>from which it is evident that the primary has two parameters and the secondary
+has four parameters.</p>
+<p>A binary, consisting of the primary and secondary separated by some
+displacement, may be constructed using <code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.FF_sum</span></code>, which takes a
+list of the <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> to be summed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ff</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_sum</span><span class="p">([</span><span class="n">ff1</span><span class="p">,</span><span class="n">ff2</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Binary parameters:&quot;</span><span class="p">,</span><span class="n">ff</span><span class="o">.</span><span class="n">parameter_labels</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Again we print the names of the parameters,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Binary</span> <span class="n">parameters</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta F~({</span><span class="se">\\</span><span class="s1">rm Jy})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta FWHM~(</span><span class="se">\\</span><span class="s1">mu{</span><span class="se">\\</span><span class="s1">rm as})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta F~({</span><span class="se">\\</span><span class="s1">rm Jy})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta FWHM~(</span><span class="se">\\</span><span class="s1">mu{</span><span class="se">\\</span><span class="s1">rm as})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta A$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta {</span><span class="se">\\</span><span class="s1">rm PA}~({</span><span class="se">\\</span><span class="s1">rm rad})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta</span><span class="se">\\</span><span class="s1">Delta x~(</span><span class="se">\\</span><span class="s1">mu{</span><span class="se">\\</span><span class="s1">rm as})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta</span><span class="se">\\</span><span class="s1">Delta y~(</span><span class="se">\\</span><span class="s1">mu{</span><span class="se">\\</span><span class="s1">rm as})$&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>from which we note that there are now eight parameters: two from the primary,
+four from the secondary, and the two that specify the displacement.  Again,
+<code class="docutils literal notranslate"><span class="pre">ff</span></code> is a <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> object, and may itself
+be used to forecast <a class="reference external" href="https://www.ngeht.org/">ngEHT</a> science capabilities.</p>
+<p>Finally, we will incorporate the complex station gains, set the gain solution
+intervals (gain epochs), and define a prior on the gain amplitudes.  We do this
+using <code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.FF_complex_gains</span></code>, which takes a
+<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> object and constructs another
+<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> object that marginalizes over the
+desired complex station gains.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ffg</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_complex_gains</span><span class="p">(</span><span class="n">ff</span><span class="p">)</span>
+
+<span class="n">ffg</span><span class="o">.</span><span class="n">set_gain_epochs</span><span class="p">(</span><span class="n">scans</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ffg</span><span class="o">.</span><span class="n">set_gain_amplitude_prior</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Binary w/ gains parameters:&quot;</span><span class="p">,</span><span class="n">ffg</span><span class="o">.</span><span class="n">parameter_labels</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The gain solution interval is set to observation scans; other available options
+are described in the <code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.FF_complex_gains</span></code> documentation.  The priors
+on the complex gain amplitudes are log-normal and set to 0.1, corresponding to a
+10% uncertainty, typcial of current <a class="reference external" href="https://www.eht.org">EHT</a> operation.  In the absence of
+specifying gain amplitude priors, they will be unconstrained (as are the complex
+gain phases).</p>
+<p>Again, we have output the parameter labels,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Binary</span> <span class="n">w</span><span class="o">/</span> <span class="n">gains</span> <span class="n">parameters</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta F~({</span><span class="se">\\</span><span class="s1">rm Jy})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta FWHM~(</span><span class="se">\\</span><span class="s1">mu{</span><span class="se">\\</span><span class="s1">rm as})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta F~({</span><span class="se">\\</span><span class="s1">rm Jy})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta FWHM~(</span><span class="se">\\</span><span class="s1">mu{</span><span class="se">\\</span><span class="s1">rm as})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta A$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta {</span><span class="se">\\</span><span class="s1">rm PA}~({</span><span class="se">\\</span><span class="s1">rm rad})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta</span><span class="se">\\</span><span class="s1">Delta x~(</span><span class="se">\\</span><span class="s1">mu{</span><span class="se">\\</span><span class="s1">rm as})$&#39;</span><span class="p">,</span> <span class="s1">&#39;$</span><span class="se">\\</span><span class="s1">delta</span><span class="se">\\</span><span class="s1">Delta y~(</span><span class="se">\\</span><span class="s1">mu{</span><span class="se">\\</span><span class="s1">rm as})$&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Note that the number and names of the parameters have not changed.  This is
+because the complex station gains will be marginalized over, i.e., we will not
+retain access to the gains themselves.</p>
+<p>Given an <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object, you are ready to start
+forcasting the capability of <a class="reference external" href="https://www.ngeht.org/">ngEHT</a> to constrain your binary model!  All of the
+above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script <code class="docutils literal notranslate"><span class="pre">tutorials/binary_ff.py</span></code>.</p>
+</div>
+<div class="section" id="forecasting-uncertainties">
+<h2>Forecasting Uncertainties<a class="headerlink" href="#forecasting-uncertainties" title="Permalink to this headline">¶</a></h2>
+<p>With the above two tutorials, <a class="reference internal" href="#creating-an-obsdata-object"><span class="std std-ref">Creating an Obsdata object</span></a> and
+<a class="reference internal" href="#creating-a-fisherforecast-object"><span class="std std-ref">Creating a FisherForecast object</span></a>, we now can start estimating the
+capabilities of <a class="reference external" href="https://www.ngeht.org/">ngEHT</a>!</p>
+<p>In this tutorial we will estimatate the precision with which <a class="reference external" href="https://www.ngeht.org/">ngEHT</a> should be
+able to constrain the parameters of our binary model for the different data
+sets.  Specifically, we will:</p>
+<ol class="arabic simple">
+<li><p>Generate estimate for uncertainties on a handful of parameters after
+marginalizing over all others.</p></li>
+<li><p>Plot the one-dimensional marginalized posteriors for both of our data sets.</p></li>
+<li><p>Plot joint two-dimensional marginalized posteriors for both of our data sets.</p></li>
+<li><p>Generate a triangle plot for our binary model.</p></li>
+</ol>
+<p>This code in this tutorial can be found in <code class="docutils literal notranslate"><span class="pre">tutorials/forecasting.py</span></code>,
+which includes the code from the previous two tutorials at the top (without the
+print statements).</p>
+<p>We must first specify the parameters of the underlying “truth” values, i.e.,
+what are the parameter values of the true brightness distribution on he sky in
+our simulated exercise.  These should be specified via a list in the same order
+as the parameter labels.  For concreteness, we will assume that:</p>
+<ul class="simple">
+<li><p>the primary has total flux 0.5 Jy and a FWHM of 10 uas,</p></li>
+<li><p>the secondary has a total flux of 1 Jy, a symmetrized-FWHM of 20 uas, an
+asymmery parameter of 0.5, and a position angle of 0.3 radians E of N,</p></li>
+<li><p>the two components are separated by 20 uas in RA and 5 uas in Dec.</p></li>
+</ul>
+<p>This corresponds to the following parameter list.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>To check that this looks the way we expect it to, we can plot the image with the
+<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast.display_image" title="fisher.fisher_forecast.FisherForecast.display_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.display_image()</span></code></a> function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">ffg</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_image.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where we have now imported <a class="reference external" href="https://matplotlib.org">Matplotlib</a> to use its plotting functionality.  The
+resulting plot is shown below.</p>
+<div class="figure align-default" id="id1">
+<a class="reference internal image-reference" href="../../_images/tutorial_image.png"><img alt="../../_images/tutorial_image.png" src="../../_images/tutorial_image.png" style="width: 487.5px; height: 375.0px;" /></a>
+<p class="caption"><span class="caption-text">Image of the brightness map for the binary model made using the
+<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast.display_image" title="fisher.fisher_forecast.FisherForecast.display_image"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.display_image()</span></code></a> function.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>We begin our science forecasts with computing the uncertainties on the fluxes
+and separations of the two components.  To do this we make use of the
+<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast.marginalized_uncertainties" title="fisher.fisher_forecast.FisherForecast.marginalized_uncertainties"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.marginalized_uncertainties()</span></code></a>
+function, which computes the uncertainties for each parameter after
+marginalizing over all others.  We specify the observation for which to
+compute the uncertainties and the indices of the parameters for which we
+would like uncertainty estimates.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sigma_obs</span> <span class="o">=</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+<span class="n">Sigma_obs2</span> <span class="o">=</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs2</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sigma&#39;s for obs:&quot;</span><span class="p">,</span><span class="n">Sigma_obs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sigma&#39;s for obs2:&quot;</span><span class="p">,</span><span class="n">Sigma_obs2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which generates the output,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sigma</span><span class="s1">&#39;s for obs: [0.00300763 0.00600743 0.00101485 0.00205108]</span>
+<span class="n">Sigma</span><span class="s1">&#39;s for obs2: [0.00377924 0.00753871 0.00203864 0.00333373]</span>
+</pre></div>
+</div>
+<p>From this we might conclude that the reduced array is similarly capable of
+constraining the fluxes of the two components (differing by about 10%-15%), but
+is considerably worse at constraining their relative location (though still
+pretty great!).</p>
+<p>We can generate plots comparing the ability of the two arrays to constrain the
+RA offsets with the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.plot_1d_forecasts()</span></code> function.  We
+must select the observations to include (i.e., the <span class="math notranslate nohighlight">\((u,v)\)</span>-coverage), the
+index of the parameter that we wish to plot (the RA offset is the seventh
+parameter, and therefore index 6 due to the zero-offset indexing), and may
+optionally set some clarifying labels to indicate which observation details the
+two different curves correspond.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ffg</span><span class="o">.</span><span class="n">plot_1d_forecast</span><span class="p">([</span><span class="n">obs2</span><span class="p">,</span><span class="n">obs</span><span class="p">],</span><span class="n">p</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ngEHT&#39;</span><span class="p">,</span><span class="s1">&#39;Reduced ngEHT&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_1d.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that we have ensured that the typically more constraining case is plotted
+second by setting the order of the observations in the list.</p>
+<div class="figure align-default" id="id2">
+<a class="reference internal image-reference" href="../../_images/tutorial_1d.png"><img alt="../../_images/tutorial_1d.png" src="../../_images/tutorial_1d.png" style="width: 375.0px; height: 300.0px;" /></a>
+<p class="caption"><span class="caption-text">Marginalized posterior on the shift in RA between the two binary components
+made using <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast.plot_1d_forecast" title="fisher.fisher_forecast.FisherForecast.plot_1d_forecast"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.plot_1d_forecast()</span></code></a>
+function.  The two plots correspond to the different observations generated
+in <a class="reference internal" href="#creating-an-obsdata-object"><span class="std std-ref">Creating an Obsdata object</span></a>.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>Similarly, we can generate plots of the two-dimensional joint posterior,
+marginalized over all other parameters using the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.plot_2d_forecasts()</span></code> function.  The
+syntax is very similar to the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.plot_1d_forecasts()</span></code> function, with
+the exception that now we must specify two parameter indices.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ffg</span><span class="o">.</span><span class="n">plot_2d_forecast</span><span class="p">([</span><span class="n">obs2</span><span class="p">,</span><span class="n">obs</span><span class="p">],</span><span class="n">p</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ngEHT&#39;</span><span class="p">,</span><span class="s1">&#39;Reduced ngEHT&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_2d.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure align-default" id="id3">
+<a class="reference internal image-reference" href="../../_images/tutorial_2d.png"><img alt="../../_images/tutorial_2d.png" src="../../_images/tutorial_2d.png" style="width: 375.0px; height: 375.0px;" /></a>
+<p class="caption"><span class="caption-text">Marginalized joint posterior on the shift in RA and Dec between the two
+binary components made using
+<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast.plot_2d_forecast" title="fisher.fisher_forecast.FisherForecast.plot_2d_forecast"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.plot_2d_forecast()</span></code></a>
+function.  The two sets of contours correspond to the different observations
+generated in <a class="reference internal" href="#creating-an-obsdata-object"><span class="std std-ref">Creating an Obsdata object</span></a>.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<p>A triangle plot, which is simply a collection of marginalized joint and
+one-dimesional posteriors, may be generated via the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.plot_triangle_forecasts()</span></code> function.
+Again, the syntax is very similar, the only difference being the manner in which
+indices are specified.  By default, all parameters are included.  It is helpful
+to also include some guidance on the location relative to the figure to ensure
+labels are visible.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ffg</span><span class="o">.</span><span class="n">plot_triangle_forecast</span><span class="p">([</span><span class="n">obs2</span><span class="p">,</span><span class="n">obs</span><span class="p">],</span><span class="n">p</span><span class="p">,</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ngEHT&#39;</span><span class="p">,</span><span class="s1">&#39;Reduced ngEHT&#39;</span><span class="p">],</span><span class="n">axis_location</span><span class="o">=</span><span class="p">[</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.075</span><span class="p">,</span><span class="mf">0.9</span><span class="p">,</span><span class="mf">0.9</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_tri.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure align-default" id="id4">
+<a class="reference internal image-reference" href="../../_images/tutorial_tri.png"><img alt="../../_images/tutorial_tri.png" src="../../_images/tutorial_tri.png" style="width: 1500.0px; height: 1500.0px;" /></a>
+<p class="caption"><span class="caption-text">Triangle plot for the binary model made using
+<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast.plot_triangle_forecast" title="fisher.fisher_forecast.FisherForecast.plot_triangle_forecast"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.plot_triangle_forecast()</span></code></a>
+function.  The two sets of contours correspond to the different observations
+generated in <a class="reference internal" href="#creating-an-obsdata-object"><span class="std std-ref">Creating an Obsdata object</span></a>.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</div>
+<p>All of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script <code class="docutils literal notranslate"><span class="pre">tutorials/forecasting.py</span></code>.</p>
+</div>
+<div class="section" id="exploring-parallelization">
+<h2>Exploring &amp; Parallelization<a class="headerlink" href="#exploring-parallelization" title="Permalink to this headline">¶</a></h2>
+<p>A key question for many science cases will be how the uncertainties depends on
+specific model prameters.  For example, how well the binary separation can be
+determined as a function of the flux of the secondary.  In this tutorial, we
+will make a plot that shows how a chosen parameter uncertainty varies with
+respect to the source model parameters.  Because large parameter space
+explorations can quickly become computationally intensive, we will also
+demonstrate how this can be parallelized to take advantage of multiple cores.</p>
+<p>Exploring parameter dependence can easily addressed via an appropriate loop over
+the model paramters.  Again, we will assume that the code from the tutorials
+<a class="reference internal" href="#creating-an-obsdata-object"><span class="std std-ref">Creating an Obsdata object</span></a> and <a class="reference internal" href="#creating-a-fisherforecast-object"><span class="std std-ref">Creating a FisherForecast object</span></a> is
+included.  The only ngEHTforecast function that we are using is the same
+<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast.marginalized_uncertainties" title="fisher.fisher_forecast.FisherForecast.marginalized_uncertainties"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast.marginalized_uncertainties()</span></code></a>
+described in <a class="reference internal" href="#forecasting-uncertainties"><span class="std std-ref">Forecasting Uncertainties</span></a>.  However, now it is embedded
+in a loop which varies the “truth” parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">secondary_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">Sigma_list</span> <span class="o">=</span> <span class="mi">0</span><span class="o">*</span><span class="n">secondary_flux</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">secondary_flux</span><span class="p">))</span> <span class="p">:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="n">secondary_flux</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">Sigma_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">secondary_flux</span><span class="p">,</span><span class="n">Sigma_list</span><span class="p">,</span><span class="s1">&#39;-ob&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Flux of Secondary (Jy)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma_{\rm RA}~(\mu{\rm as})$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_sep&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The remainder of the code makes a <a class="reference external" href="https://matplotlib.org">Matplotlib</a> plot, specifies the scales, adds
+labels and other accoutrements, and saves the following plot to a file.</p>
+<div class="figure align-default" id="id5">
+<a class="reference internal image-reference" href="../../_images/tutorial_sep.png"><img alt="../../_images/tutorial_sep.png" src="../../_images/tutorial_sep.png" style="width: 480.0px; height: 360.0px;" /></a>
+<p class="caption"><span class="caption-text">Uncertainty on the separation in RA as a function of the total flux of the
+secondary in the binary model.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</div>
+<p>All of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script <code class="docutils literal notranslate"><span class="pre">tutorials/binary_separation.py</span></code>.</p>
+<p>While the above code completes in approximately 1 minute on a single modern core,
+increasing the number of parameters being surveyed rapidly grows the
+computational expense.  Beacause the loop is trivially parallel, the evaluation
+of the uncertainty at each parameter set is independent of all others, this
+problem lends itself to parallelization.</p>
+<p>There are many packages that enable parallelization in <a class="reference external" href="https://www.python.org/">Python</a>.  We will make
+use of two: the the <a class="reference external" href="https://joblib.readthedocs.io">Joblib</a> package and <a class="reference external" href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing</a> library.  We begin with
+the former, <a class="reference external" href="https://joblib.readthedocs.io">Joblib</a>.</p>
+<p>All that changes from above is the syntax surrounding the computation of the
+elements of <code class="docutils literal notranslate"><span class="pre">Sigma_list</span></code>.  From <a class="reference external" href="https://joblib.readthedocs.io">Joblib</a> we import the functions
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">joblib.Parallel()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">joblib.delayed()</span></code> (see the <a class="reference external" href="https://joblib.readthedocs.io">Joblib</a>
+documentation for why the latter is useful).  <a class="reference external" href="https://joblib.readthedocs.io">Joblib</a> will handle the
+distribution of individual computations to the cores (here set to 4), we must
+only define a single function to return the desired marginalized uncertainty at
+each new point in the parameter space.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+
+<span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span> <span class="p">:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+
+<span class="n">secondary_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">Sigma_list</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)(</span><span class="n">delayed</span><span class="p">(</span><span class="n">get_sigma</span><span class="p">)(</span><span class="n">flux</span><span class="p">)</span> <span class="k">for</span> <span class="n">flux</span> <span class="ow">in</span> <span class="n">secondary_flux</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="o">...</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_sep_joblib.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We do so by defining a small function that, when given a flux for the secondary,
+sets the parameter list and returns the marginalized uncertaint on the RA offset.
+This is then passed to the <code class="xref py py-meth docutils literal notranslate"><span class="pre">joblib.Parallel()</span></code> using <code class="xref py py-meth docutils literal notranslate"><span class="pre">joblib.delayed()</span></code>
+as specified in the <a class="reference external" href="https://joblib.readthedocs.io">Joblib</a> documentation.</p>
+<p>The advantage of using <a class="reference external" href="https://joblib.readthedocs.io">Joblib</a> is that the entirety of the modification due to
+parallelization is to define as a function the elements of the computation that
+we wish to parallelize and some minor syntax changes.  This version of the binary
+separation may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script
+<code class="docutils literal notranslate"><span class="pre">tutorials/binary_separation_joblib.py</span></code>.</p>
+<p>Alternatively, we can make use of the <a class="reference external" href="https://www.python.org/">Python</a> <a class="reference external" href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing</a> library.  Again,
+the primary difference is that part we wish to parallelize is most conveniently
+contained in a single function.  To parallelize across 4 processes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_sigma</span><span class="p">(</span><span class="n">flux</span><span class="p">)</span> <span class="p">:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">ffg</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span> <span class="p">:</span>
+    <span class="n">secondary_flux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="k">as</span> <span class="n">mpp</span> <span class="p">:</span>
+        <span class="n">Sigma_list</span> <span class="o">=</span> <span class="n">mpp</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">get_sigma</span><span class="p">,</span><span class="n">secondary_flux</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">secondary_flux</span><span class="p">,</span><span class="n">Sigma_list</span><span class="p">,</span><span class="s1">&#39;-ob&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Flux of Secondary (Jy)&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma_{\rm RA}~(\mu{\rm as})$&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;tutorial_sep_multiproc.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To avoid repeating the initialization steps (loading the uvfits file, creating
+the <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a>), per the <a class="reference external" href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing</a>
+library documentation, the portion of the code that will ultimately be
+parallelized is contained in the <cite>__name__ == “__main__”</cite> guards.  This version
+of the binary separation may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script
+<code class="docutils literal notranslate"><span class="pre">tutorials/binary_separation_multiprocessing.py</span></code>.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="examples.html" class="btn btn-neutral" title="Examples" accesskey="p">← Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2022, Avery E. Broderick.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0+untagged.83.g030f41b',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            LINK_SUFFIX:'.html', 
+            HAS_SOURCE: 'true'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

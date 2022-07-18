@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fisher &mdash; ngEHTforecast 0+untagged.77.gc3f8281 documentation</title>
+  <title>Fisher &mdash; ngEHTforecast 0+untagged.83.g030f41b documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="../../_static/ngeht_construction.ico"/>
+    <link rel="shortcut icon" href="../../_static/ngeht_blue2.ico"/>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.77.gc3f8281 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.83.g030f41b documentation" href="../../index.html"/>
         <link rel="up" title="User’s Guide" href="userguide.html"/>
         <link rel="next" title="Data" href="data.html"/>
         <link rel="prev" title="User’s Guide" href="userguide.html"/> 
@@ -62,7 +62,7 @@
 
           
             
-            <img src="../../_static/ngeht_construction.png" class="logo" />
+            <img src="../../_static/ngEHTforecast_logo_transparent.png" class="logo" />
           
           </a>
 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                0+untagged.77.gc3f8281
+                0+untagged.83.g030f41b
               </div>
             
           
@@ -110,6 +110,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="devel.html">Developer’s Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
 </ul>
 
             
@@ -171,7 +172,7 @@
            <div itemprop="articleBody">
             
   <span class="target" id="module-fisher"></span><div class="section" id="fisher">
-<span id="id1"></span><h1>Fisher<a class="headerlink" href="#fisher" title="Permalink to this headline">¶</a></h1>
+<h1>Fisher<a class="headerlink" href="#fisher" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="base-class">
 <h2>Base Class<a class="headerlink" href="#base-class" title="Permalink to this headline">¶</a></h2>
 <p>Definition of the FisherForecast interface and a number of general utility functions.</p>
@@ -1110,7 +1111,7 @@ Parameter vector is:</p>
 <li><p>p[0] … Total flux in Jy.</p></li>
 <li><p>p[1] … Symmetrized mean of the FHWM in the major and minor axes in uas: <span class="math notranslate nohighlight">\({\rm FWHM}^{-2} = {\rm FMHM}_{\rm min}^{-2}+{\rm FWHM}_{\rm max}^{-2}\)</span></p></li>
 <li><p>p[2] … Asymmetry parameter, <span class="math notranslate nohighlight">\(A\)</span>, expected to be in the range [0,1).</p></li>
-<li><p>p[3] … Position angle in radians.</p></li>
+<li><p>p[3] … Position angle in radians of the major axis E of N.</p></li>
 </ul>
 <p>In terms of these, <span class="math notranslate nohighlight">\({\rm FWHM}_{\rm maj}={\rm FWHM}/\sqrt{1-A}\)</span> and <span class="math notranslate nohighlight">\({\rm FWHM}_{\rm min}={\rm FWHM}/\sqrt{1-A}\)</span>.</p>
 <dl class="field-list simple">
@@ -1992,7 +1993,7 @@ gaining a pair of offset parameters.  That is:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.77.gc3f8281',
+            VERSION:'0+untagged.83.g030f41b',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 

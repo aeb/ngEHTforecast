@@ -8,12 +8,12 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>fisher.ff_metamodels &mdash; ngEHTforecast 0+untagged.77.gc3f8281 documentation</title>
+  <title>fisher.ff_metamodels &mdash; ngEHTforecast 0+untagged.83.g030f41b documentation</title>
   
 
   
   
-    <link rel="shortcut icon" href="../../_static/ngeht_construction.ico"/>
+    <link rel="shortcut icon" href="../../_static/ngeht_blue2.ico"/>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.77.gc3f8281 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.83.g030f41b documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -60,7 +60,7 @@
 
           
             
-            <img src="../../_static/ngeht_construction.png" class="logo" />
+            <img src="../../_static/ngEHTforecast_logo_transparent.png" class="logo" />
           
           </a>
 
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0+untagged.77.gc3f8281
+                0+untagged.83.g030f41b
               </div>
             
           
@@ -94,6 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../docs/src/userguide.html">User’s Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../docs/src/devel.html">Developer’s Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../docs/src/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/src/tutorials.html">Tutorials</a></li>
 </ul>
 
             
@@ -283,7 +284,7 @@
                 <span class="k">else</span> <span class="p">:</span>
                     <span class="n">dx</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
                     <span class="n">dy</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
                     <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">2</span>
                     
                 <span class="n">V</span> <span class="o">=</span> <span class="n">V</span> <span class="o">+</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span> <span class="o">*</span> <span class="n">shift_factor</span>
@@ -303,7 +304,7 @@
                 <span class="k">else</span> <span class="p">:</span>
                     <span class="n">dx</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
                     <span class="n">dy</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">obs</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
                     <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">2</span>
                     
                 <span class="n">RR_prev</span><span class="p">,</span> <span class="n">LL_prev</span><span class="p">,</span> <span class="n">RL_prev</span><span class="p">,</span> <span class="n">LR_prev</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
@@ -344,7 +345,7 @@
                     <span class="n">dx</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
                     <span class="n">dy</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
                     <span class="n">V</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
-                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">v</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">v</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
                     <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">2</span>
                 
                 <span class="k">for</span> <span class="n">gV</span> <span class="ow">in</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibility_gradients</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="p">:</span>
@@ -374,7 +375,7 @@
                     <span class="n">dx</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
                     <span class="n">dy</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
                     <span class="n">RR</span><span class="p">,</span><span class="n">LL</span><span class="p">,</span><span class="n">RL</span><span class="p">,</span><span class="n">LR</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
-                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">v</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
+                    <span class="n">shift_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="mf">2.0</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="o">*</span><span class="n">dx</span><span class="o">+</span><span class="n">v</span><span class="o">*</span><span class="n">dy</span><span class="p">)</span><span class="o">*</span><span class="n">uas2rad</span> <span class="p">)</span>
                     <span class="n">k</span> <span class="o">+=</span> <span class="n">ff</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">2</span>
                 
                 <span class="n">gradRR_prev</span><span class="p">,</span> <span class="n">gradLL_prev</span><span class="p">,</span> <span class="n">gradRL_prev</span><span class="p">,</span> <span class="n">gradLR_prev</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">visibility_gradients</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
@@ -472,7 +473,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.77.gc3f8281',
+            VERSION:'0+untagged.83.g030f41b',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 

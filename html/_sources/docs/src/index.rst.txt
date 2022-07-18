@@ -26,6 +26,7 @@ Contents
    ./devel
 
    ./examples
+   ./tutorials
 	     
 Indices and tables
 ===========================================
