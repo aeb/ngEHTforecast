@@ -369,7 +369,7 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
     * p[0] ... Total flux in Jy.
     * p[1] ... Symmetrized mean of the FHWM in the major and minor axes in uas: :math:`{\\rm FWHM}^{-2} = {\\rm FMHM}_{\\rm min}^{-2}+{\\rm FWHM}_{\\rm max}^{-2}`
     * p[2] ... Asymmetry parameter, :math:`A`, expected to be in the range [0,1).
-    * p[3] ... Position angle in radians.
+    * p[3] ... Position angle in radians of the major axis E of N.
 
     In terms of these, :math:`{\\rm FWHM}_{\\rm maj}={\\rm FWHM}/\\sqrt{1-A}` and :math:`{\\rm FWHM}_{\\rm min}={\\rm FWHM}/\\sqrt{1-A}`.
 
@@ -413,8 +413,8 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
         sig = p[1]*uas2rad / np.sqrt(8.0*np.log(2.0))
         A = p[2]
 
-        cpa = np.cos(p[3])
-        spa = np.sin(p[3])
+        cpa = np.sin(p[3])
+        spa = np.cos(p[3])
         ur = cpa*u + spa*v
         vr = -spa*u + cpa*v
 
@@ -463,8 +463,8 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
         sig = p[1]
         A = p[2]
 
-        cpa = np.cos(p[3])
-        spa = np.sin(p[3])
+        cpa = np.sin(p[3])
+        spa = np.cos(p[3])
         ur = cpa*u + spa*v
         vr = -spa*u + cpa*v
 
@@ -482,7 +482,7 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
         gradV = np.array([ ey2, # dV/dF
                            -F*ey2*( pimaj**2*sig/(1-A) + pimin**2*sig/(1+A) ), # dV/dd
                            -F*ey2*0.5*( (pimaj*sig/(1-A))**2 - (pimin*sig/(1+A))**2 ), # dV/dA
-                           -F*ey2* pimaj*pimin * ( sigmaj**2 - sigmin**2 ) ])
+                           F*ey2* pimaj*pimin * ( sigmaj**2 - sigmin**2 ) ])
         
         
         return gradV.T
