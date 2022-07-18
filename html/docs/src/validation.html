@@ -1,0 +1,337 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Validation &mdash; ngEHTforecast 0+untagged.86.g8c8193e documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/ngeht_blue2.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.86.g8c8193e documentation" href="../../index.html"/>
+        <link rel="prev" title="Tutorials" href="tutorials.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> ngEHTforecast
+          
+
+          
+            
+            <img src="../../_static/ngEHTforecast_logo_transparent.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0+untagged.86.g8c8193e
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguide.html">User’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devel.html">Developer’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Validation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#analytical-tests">Analytical Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#themis-comparison">Themis Comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dmc-comparison">DMC Comparison</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ngEHTforecast</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Validation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/docs/src/validation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <span class="target" id="module-validation"></span><div class="section" id="validation">
+<h1>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">¶</a></h1>
+<p>ngEHTforecast has been extensively validated against analytical expectations and
+the existing extensively validated posterior exploration methods, Themis and
+DMC. In all instances, ngEHTforecast quantitatively matches the relevant
+comparison.  Here we collect a subset of these validation tests.  The relevant
+test scripts are contained within <strong>validation</strong> folder.</p>
+<div class="section" id="analytical-tests">
+<h2>Analytical Tests<a class="headerlink" href="#analytical-tests" title="Permalink to this headline">¶</a></h2>
+<p>A collection of analytical validation experiments were performed using a point
+source model, for which the computation of the expected uncertainty on the
+total flux is analytically tractable, even in the presence of station gains.  The
+FisherForecast model was effectively generated using the symmetric Gaussian
+with a small “true” FWHM (0.001 uas) and a tight prior imposed on the FWHM
+(0.001 uas).  The test data set was given a uniform uncertainty of 1 mJy and
+all stations were reset to AA or AP (ALMA/APEX), and thus at most two
+complex gains were possible.</p>
+<p>The analytical estimates for the uncertainties were obtained from standard
+error analysis, with expressions that may be found in
+<strong>validation/analytical_tests.py</strong>.  The results are summarized in the table
+below, where excellent quantitative agreement is found across the board.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 44%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Point Source Test</p></th>
+<th class="head" colspan="3"><p>Marginalized <span class="math notranslate nohighlight">\(\sigma_F ({\rm Jy})\)</span></p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>Fisher Est.</p></th>
+<th class="head"><p>Analytical</p></th>
+<th class="head"><p>Frac. Err.</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>Without gains</p></td>
+<td><p>1.2e-05</p></td>
+<td><p>1.2e-05</p></td>
+<td><p>5.37e-08</p></td>
+</tr>
+<tr class="row-even"><td><p>Single gain, one epoch</p></td>
+<td><p>0.1</p></td>
+<td><p>0.1</p></td>
+<td><p>2.27e-09</p></td>
+</tr>
+<tr class="row-odd"><td><p>Two gains, one epoch</p></td>
+<td><p>0.16</p></td>
+<td><p>0.14</p></td>
+<td><p>1.47e-01</p></td>
+</tr>
+<tr class="row-even"><td><p>Single gain, two epochs</p></td>
+<td><p>0.071</p></td>
+<td><p>0.071</p></td>
+<td><p>2.14e-09</p></td>
+</tr>
+<tr class="row-odd"><td><p>Two gains, two epochs</p></td>
+<td><p>0.1</p></td>
+<td><p>0.1</p></td>
+<td><p>3.13e-03</p></td>
+</tr>
+</tbody>
+</table>
+<p>A single test was performed for a symmetric Gaussian of finite size, for which
+an analytical estimate was not readily available.  Nevertheless, the dimension
+of the parameter space is sufficiently small that the exact posterior may be
+estimated directly via a grid search.  The result is show below, and is again
+in excellent quantitative agreement.</p>
+<div class="figure align-default" id="id1">
+<a class="reference internal image-reference" href="../../_images/gaussian_validation_2d.png"><img alt="../../_images/gaussian_validation_2d.png" src="../../_images/gaussian_validation_2d.png" style="width: 412.5px; height: 375.0px;" /></a>
+<p class="caption"><span class="caption-text">Comparison between the posterior obtained from an ngEHTforecast fisher
+analysis (red) and a grid search of the exact likelihood (blue).  This figure
+can be reproduced using <strong>validation/analytical_tests.py</strong>.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+<div class="section" id="themis-comparison">
+<h2>Themis Comparison<a class="headerlink" href="#themis-comparison" title="Permalink to this headline">¶</a></h2>
+<p>Both a Themis posterior estimation and an ngEHTforecast fisher-matrix analysis
+was performed on a binary model consisting of two symmetric Gaussians.  The six
+free parameters are the fluxes, FWHMs, and displacements between the two
+components.  In both, complex gains were incorporated, with 10% log-normal priors
+on the gain amplitudes.  The “truth” parameters were
+<span class="math notranslate nohighlight">\(\{I_1,{\rm FWHM}_1,I_2,{\rm FWHM}_2,x,y\}\)</span>
+= {1.5 Jy, 2 uas, 1.5 Jy, 2 uas, 5 uas, 0 uas}.  A comparison of the
+joint posteriors is shown below.</p>
+<div class="figure align-default" id="id2">
+<a class="reference internal image-reference" href="../../_images/themis_comparison.png"><img alt="../../_images/themis_comparison.png" src="../../_images/themis_comparison.png" style="width: 1125.0px; height: 1125.0px;" /></a>
+<p class="caption"><span class="caption-text">Comparison between Themis analysis (blue) and ngEHTforecast.fisher forecast
+(red) for all of the parameters in the Gaussian binary model.  This figure
+can be reproduced using <strong>validation/themis_comparison.py</strong>
+(requires ThemisPy).</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>All posteriors are well recovered by the ngEHTforecast analysis, including
+the strong correlations between the fluxes of the two components.  Small
+differences are expected due to the presence of thermal noise in the dataset
+being fit by Themis, while implicitly marginalized over in the fisher matrix
+analysis.</p>
+</div>
+<div class="section" id="dmc-comparison">
+<h2>DMC Comparison<a class="headerlink" href="#dmc-comparison" title="Permalink to this headline">¶</a></h2>
+<p>Coming soon!</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="tutorials.html" class="btn btn-neutral" title="Tutorials" accesskey="p">← Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2022, Avery E. Broderick.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0+untagged.86.g8c8193e',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            LINK_SUFFIX:'.html', 
+            HAS_SOURCE: 'true'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

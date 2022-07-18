@@ -48,7 +48,7 @@ reducing the data volume.
 Note that we have over-written our :class:`ehtim.obsdata.Obsdata` object.  We
 could give this another name, keeping the original should we desire to do so.
 
-We can see which stations are in the data set by looking at the ``obs.data``
+We can see which stations are in the data set by looking at the **obs.data**
 entries directly.  In order to select only unique entries we will make use
 of Numpy_ functions.
 
@@ -68,8 +68,8 @@ which produces
 
    
 While it is possible to get a list of stations from the telescope array
-specification in ``obs.tarr``, ngEHTforecast functions make use of the stations
-that appear explicitly in the ``obs.data`` object.  Thus, the above is more
+specification in **obs.tarr**, ngEHTforecast functions make use of the stations
+that appear explicitly in the **obs.data** object.  Thus, the above is more
 closely related to what an ngEHTforercast analysis will find in the data.
    
 A common characterization of non-closing systematic errors is an additional
@@ -101,7 +101,7 @@ removed:
    Unique stations after flagging: ['APEX' 'BAJA' 'CAT' 'CNI' 'GAM' 'GARS' 'GLT' 'HAY' 'KP' 'LMT' 'NZ' 'OVRO' 'SGO' 'SMA']
    
 You are ready to begin forecasting!  All of the above may be found in the
-Python_ script ``tutorials/obsdata.py``.
+Python_ script **tutorials/obsdata.py**.
 
    
 Creating a FisherForecast object
@@ -131,7 +131,7 @@ of the two components.
    print("Primary parameters:",ff1.parameter_labels())
    print("Secondary parameters:",ff2.parameter_labels())
 
-Both ``ff1`` and ``ff2`` are :class:`fisher.fisher_forecast.FisherForecast`
+Both **ff1** and **ff2** are :class:`fisher.fisher_forecast.FisherForecast`
 objects, either of which could be used to forecast ngEHT_ science capabilities.
 We also have printed the names of the parameters of each object:
 
@@ -144,7 +144,7 @@ from which it is evident that the primary has two parameters and the secondary
 has four parameters.
 
 A binary, consisting of the primary and secondary separated by some
-displacement, may be constructed using :class:`fisher.FF_sum`, which takes a
+displacement, may be constructed using :class:`fisher.ff_metamodels.FF_sum`, which takes a
 list of the :class:`fisher.fisher_forecast.FisherForecast` to be summed.
 
 ::
@@ -161,12 +161,12 @@ Again we print the names of the parameters,
 
 from which we note that there are now eight parameters: two from the primary,
 four from the secondary, and the two that specify the displacement.  Again,
-``ff`` is a :class:`fisher.fisher_forecast.FisherForecast` object, and may itself
+**ff** is a :class:`fisher.fisher_forecast.FisherForecast` object, and may itself
 be used to forecast ngEHT_ science capabilities.
 
 Finally, we will incorporate the complex station gains, set the gain solution
 intervals (gain epochs), and define a prior on the gain amplitudes.  We do this
-using :class:`fisher.FF_complex_gains`, which takes a
+using :class:`fisher.ff_complex_gains.FF_complex_gains`, which takes a
 :class:`fisher.fisher_forecast.FisherForecast` object and constructs another
 :class:`fisher.fisher_forecast.FisherForecast` object that marginalizes over the
 desired complex station gains.
@@ -181,11 +181,11 @@ desired complex station gains.
    print("Binary w/ gains parameters:",ffg.parameter_labels())
 
 The gain solution interval is set to observation scans; other available options
-are described in the :class:`fisher.FF_complex_gains` documentation.  The priors
-on the complex gain amplitudes are log-normal and set to 0.1, corresponding to a
-10% uncertainty, typcial of current EHT_ operation.  In the absence of
-specifying gain amplitude priors, they will be unconstrained (as are the complex
-gain phases).
+are described in the :class:`fisher.ff_complex_gains.FF_complex_gains`
+documentation.  The priors on the complex gain amplitudes are log-normal and set
+to 0.1, corresponding to a 10% uncertainty, typcial of current EHT_ operation.  In
+the absence of specifying gain amplitude priors, they will be unconstrained (as
+are the complex gain phases).
 
 Again, we have output the parameter labels,
 
@@ -199,7 +199,7 @@ retain access to the gains themselves.
 
 Given an :class:`ehtim.obsdata.Obsdata` object, you are ready to start
 forcasting the capability of ngEHT_ to constrain your binary model!  All of the
-above may be found in the Python_ script ``tutorials/binary_ff.py``.
+above may be found in the Python_ script **tutorials/binary_ff.py**.
 
 
 Forecasting Uncertainties
@@ -218,7 +218,7 @@ sets.  Specifically, we will:
 3. Plot joint two-dimensional marginalized posteriors for both of our data sets.
 4. Generate a triangle plot for our binary model.
 
-This code in this tutorial can be found in ``tutorials/forecasting.py``,
+This code in this tutorial can be found in **tutorials/forecasting.py**,
 which includes the code from the previous two tutorials at the top (without the
 print statements).
 
@@ -289,7 +289,7 @@ pretty great!).
 
 We can generate plots comparing the ability of the two arrays to constrain the
 RA offsets with the
-:meth:`fisher.fisher_forecast.FisherForecast.plot_1d_forecasts` function.  We
+:meth:`fisher.fisher_forecast.FisherForecast.plot_1d_forecast` function.  We
 must select the observations to include (i.e., the :math:`(u,v)`-coverage), the
 index of the parameter that we wish to plot (the RA offset is the seventh
 parameter, and therefore index 6 due to the zero-offset indexing), and may
@@ -314,9 +314,9 @@ second by setting the order of the observations in the list.
 
 Similarly, we can generate plots of the two-dimensional joint posterior,
 marginalized over all other parameters using the
-:meth:`fisher.fisher_forecast.FisherForecast.plot_2d_forecasts` function.  The
+:meth:`fisher.fisher_forecast.FisherForecast.plot_2d_forecast` function.  The
 syntax is very similar to the
-:meth:`fisher.fisher_forecast.FisherForecast.plot_1d_forecasts` function, with
+:meth:`fisher.fisher_forecast.FisherForecast.plot_1d_forecast` function, with
 the exception that now we must specify two parameter indices.
 
 ::
@@ -335,7 +335,7 @@ the exception that now we must specify two parameter indices.
 
 A triangle plot, which is simply a collection of marginalized joint and
 one-dimesional posteriors, may be generated via the
-:meth:`fisher.fisher_forecast.FisherForecast.plot_triangle_forecasts` function.
+:meth:`fisher.fisher_forecast.FisherForecast.plot_triangle_forecast` function.
 Again, the syntax is very similar, the only difference being the manner in which
 indices are specified.  By default, all parameters are included.  It is helpful
 to also include some guidance on the location relative to the figure to ensure
@@ -354,7 +354,7 @@ labels are visible.
    function.  The two sets of contours correspond to the different observations
    generated in :ref:`Creating an Obsdata object`.
 
-All of the above may be found in the Python_ script ``tutorials/forecasting.py``.
+All of the above may be found in the Python_ script **tutorials/forecasting.py**.
 
 
 Exploring & Parallelization
@@ -403,7 +403,7 @@ labels and other accoutrements, and saves the following plot to a file.
    Uncertainty on the separation in RA as a function of the total flux of the
    secondary in the binary model.
 
-All of the above may be found in the Python_ script ``tutorials/binary_separation.py``.
+All of the above may be found in the Python_ script **tutorials/binary_separation.py**.
 
 While the above code completes in approximately 1 minute on a single modern core,
 increasing the number of parameters being surveyed rapidly grows the
@@ -416,8 +416,8 @@ use of two: the the Joblib_ package and multiprocessing_ library.  We begin with
 the former, Joblib_.
 
 All that changes from above is the syntax surrounding the computation of the
-elements of ``Sigma_list``.  From Joblib_ we import the functions
-:meth:`joblib.Parallel` and :meth:`joblib.delayed` (see the Joblib_
+elements of **Sigma_list**.  From Joblib_ we import the functions
+:class:`joblib.parallel.Parallel` and :meth:`joblib.parallel.delayed` (see the Joblib_
 documentation for why the latter is useful).  Joblib_ will handle the
 distribution of individual computations to the cores (here set to 4), we must
 only define a single function to return the desired marginalized uncertainty at
@@ -439,15 +439,15 @@ each new point in the parameter space.
    plt.savefig('tutorial_sep_joblib.png',dpi=300)
 
 We do so by defining a small function that, when given a flux for the secondary,
-sets the parameter list and returns the marginalized uncertaint on the RA offset.
-This is then passed to the :meth:`joblib.Parallel` using :meth:`joblib.delayed`
-as specified in the Joblib_ documentation.
+sets the parameter list and returns the marginalized uncertaint on the RA
+offset.  This function is then passed to :class:`joblib.parallel.Parallel` using
+:meth:`joblib.parallel.delayed` as specified in the Joblib_ documentation.
 
 The advantage of using Joblib_ is that the entirety of the modification due to
 parallelization is to define as a function the elements of the computation that
 we wish to parallelize and some minor syntax changes.  This version of the binary
 separation may be found in the Python_ script
-``tutorials/binary_separation_joblib.py``.
+**tutorials/binary_separation_joblib.py**.
 
 Alternatively, we can make use of the Python_ multiprocessing_ library.  Again,
 the primary difference is that part we wish to parallelize is most conveniently
@@ -455,6 +455,8 @@ contained in a single function.  To parallelize across 4 processes:
 
 ::
 
+   import multiprocessing as mp
+   
    def get_sigma(flux) :
        p = [0.5,10, flux,20,0.5,0.3, 20,5]
        return ffg.marginalized_uncertainties(obs,p,ilist=6)
@@ -474,12 +476,12 @@ contained in a single function.  To parallelize across 4 processes:
 
        plt.savefig('tutorial_sep_multiproc.png',dpi=300)
 
-To avoid repeating the initialization steps (loading the uvfits file, creating
+To avoid repeating the initialization steps (loading the UVFITS file, creating
 the :class:`fisher.fisher_forecast.FisherForecast`), per the multiprocessing_
 library documentation, the portion of the code that will ultimately be
 parallelized is contained in the `__name__ == "__main__"` guards.  This version
 of the binary separation may be found in the Python_ script
-``tutorials/binary_separation_multiprocessing.py``.
+**tutorials/binary_separation_multiprocessing.py**.
 
 .. _ehtim: https://achael.github.io/eht-imaging/
 .. _Numpy: https://numpy.org
