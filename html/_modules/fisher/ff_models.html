@@ -889,14 +889,14 @@
 <span class="sd">        Utility function to quickly and easily generate a set of raster values</span>
 <span class="sd">        associated with various potential initialization schemes. These include:</span>
 <span class="sd">        an existing FisherForecast object, a FisherForecast class name, an </span>
-<span class="sd">        ehtim.image.Image object, or the name of a FITS file.  If initializing </span>
+<span class="sd">        :class:`ehtim.image.Image` object, or the name of a FITS file.  If initializing </span>
 <span class="sd">        from a FITS file, the image will be blurred to the raster resolution</span>
 <span class="sd">        prior to setting the parameter list.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">          glob (str): Can be an existing FisherForecast child object, the name of a FisherForecast child class, ehtim.image.Image object, or a string with the name of a FITS file.</span>
+<span class="sd">          glob (str): Can be an existing FisherForecast child object, the name of a FisherForecast child class, :class:`ehtim.image.Image` object, or a string with the name of a FITS file.</span>
 <span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
-<span class="sd">          **kwargs (dict): Additional key-word arguments necesary to define the object.  May include parameter values for the relevant FisherForecast object or arguments to the FisherForecast.generate_image function.</span>
+<span class="sd">          **kwargs (dict): Additional key-word arguments necesary to define the object.  May include parameter values for the relevant FisherForecast object or arguments to the :meth:`fisher.fisher_forecast.FisherForecast.generate_image` function.</span>
 <span class="sd">          </span>
 <span class="sd">        Returns:</span>
 <span class="sd">          p (list): Approximate parameter list for associated splined raster object.</span>
