@@ -2,6 +2,10 @@ import numpy as np
 import scipy.special as ss
 import scipy.interpolate as si
 import ehtim as eh
+import inspect
+import os
+
+import matplotlib.pyplot as plt
 
 import ngEHTforecast.fisher.fisher_forecast as ff
 
@@ -547,6 +551,8 @@ class FF_splined_raster(ff.FisherForecast) :
     Attributes:
       xcp (numpy.ndarray): x-positions of raster control points.
       ycp (numpy.ndarray): y-positions of raster control points.
+      dxcp (float) : pixel spacing in x-direction
+      dycp (float) : pixel spacing in y-direction
       apx (float): Raster pixel size.
     """
 
@@ -559,7 +565,10 @@ class FF_splined_raster(ff.FisherForecast) :
         
         self.xcp,self.ycp = np.meshgrid(np.linspace(-0.5*fov,0.5*fov,self.npx),np.linspace(-0.5*fov,0.5*fov,self.npx))
 
-        self.apx = (self.xcp[1,1]-self.xcp[0,0])*(self.ycp[1,1]-self.ycp[0,0])
+        self.dxcp = self.xcp[1,1]-self.xcp[0,0]
+        self.dycp = self.ycp[1,1]-self.ycp[0,0]
+        
+        self.apx = self.dxcp * self.dycp
 
         self.stokes = stokes
 
@@ -596,7 +605,7 @@ class FF_splined_raster(ff.FisherForecast) :
             V = 0.0j*u
             for i in range(self.npx) :
                 for j in range(self.npx) :
-                    V = V + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
+                    V = V + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.dxcp*u)*W_cubic_spline_1d(2.0*np.pi*self.dycp*v) * self.apx
             return V
         
         else:
@@ -608,13 +617,13 @@ class FF_splined_raster(ff.FisherForecast) :
             countI = 0
             for i in range(self.npx) :
                 for j in range(self.npx) :
-                    I = I + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
+                    I = I + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.dxcp*u)*W_cubic_spline_1d(2.0*np.pi*self.dycp*v) * self.apx
                     countI += 1
             for i in range(self.npx) :
                 for j in range(self.npx) :
-                    Q = Q + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
-                    U = U + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[2*countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
-                    V = V + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[3*countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
+                    Q = Q + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.dxcp*u)*W_cubic_spline_1d(2.0*np.pi*self.dycp*v) * self.apx
+                    U = U + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[2*countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.dxcp*u)*W_cubic_spline_1d(2.0*np.pi*self.dycp*v) * self.apx
+                    V = V + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[3*countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.dxcp*u)*W_cubic_spline_1d(2.0*np.pi*self.dycp*v) * self.apx
 
             RR = I + V
             LL = I - V
@@ -718,37 +727,109 @@ class FF_splined_raster(ff.FisherForecast) :
 
         return pll
 
-    def generate_parameter_list(self,glob,p=None) :
+    def generate_parameter_list(self,glob,verbosity=0,**kwargs) :
         """
         Utility function to quickly and easily generate a set of raster values
         associated with various potential initialization schemes. These include:
-        an existing FisherForecast object, a FisherForecast class, or a FITS file
-        name.
-
-        TBD.
+        an existing FisherForecast object, a FisherForecast class name, an 
+        ehtim.image.Image object, or the name of a FITS file.  If initializing 
+        from a FITS file, the image will be blurred to the raster resolution
+        prior to setting the parameter list.
 
         Args:
-          glob (str): Can be an existing FisherForecast child object, the name of a FisherForecast child class, or a string with a FITS file name.
-          p (list): If glob is a FisherForecast child object or the name of a FisherForecast child class, a parameter list must be passed from which the image will be generated.
+          glob (str): Can be an existing FisherForecast child object, the name of a FisherForecast child class, ehtim.image.Image object, or a string with the name of a FITS file.
+          verbosity (int): Verbosity level. Default: 0.
+          **kwargs (dict): Additional key-word arguments necesary to define the object.  May include parameter values for the relevant FisherForecast object or arguments to the FisherForecast.generate_image function.
           
         Returns:
           p (list): Approximate parameter list for associated splined raster object.
         """
 
-        if ( issubclass(type(glob),FisherForecast) ) :
+        if ( issubclass(type(glob),ff.FisherForecast) ) :
             # This is a FF object, set the parameters, make the images and go
-            pass
-        elif ( issubclass(glob,FisherForecast) ) :
+            if (verbosity>0) :
+                print("glob is a FisherForecast object!")
+
+            # Make sure that limits are such that we will be interpolating
+            if (not 'limits' in kwargs.keys()) :
+                kwargs['limits'] = None
+            if (kwargs['limits'] is None) :
+                if (np.abs(self.xcp[0,0]*rad2uas)>100.0) :
+                    kwargs['limits'] = np.abs(self.xcp[0,0])
+            elif (isinstance(kwargs['limits'],list)) :
+                kwargs['limits'][0] = min(kwargs['limits'][0],self.xcp[0,0]*rad2uas)
+                kwargs['limits'][1] = max(kwargs['limits'][1],self.xcp[-1,-1]*rad2uas)
+                kwargs['limits'][2] = min(kwargs['limits'][0],self.ycp[0,0]*rad2uas)
+                kwargs['limits'][3] = max(kwargs['limits'][3],self.ycp[-1,-1]*rad2uas)
+            else :
+                kwargs['limits'] = max(kwargs['limits'],self.xcp[-1,-1]*rad2uas)
+
+            # Make an image and interpolate to the control points
+            x,y,I = glob.generate_image(**kwargs)
+            Imin = np.min(I[I>0])
+            I = np.maximum(I,0.01*Imin)
+            # f = si.RectBivariateSpline(x[:,0],y[0,:],np.log(I))
+            f = si.RectBivariateSpline(x[:,0],y[0,:],np.log(I))
+
+            # Convert to parameter list and return
+            # p = (f(self.xcp[0,:]*rad2uas,self.ycp[:,0]*rad2uas) + np.log(rad2uas**2)).flatten()
+            p = (f(self.xcp[0,:]*rad2uas,self.ycp[:,0]*rad2uas) + np.log(rad2uas**2)).flatten()
+            return p
+
+        elif (inspect.isclass(glob) and issubclass(glob,ff.FisherForecast) ) :
             # This is a FF class, create a FF obj set the parameters, make the images and go
-            pass
+            if (verbosity>0) :
+                print("glob is a FisherForecast class name!")
+
+            # Make an instance of the object
+            ffobj = glob()
+
+            # Recurse
+            return self.generate_parameter_list(ffobj,**kwargs)
+
         elif ( isinstance(glob,str) ) :
             # This is a string, check for .fits and go
-            pass
+            if (verbosity>0) :
+                print("glob is a string!")
+
+            _,ext = os.path.splitext(glob)
+            
+            if (ext.lower()==".fits") :
+                img = eh.image.load_fits(glob)
+                img = img.blur_circ(np.sqrt(self.dxcp*self.dycp))
+
+                # Recurse
+                return self.generate_parameter_list(img,**kwargs)
+            else :
+                raise(RuntimeError("Unrecognized image file name %s.  Currently accepts FITS files."%(glob)))
+
+            # Should never get here
+            return np.zeros(self.size)
+            
+        elif ( isinstance(glob,eh.image.Image) ) :
+            # This is an ehtim Image, grab images and go
+            if (verbosity>0) :
+                print("glob is an ehtim.image.Image object!")
+
+            x1d = np.linspace(-0.5*glob.psize*(glob.xdim-1),0.5*glob.psize*(glob.xdim-1),glob.xdim)*rad2uas
+            y1d = np.linspace(-0.5*glob.psize*(glob.ydim-1),0.5*glob.psize*(glob.ydim-1),glob.ydim)*rad2uas
+            I = glob.imarr().T / (glob.psize)**2
+
+            Imin = np.min(I[I>0])
+            I = np.maximum(I,0.01*Imin)
+            f = si.RectBivariateSpline(x1d,y1d,np.log(I))
+            
+            # Convert to parameter list and return
+            return (f(self.xcp[0,:]*rad2uas,self.ycp[:,0]*rad2uas)).flatten()
+            # return (f(self.xcp[0,:]*rad2uas,self.ycp[:,0]*rad2uas) + np.log(rad2uas**2)).flatten()
+        
         else :
+
             raise(RuntimeError("Unrecognized glob from which to generate acceptable parameter list."))                  
         
-        pass
 
+        # Should never get here
+        return np.zeros(self.size)
 
     
 
@@ -851,7 +932,7 @@ class FF_smoothed_delta_ring_themage(ff.FisherForecast) :
         
     def visibility_gradients(self,obs,p,verbosity=0) :
         """
-        Generates visibility gradients associated with splined-raster + Gaussian-convolved delta-ring.
+        Generates visibility gradients associated with splined raster + Gaussian-convolved delta-ring.
 
         Args:
           obs (ehtim.Obsdata): ehtim data object

@@ -181,8 +181,8 @@ class FisherForecast :
             print("limits:",limits)
             print("shape:",shape)
 
-        umax = shape[0]/(uas2rad*(limits[1]-limits[0]))
-        vmax = shape[1]/(uas2rad*(limits[3]-limits[2]))
+        umax = 0.5*shape[0]/(uas2rad*(limits[1]-limits[0]))
+        vmax = 0.5*shape[1]/(uas2rad*(limits[3]-limits[2]))
 
         if (verbosity>0) :
             print("Max (u,v) = ",(umax,vmax))
@@ -258,7 +258,7 @@ class FisherForecast :
             fu = r'$I~({\rm pJy}/\mu{\rm as}^2)$'
             I = I*1e12
 
-        plt.pcolormesh(x,y,I,cmap='afmhot',vmin=0)
+        plt.pcolormesh(x,y,I,cmap='afmhot',vmin=0,shading='auto')
 
         plt.xlabel(r'$\Delta{\rm RA}~(\mu{\rm as})$')
         plt.ylabel(r'$\Delta{\rm Dec}~(\mu{\rm as})$')
@@ -269,6 +269,8 @@ class FisherForecast :
         plt.colorbar(cax=cbax)
         cbax.set_ylabel(fu,rotation=-90,ha='center',va='bottom')
 
+        plt.sca(axs)
+        
         return plt.gcf(),axs,cbax
         
         
