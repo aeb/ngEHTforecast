@@ -732,14 +732,14 @@ class FF_splined_raster(ff.FisherForecast) :
         Utility function to quickly and easily generate a set of raster values
         associated with various potential initialization schemes. These include:
         an existing FisherForecast object, a FisherForecast class name, an 
-        ehtim.image.Image object, or the name of a FITS file.  If initializing 
+        :class:`ehtim.image.Image` object, or the name of a FITS file.  If initializing 
         from a FITS file, the image will be blurred to the raster resolution
         prior to setting the parameter list.
 
         Args:
-          glob (str): Can be an existing FisherForecast child object, the name of a FisherForecast child class, ehtim.image.Image object, or a string with the name of a FITS file.
+          glob (str): Can be an existing FisherForecast child object, the name of a FisherForecast child class, :class:`ehtim.image.Image` object, or a string with the name of a FITS file.
           verbosity (int): Verbosity level. Default: 0.
-          **kwargs (dict): Additional key-word arguments necesary to define the object.  May include parameter values for the relevant FisherForecast object or arguments to the FisherForecast.generate_image function.
+          **kwargs (dict): Additional key-word arguments necesary to define the object.  May include parameter values for the relevant FisherForecast object or arguments to the :meth:`fisher.fisher_forecast.FisherForecast.generate_image` function.
           
         Returns:
           p (list): Approximate parameter list for associated splined raster object.
