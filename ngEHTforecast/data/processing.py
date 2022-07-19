@@ -45,15 +45,14 @@ def preprocess_obsdata(obs,ff=None,p=None,snr_cut=None,sys_err=None,const_err=No
             raise(RuntimeError("Parameter list must be provided if FisherForecast object is not None."))
         obs_new.data['vis'] = ff.visibilities(obs,p)
 
-    if (not avg_time is None) :
-        if (ff is None) :
-            raise(RuntimeError("FisherForecast object must be provided to apply SNR cut."))
-        obs_new = obs_new.flag_snr(snr_cut)
-
     if (not snr_cut is None) :
+        if (ff is None) :
+            raise(Warning("SNR cut is being applied without FisherForecast object."))
         obs_new = obs_new.flag_low_snr(snr_cut)
         
     if (not sys_err is None) :
+        if (ff is None) :
+            raise(Warning("Systematic error is being applied without FisherForecast object."))
         obs_new = obs_new.add_fractional_noise(frac_noise=0.01*sys_err)
 
     if (not const_err is None) :
