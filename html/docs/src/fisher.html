@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fisher &mdash; ngEHTforecast 0+untagged.88.gaed9d1e documentation</title>
+  <title>Fisher &mdash; ngEHTforecast 0+untagged.90.g5add042 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.88.gaed9d1e documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.90.g5add042 documentation" href="../../index.html"/>
         <link rel="up" title="User’s Guide" href="userguide.html"/>
         <link rel="next" title="Data" href="data.html"/>
         <link rel="prev" title="User’s Guide" href="userguide.html"/> 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                0+untagged.88.gaed9d1e
+                0+untagged.90.g5add042
               </div>
             
           
@@ -1454,7 +1454,7 @@ Gaussian-convolved delta-ring.</p>
 <dl class="py method">
 <dt id="fisher.ff_models.FF_smoothed_delta_ring_themage.visibility_gradients">
 <code class="sig-name descname">visibility_gradients</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/ff_models.html#FF_smoothed_delta_ring_themage.visibility_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.ff_models.FF_smoothed_delta_ring_themage.visibility_gradients" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates visibility gradients associated with splined-raster + Gaussian-convolved delta-ring.</p>
+<dd><p>Generates visibility gradients associated with splined raster + Gaussian-convolved delta-ring.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1521,6 +1521,28 @@ Parameter vector is the log of the intensity at the control points:</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt id="fisher.ff_models.FF_splined_raster.dxcp">
+<code class="sig-name descname">dxcp</code><a class="headerlink" href="#fisher.ff_models.FF_splined_raster.dxcp" title="Permalink to this definition">¶</a></dt>
+<dd><p>pixel spacing in x-direction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.ff_models.FF_splined_raster.dycp">
+<code class="sig-name descname">dycp</code><a class="headerlink" href="#fisher.ff_models.FF_splined_raster.dycp" title="Permalink to this definition">¶</a></dt>
+<dd><p>pixel spacing in y-direction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt id="fisher.ff_models.FF_splined_raster.apx">
 <code class="sig-name descname">apx</code><a class="headerlink" href="#fisher.ff_models.FF_splined_raster.apx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Raster pixel size.</p>
@@ -1533,17 +1555,19 @@ Parameter vector is the log of the intensity at the control points:</p>
 
 <dl class="py method">
 <dt id="fisher.ff_models.FF_splined_raster.generate_parameter_list">
-<code class="sig-name descname">generate_parameter_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">glob</span></em>, <em class="sig-param"><span class="n">p</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/ff_models.html#FF_splined_raster.generate_parameter_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.ff_models.FF_splined_raster.generate_parameter_list" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">generate_parameter_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">glob</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/ff_models.html#FF_splined_raster.generate_parameter_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.ff_models.FF_splined_raster.generate_parameter_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Utility function to quickly and easily generate a set of raster values
 associated with various potential initialization schemes. These include:
-an existing FisherForecast object, a FisherForecast class, or a FITS file
-name.</p>
-<p>TBD.</p>
+an existing FisherForecast object, a FisherForecast class name, an
+ehtim.image.Image object, or the name of a FITS file.  If initializing
+from a FITS file, the image will be blurred to the raster resolution
+prior to setting the parameter list.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>glob</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Can be an existing FisherForecast child object, the name of a FisherForecast child class, or a string with a FITS file name.</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – If glob is a FisherForecast child object or the name of a FisherForecast child class, a parameter list must be passed from which the image will be generated.</p></li>
+<li><p><strong>glob</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Can be an existing FisherForecast child object, the name of a FisherForecast child class, ehtim.image.Image object, or a string with the name of a FITS file.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – Additional key-word arguments necesary to define the object.  May include parameter values for the relevant FisherForecast object or arguments to the FisherForecast.generate_image function.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1994,7 +2018,7 @@ gaining a pair of offset parameters.  That is:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.88.gaed9d1e',
+            VERSION:'0+untagged.90.g5add042',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 

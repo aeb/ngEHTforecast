@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorials &mdash; ngEHTforecast 0+untagged.88.gaed9d1e documentation</title>
+  <title>Tutorials &mdash; ngEHTforecast 0+untagged.90.g5add042 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.88.gaed9d1e documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.90.g5add042 documentation" href="../../index.html"/>
         <link rel="next" title="Validation" href="validation.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0+untagged.88.gaed9d1e
+                0+untagged.90.g5add042
               </div>
             
           
@@ -99,6 +99,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#creating-an-obsdata-object">Creating an Obsdata object</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#creating-a-fisherforecast-object">Creating a FisherForecast object</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#forecasting-uncertainties">Forecasting Uncertainties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#splined-raster-models">Splined Raster Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#exploring-parallelization">Exploring &amp; Parallelization</a></li>
 </ul>
 </li>
@@ -448,6 +449,84 @@ generated in <a class="reference internal" href="#creating-an-obsdata-object"><s
 </div>
 <p>All of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script <strong>tutorials/forecasting.py</strong>.</p>
 </div>
+<div class="section" id="splined-raster-models">
+<h2>Splined Raster Models<a class="headerlink" href="#splined-raster-models" title="Permalink to this headline">¶</a></h2>
+<p>A splined-raster model, i.e., “themage”, is available in the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">ff_models.FF_splined_raster</span></code> class.  This provides a flexible image
+model that can assess imaging performance and hybrid imaging-modeling
+performance.  However, the large number of parameters can make it difficult to
+sensibly specify an image.  Therefore, a number of special ways to construct a
+parameter list are available.</p>
+<p>In this tutorial we will construct a splined-raster model and initialize it
+using an existing FisherForecast object, the name of a FisherForecast child
+class, a FITS file, and an <a class="reference external" href="https://achael.github.io/eht-imaging/image.html#ehtim.image.Image" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.image.Image</span></code></a> object.</p>
+<p>We begin by constructing a splined-raster model.  At initialization, we must
+specify the size of the raster, i.e., the number of control points in each
+direction, and the field of view of the raster.  In this case, we choose 20
+control points in each direction and a field of view of 60 uas:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ngEHTforecast.fisher</span> <span class="k">as</span> <span class="nn">fp</span>
+
+<span class="n">ff</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_splined_raster</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mf">60.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This model has 400 control points, and thus 400 parameters: the log of the
+intensities at each control point.  Even if the intensity is well defined,
+initializing 400 parameters is a daunting task!  Fortunately, a number of
+options are available with the
+<a class="reference internal" href="fisher.html#fisher.ff_models.FF_splined_raster.generate_parameter_list" title="fisher.ff_models.FF_splined_raster.generate_parameter_list"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.ff_models.FF_splined_raster.generate_parameter_list()</span></code></a> function.</p>
+<p>The first we consider is initializing from an existing FisherForecast object. We
+begin by creating another
+<a class="reference internal" href="fisher.html#fisher.ff_models.FF_smoothed_delta_ring" title="fisher.ff_models.FF_smoothed_delta_ring"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.ff_models.FF_smoothed_delta_ring</span></code></a> object.  This is then passed to
+the <a class="reference internal" href="fisher.html#fisher.ff_models.FF_splined_raster.generate_parameter_list" title="fisher.ff_models.FF_splined_raster.generate_parameter_list"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.ff_models.FF_splined_raster.generate_parameter_list()</span></code></a> function
+along with the parameter list (here for a total flux of 1 Jy, diameter of 40 uas,
+and width of 10 uas) as a key-word argument. We pass an additional argument,
+<strong>limits</strong>, which specifies the extent of the image created by the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.display_image()</span></code> function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ffinit</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_smoothed_delta_ring</span><span class="p">()</span>
+<span class="n">pinit</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">40.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">]</span>
+<span class="n">ffinit</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">pinit</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">])</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">generate_parameter_list</span><span class="p">(</span><span class="n">ffinit</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">pinit</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">ff</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>To compare the in splined-raster model and original smoothed delta-ring, we
+display both:</p>
+<div class="figure align-default" id="id5">
+<a class="reference internal image-reference" href="../../_images/tutorial_smdr.png"><img alt="../../_images/tutorial_smdr.png" src="../../_images/tutorial_smdr.png" style="width: 975.0px; height: 375.0px;" /></a>
+<p class="caption"><span class="caption-text">Smoothed delta-ring model (left) and the splined raster model initialized from it (right).</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</div>
+<p>The second is an initialization from a FisherForecast model without actually
+constructing an instantiation.  This avoids the overhead of creating the model,
+but still leverages the other FisherForecast models.  In this case, we use an
+asymmetric Gaussian model with total flux 1 Jy, symmerized FWHM of 20 uas,
+asymmetry parameter of 0.5, and PA of 1.0 rad:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">generate_parameter_list</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">FF_asymmetric_gaussian</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">1.0</span><span class="p">])</span>
+<span class="n">ff</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the third example, we initialize from an <a class="reference external" href="https://achael.github.io/eht-imaging/image.html#ehtim.image.Image" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.image.Image</span></code></a> object,
+which we create from a FITS file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">eh</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">load_fits</span><span class="p">(</span><span class="s1">&#39;M87_230GHz.fits&#39;</span><span class="p">)</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">blur_circ</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">dxcp</span><span class="o">*</span><span class="n">ff</span><span class="o">.</span><span class="n">dycp</span><span class="p">))</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">generate_parameter_list</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="n">ff</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Prior to generating the splined raster parameter list, we blur the image to
+the raster resolution to give a better impression of the results of a splined
+raster fit.  The result is shown below.</p>
+<div class="figure align-default" id="id6">
+<a class="reference internal image-reference" href="../../_images/tutorial_img.png"><img alt="../../_images/tutorial_img.png" src="../../_images/tutorial_img.png" style="width: 967.5px; height: 375.0px;" /></a>
+<p class="caption"><span class="caption-text">Image from ehtim (left) and the splined raster model initialized from it (right).</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</div>
+<p>Finally, we can initialize the parameter list from a FITS file directly.  This
+is identical to initializing from an <a class="reference external" href="https://achael.github.io/eht-imaging/image.html#ehtim.image.Image" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.image.Image</span></code></a> object, which it
+creates internally, including blurring to the raster resolution.</p>
+<p>All of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script
+<strong>tutorials/splined_raster_initialization.py</strong>.</p>
+</div>
 <div class="section" id="exploring-parallelization">
 <h2>Exploring &amp; Parallelization<a class="headerlink" href="#exploring-parallelization" title="Permalink to this headline">¶</a></h2>
 <p>A key question for many science cases will be how the uncertainties depends on
@@ -484,10 +563,10 @@ in a loop which varies the “truth” parameters:</p>
 </div>
 <p>The remainder of the code makes a <a class="reference external" href="https://matplotlib.org">Matplotlib</a> plot, specifies the scales, adds
 labels and other accoutrements, and saves the following plot to a file.</p>
-<div class="figure align-default" id="id5">
+<div class="figure align-default" id="id7">
 <a class="reference internal image-reference" href="../../_images/tutorial_sep.png"><img alt="../../_images/tutorial_sep.png" src="../../_images/tutorial_sep.png" style="width: 480.0px; height: 360.0px;" /></a>
 <p class="caption"><span class="caption-text">Uncertainty on the separation in RA as a function of the total flux of the
-secondary in the binary model.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+secondary in the binary model.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 <p>All of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script <strong>tutorials/binary_separation.py</strong>.</p>
 <p>While the above code completes in approximately 1 minute on a single modern core,
@@ -598,7 +677,7 @@ of the binary separation may be found in the <a class="reference external" href=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.88.gaed9d1e',
+            VERSION:'0+untagged.90.g5add042',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 

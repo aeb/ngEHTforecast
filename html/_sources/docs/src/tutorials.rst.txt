@@ -2,7 +2,7 @@
 
 
 Tutorials
-============================================================
+================================================================================
 Having trouble knowing where to start?  These tutorials cover key functionality
 in bitesized chuncks.  You can jump to any specific tutorial in the navigation
 bar or go through them all!  As functionality is added, new tutorials will
@@ -13,7 +13,7 @@ on getting ngEHTforecast, see the :ref:`Installation Guide`.
 
 
 Creating an Obsdata object
-------------------------------------------------------------
+--------------------------------------------------------------------------------
 Data within ngEHTforecast is handled using the :class:`ehtim.obsdata.Obsdata`
 objects.  These encapsulate the :math:`(u,v)`-positions, scan times, station
 names, among many other elements (see the ehtim_ documentation for full
@@ -105,7 +105,7 @@ Python_ script **tutorials/obsdata.py**.
 
    
 Creating a FisherForecast object
-------------------------------------------------------------
+--------------------------------------------------------------------------------
 Fisher-matrix based analyses begin with the specification of an underlying model
 that we imagine will be fit the simulate data set.  In ngEHTforecast, we specify
 this model via the creation of a :class:`fisher.fisher_forecast.FisherForecast`
@@ -202,8 +202,9 @@ forcasting the capability of ngEHT_ to constrain your binary model!  All of the
 above may be found in the Python_ script **tutorials/binary_ff.py**.
 
 
+
 Forecasting Uncertainties
-------------------------------------------------------------
+--------------------------------------------------------------------------------
 With the above two tutorials, :ref:`Creating an Obsdata object` and
 :ref:`Creating a FisherForecast object`, we now can start estimating the
 capabilities of ngEHT_!
@@ -361,8 +362,104 @@ labels are visible.
 All of the above may be found in the Python_ script **tutorials/forecasting.py**.
 
 
+Splined Raster Models
+--------------------------------------------------------------------------------
+A splined-raster model, i.e., "themage", is available in the
+:class:`ff_models.FF_splined_raster` class.  This provides a flexible image
+model that can assess imaging performance and hybrid imaging-modeling
+performance.  However, the large number of parameters can make it difficult to
+sensibly specify an image.  Therefore, a number of special ways to construct a
+parameter list are available.
+
+In this tutorial we will construct a splined-raster model and initialize it
+using an existing FisherForecast object, the name of a FisherForecast child
+class, a FITS file, and an :class:`ehtim.image.Image` object.
+
+We begin by constructing a splined-raster model.  At initialization, we must
+specify the size of the raster, i.e., the number of control points in each
+direction, and the field of view of the raster.  In this case, we choose 20
+control points in each direction and a field of view of 60 uas:
+
+.. code-block:: python
+
+   import ngEHTforecast.fisher as fp
+
+   ff = fp.FF_splined_raster(20,60.0)
+
+This model has 400 control points, and thus 400 parameters: the log of the
+intensities at each control point.  Even if the intensity is well defined,
+initializing 400 parameters is a daunting task!  Fortunately, a number of
+options are available with the
+:meth:`fisher.ff_models.FF_splined_raster.generate_parameter_list` function.
+
+The first we consider is initializing from an existing FisherForecast object. We
+begin by creating another
+:class:`fisher.ff_models.FF_smoothed_delta_ring` object.  This is then passed to
+the :meth:`fisher.ff_models.FF_splined_raster.generate_parameter_list` function
+along with the parameter list (here for a total flux of 1 Jy, diameter of 40 uas,
+and width of 10 uas) as a key-word argument. We pass an additional argument,
+**limits**, which specifies the extent of the image created by the
+:meth:`fisher.fisher_forecast.display_image` function.  
+
+.. code-block:: python
+
+   ffinit = fp.FF_smoothed_delta_ring()
+   pinit = [1.0, 40.0, 10.0]
+   ffinit.display_image(pinit,limits=[-50,50,-50,50])
+
+   p = ff.generate_parameter_list(ffinit,p=pinit,limits=100)
+   ff.display_image(p,limits=[-50,50,-50,50])
+
+To compare the in splined-raster model and original smoothed delta-ring, we
+display both:
+
+.. figure:: ./tutorials_figures/tutorial_smdr.png
+   :scale: 25%
+
+   Smoothed delta-ring model (left) and the splined raster model initialized from it (right).
+
+The second is an initialization from a FisherForecast model without actually
+constructing an instantiation.  This avoids the overhead of creating the model,
+but still leverages the other FisherForecast models.  In this case, we use an
+asymmetric Gaussian model with total flux 1 Jy, symmerized FWHM of 20 uas,
+asymmetry parameter of 0.5, and PA of 1.0 rad:
+
+.. code-block:: python
+   
+   p = ff.generate_parameter_list(fp.FF_asymmetric_gaussian,p=[1,20,0.5,1.0])
+   ff.display_image(p,limits=50)
+
+In the third example, we initialize from an :class:`ehtim.image.Image` object,
+which we create from a FITS file.
+
+.. code-block:: python
+
+   img = eh.image.load_fits('M87_230GHz.fits')
+   img = img.blur_circ(np.sqrt(ff.dxcp*ff.dycp))
+
+   p = ff.generate_parameter_list(img)
+   ff.display_image(p,limits=80)
+
+Prior to generating the splined raster parameter list, we blur the image to
+the raster resolution to give a better impression of the results of a splined
+raster fit.  The result is shown below.
+
+.. figure:: ./tutorials_figures/tutorial_img.png
+   :scale: 25%
+
+   Image from ehtim (left) and the splined raster model initialized from it (right).   
+
+Finally, we can initialize the parameter list from a FITS file directly.  This
+is identical to initializing from an :class:`ehtim.image.Image` object, which it
+creates internally, including blurring to the raster resolution.
+
+All of the above may be found in the Python_ script
+**tutorials/splined_raster_initialization.py**.   
+
+
+
 Exploring & Parallelization
-------------------------------------------------------------
+--------------------------------------------------------------------------------
 A key question for many science cases will be how the uncertainties depends on
 specific model prameters.  For example, how well the binary separation can be
 determined as a function of the flux of the secondary.  In this tutorial, we
