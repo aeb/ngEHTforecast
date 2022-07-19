@@ -402,7 +402,6 @@ and width of 10 uas) as a key-word argument. We pass an additional argument,
 :meth:`fisher.fisher_forecast.display_image` function.  
 
 .. code-block:: python
-   :emphasize-lines: 5
 		
    ffinit = fp.FF_smoothed_delta_ring()
    pinit = [1.0, 40.0, 10.0]
@@ -431,8 +430,9 @@ In the third example, we initialize from an :class:`ehtim.image.Image` object,
 which we create from a FITS file.
 
 .. code-block:: python
-   :emphasize-lines: 4
 
+   import ehtim as eh
+   
    img = eh.image.load_fits('M87_230GHz.fits')
    img = img.blur_circ(np.sqrt(ff.dxcp*ff.dycp))
 
@@ -457,6 +457,26 @@ creates internally, including blurring to the raster resolution.
 
 All of the above may be found in the Python_ script
 **tutorials/splined_raster_initialization.py**.   
+
+
+
+Data Preprocessing
+--------------------------------------------------------------------------------
+While data generation lies outside the scope of ngEHTforecast, some data
+processing steps are most conveniently handled within ngEHTforecast.  For
+example, detection thresholds depend on the source structure, and therefore
+cannot be applied until a FisherForecast model and parameter set are chosen. The
+function :meth:`data.processing.process_obsdata` exists to faciliate minor
+preprocessing steps, including those that depend on the particular model
+selected.
+
+In this tutorial, we will review the features of
+:meth:`data.processing.process_obsdata` and how to use them.
+
+
+
+      
+
 
 
 
