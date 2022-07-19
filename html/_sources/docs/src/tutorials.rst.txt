@@ -460,6 +460,26 @@ All of the above may be found in the Python_ script
 
 
 
+Data Preprocessing
+--------------------------------------------------------------------------------
+While data generation lies outside the scope of ngEHTforecast, some data
+processing steps are most conveniently handled within ngEHTforecast.  For
+example, detection thresholds depend on the source structure, and therefore
+cannot be applied until a FisherForecast model and parameter set are chosen. The
+function :meth:`data.processing.process_obsdata` exists to faciliate minor
+preprocessing steps, including those that depend on the particular model
+selected.
+
+In this tutorial, we will review the features of
+:meth:`data.processing.process_obsdata` and how to use them.
+
+
+
+      
+
+
+
+
 Exploring & Parallelization
 --------------------------------------------------------------------------------
 A key question for many science cases will be how the uncertainties depends on

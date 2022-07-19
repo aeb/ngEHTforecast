@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Data &mdash; ngEHTforecast 0+untagged.91.g58b418c.dirty documentation</title>
+  <title>Data &mdash; ngEHTforecast 0+untagged.93.g89d0f6f documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.91.g58b418c.dirty documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.93.g89d0f6f documentation" href="../../index.html"/>
         <link rel="up" title="User’s Guide" href="userguide.html"/>
         <link rel="next" title="Developer’s Guide" href="devel.html"/>
         <link rel="prev" title="Fisher" href="fisher.html"/> 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                0+untagged.91.g58b418c.dirty
+                0+untagged.93.g89d0f6f
               </div>
             
           
@@ -190,6 +190,35 @@ others depend on external libraries designed to generate simulation data sets
 for <a class="reference external" href="https://www.ngeht.org/">ngEHT</a>.</p>
 <div class="section" id="module-data.processing">
 <span id="processing"></span><h2>Processing<a class="headerlink" href="#module-data.processing" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="data.processing.preprocess_obsdata">
+<code class="sig-prename descclassname">data.processing.</code><code class="sig-name descname">preprocess_obsdata</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">ff</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">p</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">snr_cut</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sys_err</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">const_err</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">avg_time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/data/processing.html#preprocess_obsdata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data.processing.preprocess_obsdata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies default preprocessing and creates and returns a new
+<a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object.  Flagging and averaging is performed
+using ehtim functinality.  See the source code for the order in which
+operations are applied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<em>eht.obsdata.Obsdata</em><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – An ehtim Obsdata object containing the desired observing profile or a uvfits file name to read.</p></li>
+<li><p><strong>ff</strong> (<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><em>fisher.fisher_forecast.FisherForecast</em></a>) – A <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> child class describing the model for which we wish to apply the processing. Required for applying the SNR cut. Default: None.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Parameter list appropriate for ff. Requires ff to be specified. Default: None.</p></li>
+<li><p><strong>snr_cut</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – SNR below which to exclude baselines. A proxy for a detectiton threshold. Rquires ff and p to be specified. Default: None.</p></li>
+<li><p><strong>sys_err</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Percent fractional systematic error to add. A proxy for non-closing errors. Default: None.</p></li>
+<li><p><strong>const_err</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – A constant fractional error in mJy to add in quadrature. Default: None.</p></li>
+<li><p><strong>avg_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Coherently average data set. If a float, specifies the averaging time in seconds.  If ‘scan’, will create and average on scans. Default: None.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new ehtime Obsdata object with the desired processing applied.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)">ehtim.obsdata.Obsdata</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="generation-interfaces">
 <h2>Generation Interfaces<a class="headerlink" href="#generation-interfaces" title="Permalink to this headline">¶</a></h2>
@@ -237,7 +266,7 @@ for <a class="reference external" href="https://www.ngeht.org/">ngEHT</a>.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.91.g58b418c.dirty',
+            VERSION:'0+untagged.93.g89d0f6f',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
