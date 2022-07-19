@@ -402,13 +402,11 @@ and width of 10 uas) as a key-word argument. We pass an additional argument,
 :meth:`fisher.fisher_forecast.display_image` function.  
 
 .. code-block:: python
-
+		
    ffinit = fp.FF_smoothed_delta_ring()
    pinit = [1.0, 40.0, 10.0]
-   ffinit.display_image(pinit,limits=[-50,50,-50,50])
 
    p = ff.generate_parameter_list(ffinit,p=pinit,limits=100)
-   ff.display_image(p,limits=[-50,50,-50,50])
 
 To compare the in splined-raster model and original smoothed delta-ring, we
 display both:
@@ -427,18 +425,18 @@ asymmetry parameter of 0.5, and PA of 1.0 rad:
 .. code-block:: python
    
    p = ff.generate_parameter_list(fp.FF_asymmetric_gaussian,p=[1,20,0.5,1.0])
-   ff.display_image(p,limits=50)
 
 In the third example, we initialize from an :class:`ehtim.image.Image` object,
 which we create from a FITS file.
 
 .. code-block:: python
 
+   import ehtim as eh
+   
    img = eh.image.load_fits('M87_230GHz.fits')
    img = img.blur_circ(np.sqrt(ff.dxcp*ff.dycp))
 
    p = ff.generate_parameter_list(img)
-   ff.display_image(p,limits=80)
 
 Prior to generating the splined raster parameter list, we blur the image to
 the raster resolution to give a better impression of the results of a splined
@@ -452,6 +450,10 @@ raster fit.  The result is shown below.
 Finally, we can initialize the parameter list from a FITS file directly.  This
 is identical to initializing from an :class:`ehtim.image.Image` object, which it
 creates internally, including blurring to the raster resolution.
+
+.. code-block:: python
+
+   p = ff.generate_parameter_list('M87_230GHz.fits')
 
 All of the above may be found in the Python_ script
 **tutorials/splined_raster_initialization.py**.   

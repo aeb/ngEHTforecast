@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorials &mdash; ngEHTforecast 0+untagged.90.g5add042 documentation</title>
+  <title>Tutorials &mdash; ngEHTforecast 0+untagged.91.g58b418c.dirty documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.90.g5add042 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.91.g58b418c.dirty documentation" href="../../index.html"/>
         <link rel="next" title="Validation" href="validation.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0+untagged.90.g5add042
+                0+untagged.91.g58b418c.dirty
               </div>
             
           
@@ -484,10 +484,8 @@ and width of 10 uas) as a key-word argument. We pass an additional argument,
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">fisher.fisher_forecast.display_image()</span></code> function.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ffinit</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_smoothed_delta_ring</span><span class="p">()</span>
 <span class="n">pinit</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">40.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">]</span>
-<span class="n">ffinit</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">pinit</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">])</span>
 
 <span class="n">p</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">generate_parameter_list</span><span class="p">(</span><span class="n">ffinit</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">pinit</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-<span class="n">ff</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>To compare the in splined-raster model and original smoothed delta-ring, we
@@ -502,16 +500,16 @@ but still leverages the other FisherForecast models.  In this case, we use an
 asymmetric Gaussian model with total flux 1 Jy, symmerized FWHM of 20 uas,
 asymmetry parameter of 0.5, and PA of 1.0 rad:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">generate_parameter_list</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">FF_asymmetric_gaussian</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">1.0</span><span class="p">])</span>
-<span class="n">ff</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In the third example, we initialize from an <a class="reference external" href="https://achael.github.io/eht-imaging/image.html#ehtim.image.Image" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.image.Image</span></code></a> object,
 which we create from a FITS file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">eh</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">load_fits</span><span class="p">(</span><span class="s1">&#39;M87_230GHz.fits&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ehtim</span> <span class="k">as</span> <span class="nn">eh</span>
+
+<span class="n">img</span> <span class="o">=</span> <span class="n">eh</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">load_fits</span><span class="p">(</span><span class="s1">&#39;M87_230GHz.fits&#39;</span><span class="p">)</span>
 <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">blur_circ</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">dxcp</span><span class="o">*</span><span class="n">ff</span><span class="o">.</span><span class="n">dycp</span><span class="p">))</span>
 
 <span class="n">p</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">generate_parameter_list</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-<span class="n">ff</span><span class="o">.</span><span class="n">display_image</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">limits</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Prior to generating the splined raster parameter list, we blur the image to
@@ -524,6 +522,9 @@ raster fit.  The result is shown below.</p>
 <p>Finally, we can initialize the parameter list from a FITS file directly.  This
 is identical to initializing from an <a class="reference external" href="https://achael.github.io/eht-imaging/image.html#ehtim.image.Image" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.image.Image</span></code></a> object, which it
 creates internally, including blurring to the raster resolution.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">generate_parameter_list</span><span class="p">(</span><span class="s1">&#39;M87_230GHz.fits&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>All of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script
 <strong>tutorials/splined_raster_initialization.py</strong>.</p>
 </div>
@@ -677,7 +678,7 @@ of the binary separation may be found in the <a class="reference external" href=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.90.g5add042',
+            VERSION:'0+untagged.91.g58b418c.dirty',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
