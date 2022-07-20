@@ -471,11 +471,152 @@ preprocessing steps, including those that depend on the particular model
 selected.
 
 In this tutorial, we will review the features of
-:meth:`data.processing.process_obsdata` and how to use them.
+:meth:`data.processing.process_obsdata` and how to use them to average the data,
+model detection thresholds, and add various systematic components to the
+uncertainties on the complex visibilities.
+
+Given either a preexisting :class:`ehtim.obsdata.Obsdata` object or a UVFITS
+file name, we can begin.  Without additional options,
+
+.. code-block:: python
+
+   import ngEHTforecast.data as fd
+
+   obs = fd.preprocess('../uvfits/M87_230GHz.uvfits')
+
+returns the Obsdata object constructed by the :meth:`ehtim.obsdata.load_uvfits`
+function.
+   
+Averaging the data over scans increases the SNR of individual data points and
+reduces data volume.  To perform this averaging,
+
+.. code-block:: python
+
+   obs = fd.preprocess('../uvfits/M87_230GHz.uvfits',avg_time='scan')
+
+Alternatively, a scan period can be specified in seconds.
+
+Applying a detection threshold should follow the definition of a FisherForecast
+object, which we take in this example to be a symmetric Gaussian with a total
+flux of 1 Jy and FWHM of 40 uas:
+
+.. code-block:: python
+   :emphasize-lines: 5
+
+   import ngEHTforecast.fisher as fp
+   ff = fp.FF_symmetric_gaussian()
+   p = [0.6,40]
+		
+   obs = fd.preprocess('../uvfits/M87_230GHz.uvfits',avg_time='scan',ff=ff,p=p)
+
+where we have removed all data points that have an SNR below 10 **after**
+setting the complex visibilities using the symmetric Gaussian model and
+scan averaging.  Note that this step will depend on the particular model
+adopted and parameter values chosen.
+
+Non-closing systematic errors are typically incorporated via an additional
+fractional error, and is most sensibly applied after specifying a FisherForecast
+object.  A constant error floor, like that used to mitigate scattering in the
+Galactic center, may be specified independent of the underlying model.
+Therefore, to add an additional 2% fractional error and 10 mJy error floor:
+
+.. code-block:: python
+
+   obs = fd.preprocess('../uvfits/M87_230GHz.uvfits',sys_err=2,const_err=10.0,ff=ff,p=p)
+
+To explore the data at any point, a handful of functions are provided to display
+the data sets.  The baselines and visibilities can be plotted:
+
+.. code-block:: python
+
+   display_visibilities(obs)
+   display_baselines(obs)
+
+Multiple data sets can be overplotted by use of the **fig** and **axs**/**axes**
+options.  For example, to plot the :math:`(u,v)`-coverage for different data
+sets, we could do the following:
+
+.. code-block:: python
+
+   _,ax = fd.display_baselines(obs1)
+   fd.display_baselines(obs2,axes=ax,color='r')
+
+Which generates the baseline map:
+
+.. figure:: ./tutorials_figures/tutorial_data_bls.png
+   :scale: 25%
+	    
+   Baseline map of two data sets with different SNR cuts generated with the
+   :meth:`data.processing.display_baselines` function.
+
+Similarly, we can combine different visibility plots:
+
+.. code-block:: python
+
+   _,axs = fd.display_baselines(obs1)
+   fd.display_baselines(obs2,axes=axs,color='r')
+	 
+.. figure:: ./tutorials_figures/tutorial_data_vis.png
+   :scale: 25%
+
+   Data summary plot of two data sets showing the complex visibilities and
+   uncertainties generated with the :meth:`data.processing.display_visibilities`
+   function.
+
+A minimal data quality assessment can be obtained by looking at closure phases
+on trivial triangles.  In principle, these should identically vanish, though
+may deviate from zero by an amount that depends on how short the degenerate
+baseline is and the degree of extended structure.  Nevertheless, these closure
+phases provide a simple test of the internal consistency of the data.  The
+trivial closure phases may be identified and displayed via
+   
+.. code-block:: python
+		
+   fd.display_trivial_cphases(obs,print_outliers=True)
+
+which plots the values of the trivial closure phases and the distribution of the
+normalized residuals.  If outlying cases are found, they will be printed in the
+above example.  The result is:
+
+.. figure:: ./tutorials_figures/tutorial_data_triv.png
+   :scale: 75%
+
+   Trivial closure phases and their normalized residual distribution, generated
+   with :meth:`data.processing.display_trivial_cphases` function.
+
+   
+::
+   
+   179 2-sigma outliers found.  Printing only worst 20.
+   [(10.66666675, 'ALMA', 'APEX', 'LMT', 319021.84375   , -1524516.375, 2.41010099e+09, -3.68364518e+09, -2.17140198e+09, 3.31984947e+09, 34.69365821, 0.39219712)
+    (10.83333349, 'ALMA', 'APEX', 'LMT', 285234.75      , -1521679.375, 2.42862182e+09, -3.66092698e+09, -2.18805197e+09, 3.29938150e+09, 34.49958923, 0.39019933)
+    (10.5       , 'ALMA', 'APEX', 'LMT', 352198.375     , -1527667.875, 2.38696730e+09, -3.70616781e+09, -2.15059558e+09, 3.34014157e+09, 34.76051541, 0.39505022)
+    (11.16666698, 'ALMA', 'APEX', 'LMT', 216088.453125  , -1516969.625, 2.45169178e+09, -3.61507840e+09, -2.20876493e+09, 3.25807514e+09, 34.02358379, 0.38889065)
+    (10.33333325, 'ALMA', 'APEX', 'LMT', 384700.75      , -1531127.625, 2.35926502e+09, -3.72845158e+09, -2.12567296e+09, 3.36021888e+09, 34.8401166 , 0.39883577)
+    (11.49999976, 'ALMA', 'APEX', 'LMT', 145288.578125  , -1513574.625, 2.45600051e+09, -3.56897229e+09, -2.21257574e+09, 3.21653837e+09, 33.9200136 , 0.38831674)
+    (11.00000024, 'ALMA', 'APEX', 'LMT', 250901.71875   , -1519162.125, 2.44249421e+09, -3.63805670e+09, -2.20051430e+09, 3.27877709e+09, 33.87802113, 0.39004852)
+    (11.33333302, 'ALMA', 'APEX', 'LMT', 180861.609375  , -1515105.875, 2.45619686e+09, -3.59203558e+09, -2.21278771e+09, 3.23731558e+09, 33.77896262, 0.38892976)
+    ( 9.83333302, 'ALMA', 'APEX', 'LMT', 477548.34375   , -1543288.   , 2.24931968e+09, -3.79344742e+09, -2.02672410e+09, 3.41878093e+09, 35.82138766, 0.41379818)
+    ( 9.99999976, 'ALMA', 'APEX', 'LMT', 447435.8125    , -1538945.25 , 2.29037517e+09, -3.77213338e+09, -2.06367808e+09, 3.39957632e+09, 35.28836523, 0.40826177)
+    (10.16666651, 'ALMA', 'APEX', 'LMT', 416466.84375   , -1534889.125, 2.32704717e+09, -3.75045402e+09, -2.09668224e+09, 3.38004301e+09, 34.71594624, 0.40391181)
+    (11.66666651, 'ALMA', 'APEX', 'LMT', 109437.484375  , -1512378.625, 2.45110374e+09, -3.54593357e+09, -2.20812851e+09, 3.19578291e+09, 33.29811963, 0.38943998)
+    (11.83333325, 'ALMA', 'APEX', 'LMT',  73376.921875  , -1511520.375, 2.44151526e+09, -3.52296192e+09, -2.19945498e+09, 3.17508915e+09, 33.15342344, 0.39005985)
+    ( 9.66666698, 'ALMA', 'APEX', 'LMT', 506746.875     , -1547909.375, 2.20395878e+09, -3.81435597e+09, -1.98589107e+09, 3.43762022e+09, 35.83029137, 0.42265596)
+    (12.        , 'ALMA', 'APEX', 'LMT',  37175.91015625, -1511001.25 , 2.42725402e+09, -3.50010317e+09, -2.18657178e+09, 3.15449626e+09, 33.01515858, 0.39076589)
+    ( 9.50000024, 'ALMA', 'APEX', 'LMT', 534975.5625    , -1552800.375, 2.15437952e+09, -3.83481830e+09, -1.94125709e+09, 3.45605862e+09, 36.09585198, 0.43218905)
+    ( 9.33333349, 'ALMA', 'APEX', 'LMT', 562180.25      , -1557951.625, 2.10067699e+09, -3.85479629e+09, -1.89290752e+09, 3.47406029e+09, 36.83603985, 0.44147205)
+    (12.16666603, 'ALMA', 'APEX', 'LMT',    903.74713135, -1510822.5  , 2.40834662e+09, -3.47739955e+09, -2.16950349e+09, 3.13404416e+09, 32.55422891, 0.39210264)
+    (12.33333349, 'ALMA', 'APEX', 'LMT', -39264.10546875, -1677331.125, 2.38483021e+09, -3.45489510e+09, -2.14828262e+09, 3.11377203e+09, 32.22049294, 0.39305758)
+    ( 9.16666675, 'ALMA', 'APEX', 'LMT', 588308.9375    , -1563353.125, 2.04295360e+09, -3.87425101e+09, -1.84093491e+09, 3.49159091e+09, 36.91539343, 0.45524961)]
+     ...
+   -------------------------------------------------------------------
+    
+Examples of the above may be found in the Python_ script
+**tutorials/data_preproc.py**.   
 
 
 
-      
+
 
 
 

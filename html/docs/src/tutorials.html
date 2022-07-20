@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorials &mdash; ngEHTforecast 0+untagged.93.g89d0f6f documentation</title>
+  <title>Tutorials &mdash; ngEHTforecast 0+untagged.97.g72d9352 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.93.g89d0f6f documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.97.g72d9352 documentation" href="../../index.html"/>
         <link rel="next" title="Validation" href="validation.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0+untagged.93.g89d0f6f
+                0+untagged.97.g72d9352
               </div>
             
           
@@ -539,7 +539,120 @@ function <code class="xref py py-meth docutils literal notranslate"><span class=
 preprocessing steps, including those that depend on the particular model
 selected.</p>
 <p>In this tutorial, we will review the features of
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">data.processing.process_obsdata()</span></code> and how to use them.</p>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">data.processing.process_obsdata()</span></code> and how to use them to average the data,
+model detection thresholds, and add various systematic components to the
+uncertainties on the complex visibilities.</p>
+<p>Given either a preexisting <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object or a UVFITS
+file name, we can begin.  Without additional options,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ngEHTforecast.data</span> <span class="k">as</span> <span class="nn">fd</span>
+
+<span class="n">obs</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="s1">&#39;../uvfits/M87_230GHz.uvfits&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>returns the Obsdata object constructed by the <code class="xref py py-meth docutils literal notranslate"><span class="pre">ehtim.obsdata.load_uvfits()</span></code>
+function.</p>
+<p>Averaging the data over scans increases the SNR of individual data points and
+reduces data volume.  To perform this averaging,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="s1">&#39;../uvfits/M87_230GHz.uvfits&#39;</span><span class="p">,</span><span class="n">avg_time</span><span class="o">=</span><span class="s1">&#39;scan&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, a scan period can be specified in seconds.</p>
+<p>Applying a detection threshold should follow the definition of a FisherForecast
+object, which we take in this example to be a symmetric Gaussian with a total
+flux of 1 Jy and FWHM of 40 uas:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ngEHTforecast.fisher</span> <span class="k">as</span> <span class="nn">fp</span>
+<span class="n">ff</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">FF_symmetric_gaussian</span><span class="p">()</span>
+<span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.6</span><span class="p">,</span><span class="mi">40</span><span class="p">]</span>
+
+<span class="hll"><span class="n">obs</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="s1">&#39;../uvfits/M87_230GHz.uvfits&#39;</span><span class="p">,</span><span class="n">avg_time</span><span class="o">=</span><span class="s1">&#39;scan&#39;</span><span class="p">,</span><span class="n">ff</span><span class="o">=</span><span class="n">ff</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>where we have removed all data points that have an SNR below 10 <strong>after</strong>
+setting the complex visibilities using the symmetric Gaussian model and
+scan averaging.  Note that this step will depend on the particular model
+adopted and parameter values chosen.</p>
+<p>Non-closing systematic errors are typically incorporated via an additional
+fractional error, and is most sensibly applied after specifying a FisherForecast
+object.  A constant error floor, like that used to mitigate scattering in the
+Galactic center, may be specified independent of the underlying model.
+Therefore, to add an additional 2% fractional error and 10 mJy error floor:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="s1">&#39;../uvfits/M87_230GHz.uvfits&#39;</span><span class="p">,</span><span class="n">sys_err</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">const_err</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span><span class="n">ff</span><span class="o">=</span><span class="n">ff</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To explore the data at any point, a handful of functions are provided to display
+the data sets.  The baselines and visibilities can be plotted:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">display_visibilities</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+<span class="n">display_baselines</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Multiple data sets can be overplotted by use of the <strong>fig</strong> and <strong>axs</strong>/<strong>axes</strong>
+options.  For example, to plot the <span class="math notranslate nohighlight">\((u,v)\)</span>-coverage for different data
+sets, we could do the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">display_baselines</span><span class="p">(</span><span class="n">obs1</span><span class="p">)</span>
+<span class="n">fd</span><span class="o">.</span><span class="n">display_baselines</span><span class="p">(</span><span class="n">obs2</span><span class="p">,</span><span class="n">axes</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Which generates the baseline map:</p>
+<div class="figure align-default" id="id7">
+<a class="reference internal image-reference" href="../../_images/tutorial_data_bls.png"><img alt="../../_images/tutorial_data_bls.png" src="../../_images/tutorial_data_bls.png" style="width: 375.0px; height: 375.0px;" /></a>
+<p class="caption"><span class="caption-text">Baseline map of two data sets with different SNR cuts generated with the
+<a class="reference internal" href="data.html#data.processing.display_baselines" title="data.processing.display_baselines"><code class="xref py py-meth docutils literal notranslate"><span class="pre">data.processing.display_baselines()</span></code></a> function.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</div>
+<p>Similarly, we can combine different visibility plots:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span><span class="n">axs</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">display_baselines</span><span class="p">(</span><span class="n">obs1</span><span class="p">)</span>
+<span class="n">fd</span><span class="o">.</span><span class="n">display_baselines</span><span class="p">(</span><span class="n">obs2</span><span class="p">,</span><span class="n">axes</span><span class="o">=</span><span class="n">axs</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure align-default" id="id8">
+<a class="reference internal image-reference" href="../../_images/tutorial_data_vis.png"><img alt="../../_images/tutorial_data_vis.png" src="../../_images/tutorial_data_vis.png" style="width: 450.0px; height: 600.0px;" /></a>
+<p class="caption"><span class="caption-text">Data summary plot of two data sets showing the complex visibilities and
+uncertainties generated with the <a class="reference internal" href="data.html#data.processing.display_visibilities" title="data.processing.display_visibilities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">data.processing.display_visibilities()</span></code></a>
+function.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+</div>
+<p>A minimal data quality assessment can be obtained by looking at closure phases
+on trivial triangles.  In principle, these should identically vanish, though
+may deviate from zero by an amount that depends on how short the degenerate
+baseline is and the degree of extended structure.  Nevertheless, these closure
+phases provide a simple test of the internal consistency of the data.  The
+trivial closure phases may be identified and displayed via</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fd</span><span class="o">.</span><span class="n">display_trivial_cphases</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">print_outliers</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which plots the values of the trivial closure phases and the distribution of the
+normalized residuals.  If outlying cases are found, they will be printed in the
+above example.  The result is:</p>
+<div class="figure align-default" id="id9">
+<a class="reference internal image-reference" href="../../_images/tutorial_data_triv.png"><img alt="../../_images/tutorial_data_triv.png" src="../../_images/tutorial_data_triv.png" style="width: 450.0px; height: 600.0px;" /></a>
+<p class="caption"><span class="caption-text">Trivial closure phases and their normalized residual distribution, generated
+with <a class="reference internal" href="data.html#data.processing.display_trivial_cphases" title="data.processing.display_trivial_cphases"><code class="xref py py-meth docutils literal notranslate"><span class="pre">data.processing.display_trivial_cphases()</span></code></a> function.</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">179</span> <span class="mi">2</span><span class="o">-</span><span class="n">sigma</span> <span class="n">outliers</span> <span class="n">found</span><span class="o">.</span>  <span class="n">Printing</span> <span class="n">only</span> <span class="n">worst</span> <span class="mf">20.</span>
+<span class="p">[(</span><span class="mf">10.66666675</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">319021.84375</span>   <span class="p">,</span> <span class="o">-</span><span class="mf">1524516.375</span><span class="p">,</span> <span class="mf">2.41010099e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.68364518e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.17140198e+09</span><span class="p">,</span> <span class="mf">3.31984947e+09</span><span class="p">,</span> <span class="mf">34.69365821</span><span class="p">,</span> <span class="mf">0.39219712</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">10.83333349</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">285234.75</span>      <span class="p">,</span> <span class="o">-</span><span class="mf">1521679.375</span><span class="p">,</span> <span class="mf">2.42862182e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.66092698e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.18805197e+09</span><span class="p">,</span> <span class="mf">3.29938150e+09</span><span class="p">,</span> <span class="mf">34.49958923</span><span class="p">,</span> <span class="mf">0.39019933</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">10.5</span>       <span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">352198.375</span>     <span class="p">,</span> <span class="o">-</span><span class="mf">1527667.875</span><span class="p">,</span> <span class="mf">2.38696730e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.70616781e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.15059558e+09</span><span class="p">,</span> <span class="mf">3.34014157e+09</span><span class="p">,</span> <span class="mf">34.76051541</span><span class="p">,</span> <span class="mf">0.39505022</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">11.16666698</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">216088.453125</span>  <span class="p">,</span> <span class="o">-</span><span class="mf">1516969.625</span><span class="p">,</span> <span class="mf">2.45169178e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.61507840e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.20876493e+09</span><span class="p">,</span> <span class="mf">3.25807514e+09</span><span class="p">,</span> <span class="mf">34.02358379</span><span class="p">,</span> <span class="mf">0.38889065</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">10.33333325</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">384700.75</span>      <span class="p">,</span> <span class="o">-</span><span class="mf">1531127.625</span><span class="p">,</span> <span class="mf">2.35926502e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.72845158e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.12567296e+09</span><span class="p">,</span> <span class="mf">3.36021888e+09</span><span class="p">,</span> <span class="mf">34.8401166</span> <span class="p">,</span> <span class="mf">0.39883577</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">11.49999976</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">145288.578125</span>  <span class="p">,</span> <span class="o">-</span><span class="mf">1513574.625</span><span class="p">,</span> <span class="mf">2.45600051e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.56897229e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.21257574e+09</span><span class="p">,</span> <span class="mf">3.21653837e+09</span><span class="p">,</span> <span class="mf">33.9200136</span> <span class="p">,</span> <span class="mf">0.38831674</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">11.00000024</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">250901.71875</span>   <span class="p">,</span> <span class="o">-</span><span class="mf">1519162.125</span><span class="p">,</span> <span class="mf">2.44249421e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.63805670e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.20051430e+09</span><span class="p">,</span> <span class="mf">3.27877709e+09</span><span class="p">,</span> <span class="mf">33.87802113</span><span class="p">,</span> <span class="mf">0.39004852</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">11.33333302</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">180861.609375</span>  <span class="p">,</span> <span class="o">-</span><span class="mf">1515105.875</span><span class="p">,</span> <span class="mf">2.45619686e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.59203558e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.21278771e+09</span><span class="p">,</span> <span class="mf">3.23731558e+09</span><span class="p">,</span> <span class="mf">33.77896262</span><span class="p">,</span> <span class="mf">0.38892976</span><span class="p">)</span>
+ <span class="p">(</span> <span class="mf">9.83333302</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">477548.34375</span>   <span class="p">,</span> <span class="o">-</span><span class="mf">1543288.</span>   <span class="p">,</span> <span class="mf">2.24931968e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.79344742e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.02672410e+09</span><span class="p">,</span> <span class="mf">3.41878093e+09</span><span class="p">,</span> <span class="mf">35.82138766</span><span class="p">,</span> <span class="mf">0.41379818</span><span class="p">)</span>
+ <span class="p">(</span> <span class="mf">9.99999976</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">447435.8125</span>    <span class="p">,</span> <span class="o">-</span><span class="mf">1538945.25</span> <span class="p">,</span> <span class="mf">2.29037517e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.77213338e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.06367808e+09</span><span class="p">,</span> <span class="mf">3.39957632e+09</span><span class="p">,</span> <span class="mf">35.28836523</span><span class="p">,</span> <span class="mf">0.40826177</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">10.16666651</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">416466.84375</span>   <span class="p">,</span> <span class="o">-</span><span class="mf">1534889.125</span><span class="p">,</span> <span class="mf">2.32704717e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.75045402e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.09668224e+09</span><span class="p">,</span> <span class="mf">3.38004301e+09</span><span class="p">,</span> <span class="mf">34.71594624</span><span class="p">,</span> <span class="mf">0.40391181</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">11.66666651</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">109437.484375</span>  <span class="p">,</span> <span class="o">-</span><span class="mf">1512378.625</span><span class="p">,</span> <span class="mf">2.45110374e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.54593357e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.20812851e+09</span><span class="p">,</span> <span class="mf">3.19578291e+09</span><span class="p">,</span> <span class="mf">33.29811963</span><span class="p">,</span> <span class="mf">0.38943998</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">11.83333325</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span>  <span class="mf">73376.921875</span>  <span class="p">,</span> <span class="o">-</span><span class="mf">1511520.375</span><span class="p">,</span> <span class="mf">2.44151526e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.52296192e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.19945498e+09</span><span class="p">,</span> <span class="mf">3.17508915e+09</span><span class="p">,</span> <span class="mf">33.15342344</span><span class="p">,</span> <span class="mf">0.39005985</span><span class="p">)</span>
+ <span class="p">(</span> <span class="mf">9.66666698</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">506746.875</span>     <span class="p">,</span> <span class="o">-</span><span class="mf">1547909.375</span><span class="p">,</span> <span class="mf">2.20395878e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.81435597e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.98589107e+09</span><span class="p">,</span> <span class="mf">3.43762022e+09</span><span class="p">,</span> <span class="mf">35.83029137</span><span class="p">,</span> <span class="mf">0.42265596</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">12.</span>        <span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span>  <span class="mf">37175.91015625</span><span class="p">,</span> <span class="o">-</span><span class="mf">1511001.25</span> <span class="p">,</span> <span class="mf">2.42725402e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.50010317e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.18657178e+09</span><span class="p">,</span> <span class="mf">3.15449626e+09</span><span class="p">,</span> <span class="mf">33.01515858</span><span class="p">,</span> <span class="mf">0.39076589</span><span class="p">)</span>
+ <span class="p">(</span> <span class="mf">9.50000024</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">534975.5625</span>    <span class="p">,</span> <span class="o">-</span><span class="mf">1552800.375</span><span class="p">,</span> <span class="mf">2.15437952e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.83481830e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.94125709e+09</span><span class="p">,</span> <span class="mf">3.45605862e+09</span><span class="p">,</span> <span class="mf">36.09585198</span><span class="p">,</span> <span class="mf">0.43218905</span><span class="p">)</span>
+ <span class="p">(</span> <span class="mf">9.33333349</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">562180.25</span>      <span class="p">,</span> <span class="o">-</span><span class="mf">1557951.625</span><span class="p">,</span> <span class="mf">2.10067699e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.85479629e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.89290752e+09</span><span class="p">,</span> <span class="mf">3.47406029e+09</span><span class="p">,</span> <span class="mf">36.83603985</span><span class="p">,</span> <span class="mf">0.44147205</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">12.16666603</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span>    <span class="mf">903.74713135</span><span class="p">,</span> <span class="o">-</span><span class="mf">1510822.5</span>  <span class="p">,</span> <span class="mf">2.40834662e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.47739955e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.16950349e+09</span><span class="p">,</span> <span class="mf">3.13404416e+09</span><span class="p">,</span> <span class="mf">32.55422891</span><span class="p">,</span> <span class="mf">0.39210264</span><span class="p">)</span>
+ <span class="p">(</span><span class="mf">12.33333349</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">39264.10546875</span><span class="p">,</span> <span class="o">-</span><span class="mf">1677331.125</span><span class="p">,</span> <span class="mf">2.38483021e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.45489510e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.14828262e+09</span><span class="p">,</span> <span class="mf">3.11377203e+09</span><span class="p">,</span> <span class="mf">32.22049294</span><span class="p">,</span> <span class="mf">0.39305758</span><span class="p">)</span>
+ <span class="p">(</span> <span class="mf">9.16666675</span><span class="p">,</span> <span class="s1">&#39;ALMA&#39;</span><span class="p">,</span> <span class="s1">&#39;APEX&#39;</span><span class="p">,</span> <span class="s1">&#39;LMT&#39;</span><span class="p">,</span> <span class="mf">588308.9375</span>    <span class="p">,</span> <span class="o">-</span><span class="mf">1563353.125</span><span class="p">,</span> <span class="mf">2.04295360e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.87425101e+09</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.84093491e+09</span><span class="p">,</span> <span class="mf">3.49159091e+09</span><span class="p">,</span> <span class="mf">36.91539343</span><span class="p">,</span> <span class="mf">0.45524961</span><span class="p">)]</span>
+  <span class="o">...</span>
+<span class="o">-------------------------------------------------------------------</span>
+</pre></div>
+</div>
+<p>Examples of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script
+<strong>tutorials/data_preproc.py</strong>.</p>
 </div>
 <div class="section" id="exploring-parallelization">
 <h2>Exploring &amp; Parallelization<a class="headerlink" href="#exploring-parallelization" title="Permalink to this headline">¶</a></h2>
@@ -577,10 +690,10 @@ in a loop which varies the “truth” parameters:</p>
 </div>
 <p>The remainder of the code makes a <a class="reference external" href="https://matplotlib.org">Matplotlib</a> plot, specifies the scales, adds
 labels and other accoutrements, and saves the following plot to a file.</p>
-<div class="figure align-default" id="id7">
+<div class="figure align-default" id="id10">
 <a class="reference internal image-reference" href="../../_images/tutorial_sep.png"><img alt="../../_images/tutorial_sep.png" src="../../_images/tutorial_sep.png" style="width: 480.0px; height: 360.0px;" /></a>
 <p class="caption"><span class="caption-text">Uncertainty on the separation in RA as a function of the total flux of the
-secondary in the binary model.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+secondary in the binary model.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
 </div>
 <p>All of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script <strong>tutorials/binary_separation.py</strong>.</p>
 <p>While the above code completes in approximately 1 minute on a single modern core,
@@ -691,7 +804,7 @@ of the binary separation may be found in the <a class="reference external" href=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.93.g89d0f6f',
+            VERSION:'0+untagged.97.g72d9352',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 

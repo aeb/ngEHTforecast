@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Data &mdash; ngEHTforecast 0+untagged.93.g89d0f6f documentation</title>
+  <title>Data &mdash; ngEHTforecast 0+untagged.97.g72d9352 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 0+untagged.93.g89d0f6f documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 0+untagged.97.g72d9352 documentation" href="../../index.html"/>
         <link rel="up" title="User’s Guide" href="userguide.html"/>
         <link rel="next" title="Developer’s Guide" href="devel.html"/>
         <link rel="prev" title="Fisher" href="fisher.html"/> 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                0+untagged.93.g89d0f6f
+                0+untagged.97.g72d9352
               </div>
             
           
@@ -191,6 +191,78 @@ for <a class="reference external" href="https://www.ngeht.org/">ngEHT</a>.</p>
 <div class="section" id="module-data.processing">
 <span id="processing"></span><h2>Processing<a class="headerlink" href="#module-data.processing" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
+<dt id="data.processing.display_baselines">
+<code class="sig-prename descclassname">data.processing.</code><code class="sig-name descname">display_baselines</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fig</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">axes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/data/processing.html#display_baselines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data.processing.display_baselines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the baseline map for a given <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><em>ehtim.obsdata.Obsdata</em></a>) – Observation for which to plot the visibilities.</p></li>
+<li><p><strong>figsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a>) – Figure size in inches.</p></li>
+<li><p><strong>fig</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)"><em>matplotlib.figure.Figure</em></a>) – Figure object on which to generate plot.</p></li>
+<li><p><strong>axes</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.5.2)"><em>matplotlib.axes.Axes</em></a>) – Axes object on which to generate plot.</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – Key word arguments understood by errorbar and plot to be applied.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Figure and Axes object of plots.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)">matplotlib.figure.Figure</a>,<a class="reference external" href="https://matplotlib.org/stable/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.5.2)">matplotlib.axes.Axes</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="data.processing.display_trivial_cphases">
+<code class="sig-prename descclassname">data.processing.</code><code class="sig-name descname">display_trivial_cphases</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">utriv</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">return_data</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">print_outliers</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/data/processing.html#display_trivial_cphases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data.processing.display_trivial_cphases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots trivial closure phases, defined by those on triangles with a side
+shorter than <strong>utriv</strong> (by default <span class="math notranslate nohighlight">\(0.01\,{\rm G}\lambda\)</span>), and the
+distribution of their normalized residuals.  Optionally, will return the
+trivial closure phase data and/or print any outliers to the screen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><em>ehtim.obsdata.Obsdata</em></a>) – Observation for which to plot the visibilities.</p></li>
+<li><p><strong>utriv</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Baseline length cutoff in <span class="math notranslate nohighlight">\({\rm G}\lambda\)</span>, below which a baseline will be considered “trivial”. Default: 0.01.</p></li>
+<li><p><strong>return_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If True, will return the trivial closure phases.</p></li>
+<li><p><strong>print_outliers</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If True, will print the most discrepant trivial closure phases, in order of decreasing discrepancy.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If return_data=True, returns the closure phase data for the trivial triangles.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(np.recarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="data.processing.display_visibilities">
+<code class="sig-prename descclassname">data.processing.</code><code class="sig-name descname">display_visibilities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fig</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">axs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/data/processing.html#display_visibilities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data.processing.display_visibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the visilibility amplitudes, phases, and uncertainties as a function
+of baseline length for a given <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><em>ehtim.obsdata.Obsdata</em></a>) – Observation for which to plot the visibilities.</p></li>
+<li><p><strong>figsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a>) – Figure size in inches.</p></li>
+<li><p><strong>fig</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)"><em>matplotlib.figure.Figure</em></a>) – Figure object on which to generate plots.</p></li>
+<li><p><strong>axs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of <a class="reference external" href="https://matplotlib.org/stable/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.5.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.axes.Axes</span></code></a> objects on which to generate plots.</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – Key word arguments understood by errorbar and plot to be applied.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Figure object and list of Axes objects as produced by <a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure.subplots" title="(in Matplotlib v3.5.2)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">matplotlib.figure.Figure.subplots()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.5.2)">matplotlib.figure.Figure</a>,<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="data.processing.preprocess_obsdata">
 <code class="sig-prename descclassname">data.processing.</code><code class="sig-name descname">preprocess_obsdata</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">ff</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">p</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">snr_cut</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sys_err</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">const_err</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">avg_time</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/data/processing.html#preprocess_obsdata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data.processing.preprocess_obsdata" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies default preprocessing and creates and returns a new
@@ -200,7 +272,7 @@ operations are applied.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>obs</strong> (<em>eht.obsdata.Obsdata</em><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – An ehtim Obsdata object containing the desired observing profile or a uvfits file name to read.</p></li>
+<li><p><strong>obs</strong> (<a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><em>ehtim.obsdata.Obsdata</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – An ehtim Obsdata object containing the desired observing profile or a uvfits file name to read.</p></li>
 <li><p><strong>ff</strong> (<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><em>fisher.fisher_forecast.FisherForecast</em></a>) – A <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> child class describing the model for which we wish to apply the processing. Required for applying the SNR cut. Default: None.</p></li>
 <li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Parameter list appropriate for ff. Requires ff to be specified. Default: None.</p></li>
 <li><p><strong>snr_cut</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – SNR below which to exclude baselines. A proxy for a detectiton threshold. Rquires ff and p to be specified. Default: None.</p></li>
@@ -266,7 +338,7 @@ operations are applied.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0+untagged.93.g89d0f6f',
+            VERSION:'0+untagged.97.g72d9352',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
