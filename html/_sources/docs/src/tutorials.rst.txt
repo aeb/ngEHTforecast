@@ -507,7 +507,7 @@ flux of 1 Jy and FWHM of 40 uas:
    ff = fp.FF_symmetric_gaussian()
    p = [0.6,40]
 		
-   obs = fd.preprocess('../uvfits/M87_230GHz.uvfits',avg_time='scan',ff=ff,p=p)
+   obs = fd.preprocess('../uvfits/M87_230GHz.uvfits',avg_time='scan',ff=ff,p=p,snr_cut=10)
 
 where we have removed all data points that have an SNR below 10 **after**
 setting the complex visibilities using the symmetric Gaussian model and
