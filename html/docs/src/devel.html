@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Developer’s Guide &mdash; ngEHTforecast 1.0 documentation</title>
+  <title>Developer’s Guide &mdash; ngEHTforecast 1.0+1.g65d2e94 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 1.0 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 1.0+1.g65d2e94 documentation" href="../../index.html"/>
         <link rel="next" title="Examples" href="examples.html"/>
         <link rel="prev" title="Data" href="data.html"/> 
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                1.0
+                1.0+1.g65d2e94
               </div>
             
           
@@ -167,6 +167,15 @@
 <div class="section" id="getting-the-latest-version">
 <h2>Getting the latest version<a class="headerlink" href="#getting-the-latest-version" title="Permalink to this headline">¶</a></h2>
 <p>The latest version of ngEHTforecast can be obtained from <a class="reference external" href="https://github.com/aeb/ngEHTforecast">https://github.com/aeb/ngEHTforecast</a>.</p>
+<p>ngEHTforecast uses the <a class="reference external" href="https://danielkummer.github.io/git-flow-cheatsheet/">git-flow</a> extensions to facilitate development. As a result, there are a number of branches that you may see in the git repository:</p>
+<ul class="simple">
+<li><p><cite>master</cite>: The latest stable release, generated from develop. This branch contains well-tested code, is rarely updated, and therefore is usually what a typical user wants.</p></li>
+<li><p><cite>develop</cite>: The current version under development, where the latest new functionality may be found.  This is periodically merged into master, generating releases. This will be updated continually and is not guaranteed to be stable.</p></li>
+<li><p><cite>feature</cite> branches: Branches in which specific new functionality can be developed, tested, and validated, prior to merging into develop.  In principle, every new code feature will have its origin in a <cite>feature</cite> branch.</p></li>
+<li><p><cite>release</cite> branches: Ephemeral intermediate branches used to stage new releases.</p></li>
+<li><p><cite>hotfix</cite> branches: Branches containing bug fixes to published releases.</p></li>
+</ul>
+<p>Most users will want to use <cite>master</cite>, some may want to use <cite>develop</cite> at the expense of stability, and only developers will want to use the remainder.</p>
 </div>
 <div class="section" id="scope-and-goals">
 <h2>Scope and goals<a class="headerlink" href="#scope-and-goals" title="Permalink to this headline">¶</a></h2>
@@ -183,7 +192,7 @@ for performing data simulation.</p>
 <h2>Portability<a class="headerlink" href="#portability" title="Permalink to this headline">¶</a></h2>
 <p>ngEHTforecast aspires to be as universally portable as possible.  While library
 interdependencies are neither unavoidable nor always undesirable, and ngEHTforecast does
-depend on Numpy, SciPy, Matplotlib, and <a class="reference external" href="https://achael.github.io/eht-imaging/">ehtim</a>, such dependencies should be kept to a
+depend on <a class="reference external" href="https://numpy.org">Numpy</a>, <a class="reference external" href="https://scipy.org">SciPy</a>, <a class="reference external" href="https://matplotlib.org">Matplotlib</a>, and <a class="reference external" href="https://achael.github.io/eht-imaging/">ehtim</a>, such dependencies should be kept to a
 minimum.  No absolute rules are possible for this.  Nevertheless:</p>
 <ol class="arabic simple">
 <li><p>Consider if additional libraries are required, or if the goal can be
@@ -292,7 +301,7 @@ file in docs/src, e.g.,</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.0',
+            VERSION:'1.0+1.g65d2e94',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
