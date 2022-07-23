@@ -5,6 +5,8 @@ Getting ngEHTforecast
 ------------------------------
 The latest version of ngEHTforecast can be obtained from https://github.com/aeb/ngEHTforecast.
 
+The git repository contains a number of branches. By default, after cloning you will be in the `master` branch, which contains the latest stable release, and is probably where you want to be. The most up-to-date functionality can be found in `develop`, which will periodically be merged into `master`.  (See :ref:`Developer's Guide` for more details about the repository structure.)
+
 Installing with pip
 ------------------------------
 To install ngEHTforecast, in the ngEHTforecast directory,
