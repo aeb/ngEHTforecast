@@ -13,12 +13,12 @@ data
    Data production and preprocessing tools
 """
 
-__author__="Avery E. Broderick"
+__author__ = "Avery E. Broderick"
 __bibtex__ = r"""@Article{Broderick \& Pesce, 2022,
   %%% Fill in from ADS!
 }"""
 
-__all__=['fisher', 'data']
+__all__ = ['fisher', 'data']
 from . import *
 
 from ._version import get_versions
