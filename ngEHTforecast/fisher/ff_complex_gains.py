@@ -18,7 +18,7 @@ class FF_complex_gains_single_epoch(ff.FisherForecast) :
       ff (FisherForecast): The FisherForecast object before gain reconstruction.
       plbls (list): List of parameter labels (str) including gains parameter names.
       gain_amplitude_priors (list): list of standard deviations of the log-normal priors on the gain amplitudes. Default: 10.
-      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 100.
+      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 30.
       gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.
       gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.
     """
@@ -130,11 +130,11 @@ class FF_complex_gains_single_epoch(ff.FisherForecast) :
                         elif ( 'All' in self.gain_phase_priors.keys() ) :
                             self.prior_sigma_list.append(self.gain_phase_priors['All'])
                         else :
-                            self.prior_sigma_list.append(100.0) # Big phase
+                            self.prior_sigma_list.append(30.0) # Big phase
 
                     else :
                         self.prior_sigma_list.append(10.0) # Big amplitude
-                        self.prior_sigma_list.append(100.0) # Big phase
+                        self.prior_sigma_list.append(30.0) # Big phase
 
             gradV = np.array(gradV).T
 
@@ -279,11 +279,11 @@ class FF_complex_gains_single_epoch(ff.FisherForecast) :
                         elif ( 'All' in self.gain_phase_priors.keys() ) :
                             self.prior_sigma_list.append(self.gain_phase_priors['All'])
                         else :
-                            self.prior_sigma_list.append(100.0) # Big phase
+                            self.prior_sigma_list.append(30.0) # Big phase
 
                     else :
                         self.prior_sigma_list.append(10.0) # Big amplitude
-                        self.prior_sigma_list.append(100.0) # Big phase
+                        self.prior_sigma_list.append(30.0) # Big phase
 
                     # complex gain ratio priors
                     if ( len(list(self.gain_ratio_amplitude_priors.keys()))>0 or len(list(self.gain_ratio_phase_priors.keys()))>0) :
@@ -383,7 +383,7 @@ class FF_complex_gains_single_epoch(ff.FisherForecast) :
           sigma (float): Standard deviation of the phase.
           station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
         """
-        sigma = min(sigma,100.0)
+        sigma = min(sigma,30.0)
         if (station is None) :
             self.gain_phase_priors = {'All':sigma}
         elif (isinstance(station,list)) :
@@ -404,7 +404,7 @@ class FF_complex_gains_single_epoch(ff.FisherForecast) :
           sigma (float): Standard deviation of the log-amplitude ratio.
           station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
         """
-        sigma = min(sigma,100.0)
+        sigma = min(sigma,30.0)
         if (station is None) :
             self.gain_ratio_amplitude_priors = {'All':sigma}
         else :
@@ -422,7 +422,7 @@ class FF_complex_gains_single_epoch(ff.FisherForecast) :
           sigma (float): Standard deviation of the phase.
           station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
         """
-        sigma = min(sigma,100.0)
+        sigma = min(sigma,30.0)
         if (station is None) :
             self.gain_ratio_phase_priors = {'All':sigma}
         else :
@@ -444,7 +444,7 @@ class FF_complex_gains(ff.FisherForecast) :
       ff (FisherForecast): The FisherForecast object before gain reconstruction.
       gain_epochs (numpy.ndarray): 2D array containing the start and end times for each gain solution epoch.
       gain_amplitude_priors (list): list of standard deviations of the log-normal priors on the gain amplitudes. Default: 10.
-      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 100.
+      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 30.
       gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.
       gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.
     """
@@ -705,7 +705,7 @@ class FF_complex_gains(ff.FisherForecast) :
           sigma (float): Standard deviation of the phase.
           station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
         """
-        sigma = min(sigma,100.0)
+        sigma = min(sigma,30.0)
         if (station is None) :
             self.gain_phase_priors = {'All':sigma}
         else :
@@ -727,7 +727,7 @@ class FF_complex_gains(ff.FisherForecast) :
           sigma (float): Standard deviation of the log-amplitude ratio.
           station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
         """
-        sigma = min(sigma,100.0)
+        sigma = min(sigma,30.0)
         if (station is None) :
             self.gain_ratio_amplitude_priors = {'All':sigma}
         else :
@@ -749,7 +749,7 @@ class FF_complex_gains(ff.FisherForecast) :
           sigma (float): Standard deviation of the phase.
           station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
         """
-        sigma = min(sigma,100.0)
+        sigma = min(sigma,30.0)
         if (station is None) :
             self.gain_ratio_phase_priors = {'All':sigma}
         else :
