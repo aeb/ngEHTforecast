@@ -727,7 +727,7 @@ class FF_complex_gains(ff.FisherForecast) :
           sigma (float): Standard deviation of the log-amplitude ratio.
           station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.
         """
-        sigma = min(sigma,30.0)
+        sigma = min(sigma,10.0)
         if (station is None) :
             self.gain_ratio_amplitude_priors = {'All':sigma}
         else :
