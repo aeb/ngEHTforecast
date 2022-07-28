@@ -578,7 +578,8 @@ class FF_complex_gains(ff.FisherForecast) :
                     r = covar_wgs[self.ff.size:,:self.ff.size]
                     m = covar_wgs[self.ff.size:,self.ff.size:]
                     r,m = self._condition_vM(r,m)
-                    mn = n - np.matmul(r.T,np.matmul(ff._invert_matrix(m),r))
+                    # mn = n - np.matmul(r.T,np.matmul(ff._invert_matrix(m),r))
+                    mn = n - ff._vMv(r,ff._invert_matrix(m))
                     
                     if (verbosity>1) :
                         print("gain epoch %g of %g ----------------------"%(ige,self.gain_epochs.shape[0]))
@@ -647,7 +648,8 @@ class FF_complex_gains(ff.FisherForecast) :
                     r = covar_wgs[self.ff.size:,:self.ff.size]
                     m = covar_wgs[self.ff.size:,self.ff.size:]
                     r,m = self._condition_vM(r,m)
-                    mn = n - np.matmul(r.T,np.matmul(ff._invert_matrix(m),r))
+                    # mn = n - np.matmul(r.T,np.matmul(ff._invert_matrix(m),r))
+                    mn = n - ff._vMv(r,ff._invert_matrix(m))
 
                     self.covar = self.covar + 0.5*(mn+mn.T)
 

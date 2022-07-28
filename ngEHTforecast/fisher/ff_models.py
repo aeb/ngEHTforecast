@@ -10,14 +10,14 @@ import matplotlib.pyplot as plt
 import ngEHTforecast.fisher.fisher_forecast as ff
 
 # Some constants
-uas2rad = np.pi/180./3600e6            
+uas2rad = np.pi/180./3600e6
 rad2uas = 1.0/(uas2rad)
 sig2fwhm = np.sqrt(8.0*np.log(2.0))
 fwhm2sig = 1.0/sig2fwhm
 
-class FF_model_image(ff.FisherForecast) :
+class FF_model_image(ff.FisherForecast):
     """
-    FisherForecast from ThemisyPy model_image objects. Uses FFTs and centered 
+    FisherForecast from ThemisyPy model_image objects. Uses FFTs and centered
     finite-difference to compute the visibilities and gradients. May not always
     produce sensible behaviors. Has not been extensively tested for some time.
 
@@ -29,15 +29,15 @@ class FF_model_image(ff.FisherForecast) :
       img (model_image): The ThemisPy model_image object for which to make forecasts.
     """
 
-    def __init__(self,img,stokes='I') :
+    def __init__(self, img, stokes='I'):
         super().__init__()
         self.img = img
         self.size = self.img.size
         self.stokes = stokes
 
-    def visibilities(self,obs,p,limits=None,shape=None,padding=4,verbosity=0) :
+    def visibilities(self, obs, p, limits=None, shape=None, padding=4, verbosity=0):
         """
-        Generates visibilities associated with a given model image object.  Note 
+        Generates visibilities associated with a given model image object.  Note
         that this uses FFTs to create the visibilities and then interpolates.
 
         Args:
@@ -59,61 +59,60 @@ class FF_model_image(ff.FisherForecast) :
         self.img.generate(p)
 
         # Fix image limits
-        if (limits is None) :
-            limits = [-100,100,-100,100]
-        elif (isinstance(limits,list)) :
+        if (limits is None):
+            limits = [-100, 100, -100, 100]
+        elif (isinstance(limits, list)):
             limits = limits
-        else :
+        else:
             limits = [-limits, limits, -limits, limits]
 
         # Set shape
-        if (shape is None) :
+        if (shape is None):
             shape = [256, 256]
-        elif (isinstance(shape,list)) :
+        elif (isinstance(shape, list)):
             shape = shape
-        else :
+        else:
             shape = [shape, shape]
-            
-        if (verbosity>0) :
-            print("limits:",limits)
-            print("shape:",shape)
-            
+
+        if (verbosity > 0):
+            print("limits:", limits)
+            print("shape:", shape)
+
         # Generate a set of pixels
-        x,y = np.mgrid[limits[0]:limits[1]:shape[0]*1j,limits[2]:limits[3]:shape[1]*1j]
+        x, y = np.mgrid[limits[0]:limits[1]:shape[0]*1j, limits[2]:limits[3]:shape[1]*1j]
         # Generate a set of intensities (Jy/uas^2)
-        I = self.img.intensity_map(x,y,p,verbosity=verbosity)
-        V00_img = np.sum(I*np.abs((x[1,1]-x[0,0])*(y[1,1]-y[0,0])))
+        I = self.img.intensity_map(x, y, p, verbosity=verbosity)
+        V00_img = np.sum(I*np.abs((x[1, 1]-x[0, 0])*(y[1, 1]-y[0, 0])))
 
         uas2rad = np.pi/180./3600e6
         x = x * uas2rad
         y = y * uas2rad
-        
-        # Generate the complex visibilities, gridded
-        V2d = np.fft.fftshift(np.conj(np.fft.fft2(I,s=padding*np.array(shape))))
-        u1d = np.fft.fftshift(np.fft.fftfreq(padding*I.shape[0],np.abs(x[1,1]-x[0,0])))
-        v1d = np.fft.fftshift(np.fft.fftfreq(padding*I.shape[1],np.abs(y[1,1]-y[0,0])))
-        
-        # Center image
-        i2d,j2d = np.meshgrid(np.arange(V2d.shape[0]),np.arange(V2d.shape[1]))
-        V2d = V2d * np.exp(1.0j*np.pi*(i2d+j2d))
-        
-        
-        # Generate the interpolator and interpolate to the u,v list
-        Vrinterp = si.RectBivariateSpline(u1d,v1d,np.real(V2d))
-        Viinterp = si.RectBivariateSpline(u1d,v1d,np.imag(V2d))
 
-        V00_fft = Vrinterp(0.0,0.0)
+        # Generate the complex visibilities, gridded
+        V2d = np.fft.fftshift(np.conj(np.fft.fft2(I, s=padding*np.array(shape))))
+        u1d = np.fft.fftshift(np.fft.fftfreq(padding*I.shape[0], np.abs(x[1, 1]-x[0, 0])))
+        v1d = np.fft.fftshift(np.fft.fftfreq(padding*I.shape[1], np.abs(y[1, 1]-y[0, 0])))
+
+        # Center image
+        i2d, j2d = np.meshgrid(np.arange(V2d.shape[0]), np.arange(V2d.shape[1]))
+        V2d = V2d * np.exp(1.0j*np.pi*(i2d+j2d))
+
+        # Generate the interpolator and interpolate to the u,v list
+        Vrinterp = si.RectBivariateSpline(u1d, v1d, np.real(V2d))
+        Viinterp = si.RectBivariateSpline(u1d, v1d, np.imag(V2d))
+
+        V00_fft = Vrinterp(0.0, 0.0)
         V2d = V2d * V00_img/V00_fft
-        
+
         V = 0.0j * u
-        for i in range(len(u)) :
-            V[i] = (Vrinterp(obs.data['u'][i],obs.data['v'][i]) + 1.0j*Viinterp(obs.data['u'][i],obs.data['v'][i]))
+        for i in range(len(u)):
+            V[i] = (Vrinterp(obs.data['u'][i], obs.data['v'][i]) + 1.0j*Viinterp(obs.data['u'][i], obs.data['v'][i]))
 
         return V
-            
-    def visibility_gradients(self,obs,p,h=1e-2,limits=None,shape=None,padding=4,verbosity=0) :
+
+    def visibility_gradients(self, obs, p, h=1e-2, limits=None, shape=None, padding=4, verbosity=0):
         """
-        Generates visibilities associated with a given model image object.  Note 
+        Generates visibilities associated with a given model image object.  Note
         that this uses FFTs to create the visibilities and then interpolates.
 
         Args:
@@ -133,23 +132,23 @@ class FF_model_image(ff.FisherForecast) :
             raise(Exception('Polarized gradients for FF_model_image are not yet implemented!'))
 
         pp = np.copy(p)
-        gradV = np.zeros((len(u),self.img.size))
+        gradV = np.zeros((len(u), self.img.size))
 
-        for i in range(self.img.size) :
-            if (np.abs(p[i])>0) :
+        for i in range(self.img.size):
+            if (np.abs(p[i]) > 0):
                 hq = h*np.abs(p[i])
-            else :
+            else:
                 hq = h**2
             pp[i] = p[i] + hq
-            Vmp = np.copy(self.visibilities(obs,pp,limits=limits,shape=shape,padding=padding,verbosity=verbosity))
+            Vmp = np.copy(self.visibilities(obs, pp, limits=limits, shape=shape, padding=padding, verbosity=verbosity))
             pp[i] = p[i] - hq
-            Vmm = np.copy(self.visibilities(obs,pp,limits=limits,shape=shape,padding=padding,verbosity=verbosity))
+            Vmm = np.copy(self.visibilities(obs, pp, limits=limits, shape=shape, padding=padding, verbosity=verbosity))
             pp[i] = p[i]
-            gradV[:,i] = (Vmp-Vmm)/(2.0*hq)
+            gradV[:, i] = (Vmp-Vmm)/(2.0*hq)
 
         return gradV
 
-    def parameter_labels(self,verbosity=0) :
+    def parameter_labels(self, verbosity=0):
         """
         Parameter labels to be used in plotting.
 
@@ -158,11 +157,11 @@ class FF_model_image(ff.FisherForecast) :
 
         Returns:
           (list): List of strings with parameter labels.
-        """        
+        """
         return self.img.parameter_name_list()
-    
 
-class FF_smoothed_delta_ring(ff.FisherForecast) :
+
+class FF_smoothed_delta_ring(ff.FisherForecast):
     """
     FisherForecast object for a delta-ring convolved with a circular Gaussian.
     Parameter vector is:
@@ -175,12 +174,12 @@ class FF_smoothed_delta_ring(ff.FisherForecast) :
       stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
     """
 
-    def __init__(self,stokes='I') :
+    def __init__(self, stokes='I'):
         super().__init__()
         self.size = 3
         self.stokes = stokes
-        
-    def visibilities(self,obs,p,verbosity=0) :
+
+    def visibilities(self, obs, p, verbosity=0):
         """
         Generates visibilities associated with Gaussian-convolved delta-ring.
 
@@ -192,7 +191,7 @@ class FF_smoothed_delta_ring(ff.FisherForecast) :
         Returns:
           (numpy.ndarray): List of complex visibilities computed at observations.
         """
-        
+
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... diameter in uas
@@ -203,20 +202,20 @@ class FF_smoothed_delta_ring(ff.FisherForecast) :
 
         u = obs.data['u']
         v = obs.data['v']
-        
+
         d = p[1]
-        w = p[2] 
+        w = p[2]
         uas2rad = np.pi/180./3600e6
         piuv = np.pi*np.sqrt(u**2+v**2)*uas2rad
         x = piuv*d
         y = piuv*w
-        J0 = ss.jv(0,x)
-        J1 = ss.jv(1,x)
+        J0 = ss.jv(0, x)
+        J1 = ss.jv(1, x)
         ey2 = np.exp(-0.5*y**2)
         V = p[0] * J0 * ey2
         return V
-        
-    def visibility_gradients(self,obs,p,verbosity=0) :
+
+    def visibility_gradients(self, obs, p, verbosity=0):
         """
         Generates visibility gradients associated with Gaussian-convolved delta-ring.
 
@@ -239,25 +238,25 @@ class FF_smoothed_delta_ring(ff.FisherForecast) :
 
         u = obs.data['u']
         v = obs.data['v']
-                
+
         d = p[1]
         w = p[2]
         uas2rad = np.pi/180./3600e6
         piuv = np.pi*np.sqrt(u**2+v**2)*uas2rad
         x = piuv*d
         y = piuv*w
-        J0 = ss.jv(0,x)
-        J1 = ss.jv(1,x)
+        J0 = ss.jv(0, x)
+        J1 = ss.jv(1, x)
         ey2 = np.exp(-0.5*y**2)
 
-        gradV = np.array([ J0*ey2,  # dV/dp[0]
-                           -p[0]*piuv*J1*ey2, # dV/dd
-                           -p[0]*piuv**2*w*J0*ey2 ]) # dV/dw
+        gradV = np.array([J0*ey2,  # dV/dp[0]
+                          -p[0]*piuv*J1*ey2, # dV/dd
+                          -p[0]*piuv**2*w*J0*ey2 ]) # dV/dw
 
         return gradV.T
-        
 
-    def parameter_labels(self,verbosity=0) :
+
+    def parameter_labels(self, verbosity=0):
         """
         Parameter labels to be used in plotting.
 
@@ -266,11 +265,145 @@ class FF_smoothed_delta_ring(ff.FisherForecast) :
 
         Returns:
           (list): List of strings with parameter labels.
-        """        
-        return [r'$\delta F~({\rm Jy})$',r'$\delta d~(\mu{\rm as})$',r'$\delta w~(\mu{\rm as})$']
+        """
+        return [r'$\delta F~({\rm Jy})$', r'$\delta d~(\mu{\rm as})$', r'$\delta w~(\mu{\rm as})$']
+
+
+class FF_double_smoothed_delta_ring(ff.FisherForecast):
+    """
+    FisherForecast object for a delta-ring convolved with a circular Gaussian.
+    Parameter vector is:
+
+    * p[0] ... Flux of n=1 ring in Jy.
+    * p[1] ... Diameter of n=1 ring in uas.
+    * p[2] ... Twice the standard deviation of the Gaussian smoothing kernel in uas.
+    * p[3] ... Ratio of flux in n=2 and n=1 rings.
+    * p[4] ... Ratio of difference in the diameters between the n=1 and n=2 rings to the diameter of the n=1 ring.
+    * p[5] ... Ratio of the standard deviations of the n=2 and n=1 rings.
+
+    Args:
+      stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
+    """
+
+    def __init__(self, stokes='I'):
+        super().__init__()
+        self.size = 6
+        self.stokes = stokes
+
+    def visibilities(self, obs, p, verbosity=0):
+        """
+        Generates visibilities associated with Gaussian-convolved delta-ring.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (numpy.ndarray): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          (numpy.ndarray): List of complex visibilities computed at observations.
+        """
+        
+        if self.stokes != 'I':
+            raise(Exception('Polarized visibilities for FF_smoothed_delta_ring are not yet implemented!'))
+
+        u = obs.data['u']
+        v = obs.data['v']
+
+        I = p[0]
+        d = p[1]
+        w = p[2]
+
+        I2 = p[3]*I
+        d2 = p[4]*d + d
+        w2 = p[5]*w
+
+        uas2rad = np.pi/180./3600e6
+        piuv = np.pi*np.sqrt(u**2+v**2)*uas2rad
+
+        x = piuv*d
+        y = piuv*w
+        J0 = ss.jv(0, x)
+        J1 = ss.jv(1, x)
+        ey2 = np.exp(-0.5*y**2)
+        V = I * J0 * ey2
+
+        x = piuv*d2
+        y = piuv*w2
+        J0 = ss.jv(0, x)
+        J1 = ss.jv(1, x)
+        ey2 = np.exp(-0.5*y**2)
+        V = V + I2 * J0 * ey2
+        
+        return V
+
+    def visibility_gradients(self, obs, p, verbosity=0):
+        """
+        Generates visibility gradients associated with Gaussian-convolved delta-ring.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (numpy.ndarray): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          (numpy.ndarray): List of complex visibilities computed at observations.
+        """
+
+        if self.stokes != 'I':
+            raise(Exception('Polarized gradients for FF_smoothed_delta_ring are not yet implemented!'))
+
+        u = obs.data['u']
+        v = obs.data['v']
+
+        I = p[0]
+        d = p[1]
+        w = p[2]
+
+        I2 = p[3]*I
+        d2 = p[4]*d + d
+        w2 = p[5]*w
+
+        uas2rad = np.pi/180./3600e6
+        piuv = np.pi*np.sqrt(u**2+v**2)*uas2rad
+        
+        x1 = piuv*d
+        y1 = piuv*w
+        J01 = ss.jv(0, x1)
+        J11 = ss.jv(1, x1)
+        ey21 = np.exp(-0.5*y1**2)
+
+        x2 = piuv*d2
+        y2 = piuv*w2
+        J02 = ss.jv(0, x2)
+        J12 = ss.jv(1, x2)
+        ey22 = np.exp(-0.5*y2**2)
+
+        gradV = [J01*ey21 + p[3]*J02*ey22,  # dV/dp[0]
+                 -I*piuv*J11*ey21 - I2*piuv*J12*ey22 * (p[4]+1), # dV/dd
+                 -I*piuv**2*w*J01*ey21 - I2*piuv**2*w2*J02*ey22 * p[5], # dV/dw
+                 I*J02*ey22,  # dV/dp[3]
+                 -I2*piuv*J12*ey22 * d, # dV/dp[4]
+                 -I2*piuv**2*w2*J02*ey22 * w ] # dV/dp[5]
+
+        gradV = np.array(gradV)
+        
+        return gradV.T
+
+
+    def parameter_labels(self, verbosity=0):
+        """
+        Parameter labels to be used in plotting.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          (list): List of strings with parameter labels.
+        """
+        return [r'$\delta F_1~({\rm Jy})$', r'$\delta d_1~(\mu{\rm as})$', r'$\delta w_1~(\mu{\rm as})$', r'$\delta f_2$', r'$\delta f_{\Delta d,2}$', r'$\delta f_{w,2}$']
     
 
-class FF_symmetric_gaussian(ff.FisherForecast) :
+class FF_symmetric_gaussian(ff.FisherForecast):
     """
     FisherForecast object for a circular Gaussian.
     Parameter vector is:
@@ -282,12 +415,12 @@ class FF_symmetric_gaussian(ff.FisherForecast) :
       stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
     """
 
-    def __init__(self,stokes='I') :
+    def __init__(self, stokes='I'):
         super().__init__()
         self.size = 2
         self.stokes = stokes
-        
-    def visibilities(self,obs,p,verbosity=0) :
+
+    def visibilities(self, obs, p, verbosity=0):
         """
         Generates visibilities associated with a circular Gaussian.
 
@@ -316,8 +449,8 @@ class FF_symmetric_gaussian(ff.FisherForecast) :
         y = piuv * d
         ey2 = np.exp(-0.5*y**2)
         return p[0]*ey2
-        
-    def visibility_gradients(self,obs,p,verbosity=0) :
+
+    def visibility_gradients(self, obs, p, verbosity=0):
         """
         Generates visibility gradients associated with a circular Gaussian.
 
@@ -346,13 +479,13 @@ class FF_symmetric_gaussian(ff.FisherForecast) :
         y = piuv * d
         ey2 = np.exp(-0.5*y**2)
 
-        gradV = np.array([ ey2, # dV/dp[0]
-                           -p[0]*piuv**2*d*ey2 ]) # dV/dd
+        gradV = np.array([ey2, # dV/dp[0]
+                          -p[0]*piuv**2*d*ey2]) # dV/dd
 
         return gradV.T
-        
 
-    def parameter_labels(self,verbosity=0) :
+
+    def parameter_labels(self, verbosity=0):
         """
         Parameter labels to be used in plotting.
 
@@ -362,10 +495,10 @@ class FF_symmetric_gaussian(ff.FisherForecast) :
         Returns:
           (list): List of strings with parameter labels.
         """        
-        return [r'$\delta F~({\rm Jy})$',r'$\delta FWHM~(\mu{\rm as})$']
+        return [r'$\delta F~({\rm Jy})$', r'$\delta FWHM~(\mu{\rm as})$']
 
 
-class FF_asymmetric_gaussian(ff.FisherForecast) :
+class FF_asymmetric_gaussian(ff.FisherForecast):
     """
     FisherForecast object for a noncircular Gaussian.  
     Parameter vector is:
@@ -381,12 +514,12 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
       stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
     """
 
-    def __init__(self,stokes='I') :
+    def __init__(self, stokes='I'):
         super().__init__()
         self.size = 4
         self.stokes = stokes
         
-    def visibilities(self,obs,p,verbosity=0) :
+    def visibilities(self, obs, p, verbosity=0):
         """
         Generates visibilities associated with a noncircular Gaussian.
 
@@ -402,7 +535,7 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... mean diameter in uas
-        #  p[2] ... asymmetry parameter 
+        #  p[2] ... asymmetry parameter
         #  p[3] ... position angle in radians
 
         if self.stokes != 'I':
@@ -412,7 +545,7 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
         v = obs.data['v']
 
         uas2rad = np.pi/180./3600e6
-        
+
         F = p[0]
         sig = p[1]*uas2rad / np.sqrt(8.0*np.log(2.0))
         A = p[2]
@@ -435,8 +568,8 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
 
         return F*ey2
 
-    
-    def visibility_gradients(self,obs,p,verbosity=0) :
+
+    def visibility_gradients(self, obs, p, verbosity=0):
         """
         Generates visibility gradients associated with a noncircular Gaussian.
 
@@ -448,11 +581,11 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
         Returns:
           (numpy.ndarray): List of complex visibilities computed at observations.
         """
-        
+
         # Takes:
         #  p[0] ... flux in Jy
         #  p[1] ... mean diameter in uas
-        #  p[2] ... asymmetry parameter 
+        #  p[2] ... asymmetry parameter
         #  p[3] ... position angle in radians
 
         if self.stokes != 'I':
@@ -462,7 +595,7 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
         v = obs.data['v']
 
         # uas2rad_fwhm2sig = np.pi/180./3600e6 / np.sqrt(8.0*np.log(2.0))
-        
+
         F = p[0]
         sig = p[1]
         A = p[2]
@@ -475,23 +608,23 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
         sigmaj = sig / np.sqrt(1-A)
         sigmin = sig / np.sqrt(1+A)
 
-        pimaj = 2.0*np.pi*ur * uas2rad*fwhm2sig 
-        pimin = 2.0*np.pi*vr * uas2rad*fwhm2sig 
+        pimaj = 2.0*np.pi*ur * uas2rad*fwhm2sig
+        pimin = 2.0*np.pi*vr * uas2rad*fwhm2sig
 
         ymaj = pimaj*sigmaj
         ymin = pimin*sigmin
 
         ey2 = np.exp(-0.5*(ymaj**2+ymin**2))
 
-        gradV = np.array([ ey2, # dV/dF
-                           -F*ey2*( pimaj**2*sig/(1-A) + pimin**2*sig/(1+A) ), # dV/dd
-                           -F*ey2*0.5*( (pimaj*sig/(1-A))**2 - (pimin*sig/(1+A))**2 ), # dV/dA
-                           F*ey2* pimaj*pimin * ( sigmaj**2 - sigmin**2 ) ])
-        
-        
+        gradV = np.array([ey2, # dV/dF
+                          -F*ey2*( pimaj**2*sig/(1-A) + pimin**2*sig/(1+A) ), # dV/dd
+                          -F*ey2*0.5*( (pimaj*sig/(1-A))**2 - (pimin*sig/(1+A))**2 ), # dV/dA
+                          F*ey2* pimaj*pimin * ( sigmaj**2 - sigmin**2 )])
+
         return gradV.T
 
-    def parameter_labels(self,verbosity=0) :
+
+    def parameter_labels(self, verbosity=0):
         """
         Parameter labels to be used in plotting.
 
@@ -505,7 +638,7 @@ class FF_asymmetric_gaussian(ff.FisherForecast) :
 
     
 
-def W_cubic_spline_1d(k,a=-0.5) :
+def W_cubic_spline_1d(k,a=-0.5):
     """
     Fourier domain convolution function for the approximate 1D cubic spline.
     Useful for the splined raster image classes.
@@ -528,7 +661,7 @@ def W_cubic_spline_1d(k,a=-0.5) :
                        - 4.0*ok3*np.sin(k)*( 2.0*a*np.cos(k) + (4*a+3) ) ) )
 
     
-class FF_splined_raster(ff.FisherForecast) :
+class FF_splined_raster(ff.FisherForecast):
     """
     FisherForecast object for a splined raster (i.e., themage).
     Parameter vector is the log of the intensity at the control points:
@@ -556,7 +689,7 @@ class FF_splined_raster(ff.FisherForecast) :
       apx (float): Raster pixel size.
     """
 
-    def __init__(self,N,fov,stokes='I') :
+    def __init__(self,N,fov,stokes='I'):
         super().__init__()
         self.npx = N
         self.size = self.npx**2
@@ -575,7 +708,7 @@ class FF_splined_raster(ff.FisherForecast) :
         if self.stokes != 'I':
             self.size *= 4
 
-    def visibilities(self,obs,p,verbosity=0) :
+    def visibilities(self,obs,p,verbosity=0):
         """
         Generates visibilities associated with a splined raster model.
 
@@ -603,8 +736,8 @@ class FF_splined_raster(ff.FisherForecast) :
         # Add themage
         if self.stokes == 'I':
             V = 0.0j*u
-            for i in range(self.npx) :
-                for j in range(self.npx) :
+            for i in range(self.npx):
+                for j in range(self.npx):
                     V = V + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.dxcp*u)*W_cubic_spline_1d(2.0*np.pi*self.dycp*v) * self.apx
             return V
         
@@ -615,12 +748,12 @@ class FF_splined_raster(ff.FisherForecast) :
             V = 0.0j*u
 
             countI = 0
-            for i in range(self.npx) :
-                for j in range(self.npx) :
+            for i in range(self.npx):
+                for j in range(self.npx):
                     I = I + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.dxcp*u)*W_cubic_spline_1d(2.0*np.pi*self.dycp*v) * self.apx
                     countI += 1
-            for i in range(self.npx) :
-                for j in range(self.npx) :
+            for i in range(self.npx):
+                for j in range(self.npx):
                     Q = Q + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.dxcp*u)*W_cubic_spline_1d(2.0*np.pi*self.dycp*v) * self.apx
                     U = U + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[2*countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.dxcp*u)*W_cubic_spline_1d(2.0*np.pi*self.dycp*v) * self.apx
                     V = V + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[3*countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.dxcp*u)*W_cubic_spline_1d(2.0*np.pi*self.dycp*v) * self.apx
@@ -632,7 +765,7 @@ class FF_splined_raster(ff.FisherForecast) :
 
             return RR, LL, RL, LR
         
-    def visibility_gradients(self,obs,p,verbosity=0) :
+    def visibility_gradients(self,obs,p,verbosity=0):
         """
         Generates visibility gradients associated with a splined raster model.
 
@@ -660,8 +793,8 @@ class FF_splined_raster(ff.FisherForecast) :
         # Add themage
         if self.stokes == 'I':
             gradV = list()
-            for j in range(self.npx) :
-                for i in range(self.npx) :
+            for j in range(self.npx):
+                for i in range(self.npx):
                     gradV.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
             gradV = np.array(gradV)
             return gradV.T
@@ -672,12 +805,12 @@ class FF_splined_raster(ff.FisherForecast) :
             gradV = list()
             
             countI = 0
-            for j in range(self.npx) :
-                for i in range(self.npx) :
+            for j in range(self.npx):
+                for i in range(self.npx):
                     gradI.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
                     countI += 1
-            for j in range(self.npx) :
-                for i in range(self.npx) :
+            for j in range(self.npx):
+                for i in range(self.npx):
                     gradQ.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
                     gradU.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[2*countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
                     gradV.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[3*countI + i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
@@ -699,7 +832,7 @@ class FF_splined_raster(ff.FisherForecast) :
             return grad_RR, grad_LL, grad_RL, grad_LR
 
 
-    def parameter_labels(self,verbosity=0) :
+    def parameter_labels(self,verbosity=0):
         """
         Parameter labels to be used in plotting.
 
@@ -710,24 +843,24 @@ class FF_splined_raster(ff.FisherForecast) :
           (list): List of strings with parameter labels.
         """        
         pll = []
-        for j in range(self.npx) :
-            for i in range(self.npx) :
+        for j in range(self.npx):
+            for i in range(self.npx):
                 pll.append( r'$\delta I_{%i,%i}$'%(i,j) )
 
         if self.stokes != 'I':
-            for j in range(self.npx) :
-                for i in range(self.npx) :
+            for j in range(self.npx):
+                for i in range(self.npx):
                     pll.append( r'$\delta Q_{%i,%i}$'%(i,j) )
-            for j in range(self.npx) :
-                for i in range(self.npx) :
+            for j in range(self.npx):
+                for i in range(self.npx):
                     pll.append( r'$\delta U_{%i,%i}$'%(i,j) )
-            for j in range(self.npx) :
-                for i in range(self.npx) :
+            for j in range(self.npx):
+                for i in range(self.npx):
                     pll.append( r'$\delta V_{%i,%i}$'%(i,j) )
 
         return pll
 
-    def generate_parameter_list(self,glob,verbosity=0,**kwargs) :
+    def generate_parameter_list(self,glob,verbosity=0,**kwargs):
         """
         Utility function to quickly and easily generate a set of raster values
         associated with various potential initialization schemes. These include:
@@ -745,23 +878,23 @@ class FF_splined_raster(ff.FisherForecast) :
           p (list): Approximate parameter list for associated splined raster object.
         """
 
-        if ( issubclass(type(glob),ff.FisherForecast) ) :
+        if ( issubclass(type(glob),ff.FisherForecast) ):
             # This is a FF object, set the parameters, make the images and go
-            if (verbosity>0) :
+            if (verbosity>0):
                 print("glob is a FisherForecast object!")
 
             # Make sure that limits are such that we will be interpolating
-            if (not 'limits' in kwargs.keys()) :
+            if (not 'limits' in kwargs.keys()):
                 kwargs['limits'] = None
-            if (kwargs['limits'] is None) :
-                if (np.abs(self.xcp[0,0]*rad2uas)>100.0) :
+            if (kwargs['limits'] is None):
+                if (np.abs(self.xcp[0,0]*rad2uas)>100.0):
                     kwargs['limits'] = np.abs(self.xcp[0,0])
-            elif (isinstance(kwargs['limits'],list)) :
+            elif (isinstance(kwargs['limits'],list)):
                 kwargs['limits'][0] = min(kwargs['limits'][0],self.xcp[0,0]*rad2uas)
                 kwargs['limits'][1] = max(kwargs['limits'][1],self.xcp[-1,-1]*rad2uas)
                 kwargs['limits'][2] = min(kwargs['limits'][0],self.ycp[0,0]*rad2uas)
                 kwargs['limits'][3] = max(kwargs['limits'][3],self.ycp[-1,-1]*rad2uas)
-            else :
+            else:
                 kwargs['limits'] = max(kwargs['limits'],self.xcp[-1,-1]*rad2uas)
 
             # Make an image and interpolate to the control points
@@ -776,9 +909,9 @@ class FF_splined_raster(ff.FisherForecast) :
             p = (f(self.xcp[0,:]*rad2uas,self.ycp[:,0]*rad2uas) + np.log(rad2uas**2)).flatten()
             return p
 
-        elif (inspect.isclass(glob) and issubclass(glob,ff.FisherForecast) ) :
+        elif (inspect.isclass(glob) and issubclass(glob,ff.FisherForecast) ):
             # This is a FF class, create a FF obj set the parameters, make the images and go
-            if (verbosity>0) :
+            if (verbosity>0):
                 print("glob is a FisherForecast class name!")
 
             # Make an instance of the object
@@ -787,28 +920,28 @@ class FF_splined_raster(ff.FisherForecast) :
             # Recurse
             return self.generate_parameter_list(ffobj,**kwargs)
 
-        elif ( isinstance(glob,str) ) :
+        elif ( isinstance(glob,str) ):
             # This is a string, check for .fits and go
-            if (verbosity>0) :
+            if (verbosity>0):
                 print("glob is a string!")
 
             _,ext = os.path.splitext(glob)
             
-            if (ext.lower()==".fits") :
+            if (ext.lower()==".fits"):
                 img = eh.image.load_fits(glob)
                 img = img.blur_circ(np.sqrt(self.dxcp*self.dycp))
 
                 # Recurse
                 return self.generate_parameter_list(img,**kwargs)
-            else :
+            else:
                 raise(RuntimeError("Unrecognized image file name %s.  Currently accepts FITS files."%(glob)))
 
             # Should never get here
             return np.zeros(self.size)
             
-        elif ( isinstance(glob,eh.image.Image) ) :
+        elif ( isinstance(glob,eh.image.Image) ):
             # This is an ehtim Image, grab images and go
-            if (verbosity>0) :
+            if (verbosity>0):
                 print("glob is an ehtim.image.Image object!")
 
             x1d = np.linspace(-0.5*glob.psize*(glob.xdim-1),0.5*glob.psize*(glob.xdim-1),glob.xdim)*rad2uas
@@ -823,7 +956,7 @@ class FF_splined_raster(ff.FisherForecast) :
             return (f(self.xcp[0,:]*rad2uas,self.ycp[:,0]*rad2uas)).flatten()
             # return (f(self.xcp[0,:]*rad2uas,self.ycp[:,0]*rad2uas) + np.log(rad2uas**2)).flatten()
         
-        else :
+        else:
 
             raise(RuntimeError("Unrecognized glob from which to generate acceptable parameter list."))                  
         
@@ -833,7 +966,7 @@ class FF_splined_raster(ff.FisherForecast) :
 
     
 
-class FF_smoothed_delta_ring_themage(ff.FisherForecast) :
+class FF_smoothed_delta_ring_themage(ff.FisherForecast):
     """
     FisherForecast object for a splined raster (i.e., themage) plus a
     Gaussian-convolved delta-ring.
@@ -864,7 +997,7 @@ class FF_smoothed_delta_ring_themage(ff.FisherForecast) :
       apx (float): Raster pixel size.
     """
 
-    def __init__(self,N,fov,stokes='I') :
+    def __init__(self,N,fov,stokes='I'):
         super().__init__()
         self.npx = N
         self.size = self.npx**2 + 3
@@ -876,7 +1009,7 @@ class FF_smoothed_delta_ring_themage(ff.FisherForecast) :
 
         self.stokes = stokes
 
-    def visibilities(self,obs,p,verbosity=0) :
+    def visibilities(self,obs,p,verbosity=0):
         """
         Generates visibilities associated with splined raster + Gaussian-convolved delta-ring.
 
@@ -909,8 +1042,8 @@ class FF_smoothed_delta_ring_themage(ff.FisherForecast) :
         # print("p:",p)
         
         # Add themage
-        for i in range(self.npx) :
-            for j in range(self.npx) :
+        for i in range(self.npx):
+            for j in range(self.npx):
                 V = V + np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx
 
         # print(u[:5],v[:5],V[:5])
@@ -930,7 +1063,7 @@ class FF_smoothed_delta_ring_themage(ff.FisherForecast) :
         
         return V
         
-    def visibility_gradients(self,obs,p,verbosity=0) :
+    def visibility_gradients(self,obs,p,verbosity=0):
         """
         Generates visibility gradients associated with splined raster + Gaussian-convolved delta-ring.
 
@@ -961,8 +1094,8 @@ class FF_smoothed_delta_ring_themage(ff.FisherForecast) :
         gradV = []
 
         # Add themage
-        for j in range(self.npx) :
-            for i in range(self.npx) :
+        for j in range(self.npx):
+            for i in range(self.npx):
                 gradV.append( np.exp(-2.0j*np.pi*(u*self.xcp[i,j]+v*self.ycp[i,j]) + p[i+self.npx*j]) * W_cubic_spline_1d(2.0*np.pi*self.xcp[i,j]*u)*W_cubic_spline_1d(2.0*np.pi*self.ycp[i,j]*v) * self.apx )
         
         # Add ring
@@ -987,7 +1120,7 @@ class FF_smoothed_delta_ring_themage(ff.FisherForecast) :
         return gradV.T
         
 
-    def parameter_labels(self,verbosity=0) :
+    def parameter_labels(self,verbosity=0):
         """
         Parameter labels to be used in plotting.
 
@@ -998,8 +1131,8 @@ class FF_smoothed_delta_ring_themage(ff.FisherForecast) :
           (list): List of strings with parameter labels.
         """        
         pll = []
-        for j in range(self.npx) :
-            for i in range(self.npx) :
+        for j in range(self.npx):
+            for i in range(self.npx):
                 pll.append( r'$\delta I_{%i,%i}$'%(i,j) )
 
         pll.append(r'$\delta F~({\rm Jy})$')
@@ -1009,7 +1142,7 @@ class FF_smoothed_delta_ring_themage(ff.FisherForecast) :
         return pll
 
     
-class FF_thick_mring(ff.FisherForecast) :
+class FF_thick_mring(ff.FisherForecast):
     """
     FisherForecast object for an m-ring model (based on ehtim).
     Parameter vector is:
@@ -1029,7 +1162,7 @@ class FF_thick_mring(ff.FisherForecast) :
 
     """
 
-    def __init__(self,m,mp=None,mc=None,stokes='I') :
+    def __init__(self,m,mp=None,mc=None,stokes='I'):
         super().__init__()
         self.m = m
         self.mp = mp
@@ -1042,7 +1175,7 @@ class FF_thick_mring(ff.FisherForecast) :
             if (self.mc > 0):
                 self.size += 2 + 4*self.mc
 
-    def param_wrapper(self,p) :
+    def param_wrapper(self,p):
         """
         Converts parameters from a flattened list to an ehtim-style dictionary.
         
@@ -1088,7 +1221,7 @@ class FF_thick_mring(ff.FisherForecast) :
 
         return params
 
-    def visibilities(self,obs,p,verbosity=0) :
+    def visibilities(self,obs,p,verbosity=0):
         """
         Generates visibilities associated with m-ring model.
 
@@ -1131,7 +1264,7 @@ class FF_thick_mring(ff.FisherForecast) :
             vis_LR = eh.model.sample_1model_uv(u,v,'thick_mring',params,pol='LR')
             return vis_RR, vis_LL, vis_RL, vis_LR
         
-    def visibility_gradients(self,obs,p,verbosity=0) :
+    def visibility_gradients(self,obs,p,verbosity=0):
         """
         Generates visibility gradients associated with m-ring model.
 
@@ -1203,7 +1336,7 @@ class FF_thick_mring(ff.FisherForecast) :
 
             return grad_RR.T, grad_LL.T, grad_RL.T, grad_LR.T
 
-    def parameter_labels(self,verbosity=0) :
+    def parameter_labels(self,verbosity=0):
         """
         Parameter labels to be used in plotting.
 

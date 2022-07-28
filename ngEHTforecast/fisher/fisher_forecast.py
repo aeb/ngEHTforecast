@@ -20,12 +20,20 @@ def _print_vector(v) :
     print(line)
 
 def _invert_matrix(a) :
-    return linalg.inv(a)
+    tmp = linalg.inv(a)
+    return 0.5*(tmp+tmp.T)
+    # return linalg.inv(a)
     # return linalg.pinvh(a)
     # n = a.shape[0]
     # I = np.identity(n)
     # return linalg.solve(a, I, sym_pos = True, overwrite_b = True)
 
+def _vMv(v,M) :
+    # return np.matmul(v.T,np.matmul(M,v))
+    tmp = np.matmul(v.T,np.matmul(M,v))
+    return 0.5*(tmp+tmp.T)
+    
+    
 # Some constants
 uas2rad = np.pi/180./3600e6            
 rad2uas = 1.0/(uas2rad)
@@ -474,7 +482,8 @@ class FisherForecast :
             # print("Before mN:",mN)
             v,M = self._condition_vM(v,M)
             Minv = _invert_matrix(M)
-            mN = (N - np.matmul(v,np.matmul(Minv,v)))
+            # mN = (N - np.matmul(v,np.matmul(Minv,v)))
+            mN = (N - _vMv(v,Minv))
             # print("After mN:",mN)
             Sig_marg = np.sqrt(2.0/mN)
 
@@ -495,7 +504,8 @@ class FisherForecast :
                 # print("Before mN:",mN)
                 v,M = self._condition_vM(v,M)
                 Minv = _invert_matrix(M)
-                mN = N - np.matmul(v,np.matmul(Minv,v))
+                # mN = N - np.matmul(v,np.matmul(Minv,v))
+                mN = N - _vMv(v,Minv)
                 # print("After mN:",mN)
                 Sig_marg[k] = np.sqrt(2.0/mN)
                 
@@ -535,7 +545,8 @@ class FisherForecast :
             r,m = self._condition_vM(r,m)
             # print("After mN:",n - np.matmul(r.T,np.matmul(_invert_matrix(m),r)))
             # print("Shapes:",n.shape,r.shape,m.shape)
-            return n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
+            # return n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))
+            return n - _vMv(r,_invert_matrix(m))
             
     
     def uncertainties(self,obs,p,ilist=None,verbosity=0,**kwargs) :
@@ -573,7 +584,8 @@ class FisherForecast :
             N = C[i][i]
             v,M = self._condition_vM(v,M)
             Minv = _invert_matrix(M)
-            mN = N - np.matmul(v,np.matmul(Minv,v))
+            # mN = N - np.matmul(v,np.matmul(Minv,v))
+            mN = N - _vMv(v,Minv)
             Sig_uni[i] = np.sqrt(2.0/N)
             Sig_marg[i] = np.sqrt(2.0/mN)
         else :            
@@ -593,7 +605,8 @@ class FisherForecast :
                 N = C[i][i]
                 v,M = self._condition_vM(v,M)
                 Minv = _invert_matrix(M)
-                mN = N - np.matmul(v,np.matmul(Minv,v))
+                # mN = N - np.matmul(v,np.matmul(Minv,v))
+                mN = N - _vMv(v,Minv)
                 Sig_uni[i] = np.sqrt(2.0/N)
                 Sig_marg[i] = np.sqrt(2.0/mN)
 
@@ -672,8 +685,10 @@ class FisherForecast :
             # print(v1.shape,v2.shape)
             
             Minv = _invert_matrix(M)
-            N1 = N1 - np.matmul(v1.T,np.matmul(Minv,v1))
-            N2 = N2 - np.matmul(v2.T,np.matmul(Minv,v2))
+            # N1 = N1 - np.matmul(v1.T,np.matmul(Minv,v1))
+            # N2 = N2 - np.matmul(v2.T,np.matmul(Minv,v2))
+            N1 = N1 - _vMv(v1,Minv)
+            N2 = N2 - _vMv(v2,Minv)
             C12 = C12 - 0.5*(np.matmul(v1.T,np.matmul(Minv,v2)) + np.matmul(v2.T,np.matmul(Minv,v1)))
 
         else :
@@ -696,6 +711,9 @@ class FisherForecast :
             print(N1,N2,C12)
             # print(mN1,mN2,mC12)
             print(C)
+
+            l1 = max(1e-10,l1)
+            l2 = max(1e-10,l2)
 
         if (l1>l2 ):
             Sig_maj = np.sqrt(1.0/l2)
@@ -976,6 +994,12 @@ class FisherForecast :
             else :
                 raise(RuntimeError("Received unexpected value for kind, %s. Allowed values are 'fixed' and 'marginalized'."))
 
+            # print("Sigma before:",Sigma)
+            for jj in range(len(Sigma)) :
+                if (np.isnan(Sigma[jj]) or np.isinf(Sigma[jj])) :
+                    Sigma[jj] = 999.0
+            # print("Sigma after: ",Sigma)
+
             for j in range(nrow) :
                 jj = ilist[j]
                 xtmp = np.linspace(-3.5*Sigma[jj],3.5*Sigma[jj],256)
@@ -983,7 +1007,7 @@ class FisherForecast :
                 axes[j,j].fill_between(xtmp,ytmp,y2=0,color=self._choose_from_list(colors,k),alpha=self._choose_from_list(alphas,k)/3.0)
                 axes[j,j].plot(xtmp,ytmp,color=self._choose_from_list(colors,k))
 
-                if (k==0) :
+                if (k==0) :                        
                     xlim_dict[j] = (-3.5*Sigma[jj],3.5*Sigma[jj])
                 else :
                     if (3.5*Sigma[jj]>xlim_dict[j][1]) :
