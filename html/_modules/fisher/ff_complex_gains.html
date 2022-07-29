@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>fisher.ff_complex_gains &mdash; ngEHTforecast 1.0+3.g1ee81c3.dirty documentation</title>
+  <title>fisher.ff_complex_gains &mdash; ngEHTforecast 1.0+8.g6a96889 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 1.0+3.g1ee81c3.dirty documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 1.0+8.g6a96889 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                1.0+3.g1ee81c3.dirty
+                1.0+8.g6a96889
               </div>
             
           
@@ -175,7 +175,7 @@
 <span class="sd">      ff (FisherForecast): The FisherForecast object before gain reconstruction.</span>
 <span class="sd">      plbls (list): List of parameter labels (str) including gains parameter names.</span>
 <span class="sd">      gain_amplitude_priors (list): list of standard deviations of the log-normal priors on the gain amplitudes. Default: 10.</span>
-<span class="sd">      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 100.</span>
+<span class="sd">      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 30.</span>
 <span class="sd">      gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.</span>
 <span class="sd">      gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -287,11 +287,11 @@
                         <span class="k">elif</span> <span class="p">(</span> <span class="s1">&#39;All&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">[</span><span class="s1">&#39;All&#39;</span><span class="p">])</span>
                         <span class="k">else</span> <span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">30.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
 
                     <span class="k">else</span> <span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span> <span class="c1"># Big amplitude</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">30.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
 
             <span class="n">gradV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gradV</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
@@ -436,11 +436,11 @@
                         <span class="k">elif</span> <span class="p">(</span> <span class="s1">&#39;All&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">)</span> <span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span><span class="p">[</span><span class="s1">&#39;All&#39;</span><span class="p">])</span>
                         <span class="k">else</span> <span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">30.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
 
                     <span class="k">else</span> <span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span> <span class="c1"># Big amplitude</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">30.0</span><span class="p">)</span> <span class="c1"># Big phase</span>
 
                     <span class="c1"># complex gain ratio priors</span>
                     <span class="k">if</span> <span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">&gt;</span><span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
@@ -540,7 +540,7 @@
 <span class="sd">          sigma (float): Standard deviation of the phase.</span>
 <span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">30.0</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
         <span class="k">elif</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">station</span><span class="p">,</span><span class="nb">list</span><span class="p">))</span> <span class="p">:</span>
@@ -561,7 +561,7 @@
 <span class="sd">          sigma (float): Standard deviation of the log-amplitude ratio.</span>
 <span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">30.0</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
         <span class="k">else</span> <span class="p">:</span>
@@ -579,7 +579,7 @@
 <span class="sd">          sigma (float): Standard deviation of the phase.</span>
 <span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">30.0</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
         <span class="k">else</span> <span class="p">:</span>
@@ -601,7 +601,7 @@
 <span class="sd">      ff (FisherForecast): The FisherForecast object before gain reconstruction.</span>
 <span class="sd">      gain_epochs (numpy.ndarray): 2D array containing the start and end times for each gain solution epoch.</span>
 <span class="sd">      gain_amplitude_priors (list): list of standard deviations of the log-normal priors on the gain amplitudes. Default: 10.</span>
-<span class="sd">      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 100.</span>
+<span class="sd">      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 30.</span>
 <span class="sd">      gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.</span>
 <span class="sd">      gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -862,7 +862,7 @@
 <span class="sd">          sigma (float): Standard deviation of the phase.</span>
 <span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">30.0</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gain_phase_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
         <span class="k">else</span> <span class="p">:</span>
@@ -884,7 +884,7 @@
 <span class="sd">          sigma (float): Standard deviation of the log-amplitude ratio.</span>
 <span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">10.0</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_amplitude_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
         <span class="k">else</span> <span class="p">:</span>
@@ -906,7 +906,7 @@
 <span class="sd">          sigma (float): Standard deviation of the phase.</span>
 <span class="sd">          station (str,list): Station code of the station(s) for which the prior is to be set. If None, will set the prior on all stations. Default: None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">100.0</span><span class="p">)</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span><span class="mf">30.0</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">station</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gain_ratio_phase_priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;All&#39;</span><span class="p">:</span><span class="n">sigma</span><span class="p">}</span>
         <span class="k">else</span> <span class="p">:</span>
@@ -949,7 +949,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.0+3.g1ee81c3.dirty',
+            VERSION:'1.0+8.g6a96889',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 

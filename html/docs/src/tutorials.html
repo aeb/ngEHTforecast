@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorials &mdash; ngEHTforecast 1.0+3.g1ee81c3.dirty documentation</title>
+  <title>Tutorials &mdash; ngEHTforecast 1.0+8.g6a96889 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 1.0+3.g1ee81c3.dirty documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 1.0+8.g6a96889 documentation" href="../../index.html"/>
         <link rel="next" title="Validation" href="validation.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                1.0+3.g1ee81c3.dirty
+                1.0+8.g6a96889
               </div>
             
           
@@ -101,6 +101,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#forecasting-uncertainties">Forecasting Uncertainties</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#splined-raster-models">Splined Raster Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data-preprocessing">Data Preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-generation">Data Generation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#exploring-parallelization">Exploring &amp; Parallelization</a></li>
 </ul>
 </li>
@@ -654,6 +655,78 @@ with <a class="reference internal" href="data.html#data.processing.display_trivi
 <p>Examples of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script
 <strong>tutorials/data_preproc.py</strong>.</p>
 </div>
+<div class="section" id="data-generation">
+<h2>Data Generation<a class="headerlink" href="#data-generation" title="Permalink to this headline">¶</a></h2>
+<p>Simulated data sets can be generated from
+<code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForercast</span></code> objects using the with <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a>
+package.  While examples exist within the <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a> repository, here we review
+some basic functionality, though see the <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a> documentation for detailed
+information.</p>
+<p>We begin by importing the <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a> observation generation functionality.  This
+presumes that <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a> is installed (see the <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a> documentation).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"><span class="kn">import</span> <span class="nn">ngehtsim.obs.obs_generator</span> <span class="k">as</span> <span class="nn">og</span>
+</span><span class="kn">import</span> <span class="nn">ngEHTforecast</span> <span class="k">as</span> <span class="nn">nf</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</pre></div>
+</div>
+<p>We then construct a <code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForercast</span></code> object and
+set of parameters from which visibilities will be constructed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ff</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">fisher</span><span class="o">.</span><span class="n">FF_symmetric_gaussian</span><span class="p">()</span>
+<span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">20.0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>We then specify various setting options for the observation generator. Reasonable
+defaults exist for each setting, and these may be specified separately in a
+state file (see the <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a> documentation).  A subset of potential options are
+listed here, including setting the weather profile (here ‘poor’), source name,
+source position, observation frequency, and array choice.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">settings</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">settings</span><span class="p">[</span><span class="s1">&#39;weather&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;poor&#39;</span>
+<span class="n">settings</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Test&#39;</span>
+<span class="n">settings</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">12.4852</span> <span class="c1"># 12h 29m 06.7s</span>
+<span class="n">settings</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0525</span> <span class="c1"># +02° 03′ 09″</span>
+<span class="n">settings</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;230&#39;</span> <span class="c1"># GHz</span>
+<span class="n">settings</span><span class="p">[</span><span class="s1">&#39;array&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ngEHTphase1&#39;</span>
+</pre></div>
+</div>
+<p>An observation generator object is created and an observation generated.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">obsgen</span> <span class="o">=</span> <span class="n">og</span><span class="o">.</span><span class="n">obs_generator</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<span class="n">obs_poor</span> <span class="o">=</span> <span class="n">obsgen</span><span class="o">.</span><span class="n">make_obs</span><span class="p">(</span><span class="n">ff</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span><span class="n">addnoise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">addgains</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that we have turned off the additions of noise and gains as we are
+interested in typical array performance.  However, neither is manditory.  We
+make a second data set after modifying the settings, in this instance changing
+the weather:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;weather&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;good&#39;</span>
+<span class="n">obsgen</span> <span class="o">=</span> <span class="n">og</span><span class="o">.</span><span class="n">obs_generator</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<span class="n">obs_good</span> <span class="o">=</span> <span class="n">obsgen</span><span class="o">.</span><span class="n">make_obs</span><span class="p">(</span><span class="n">ff</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span><span class="n">addnoise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">addgains</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The two data sets, <strong>[obs_good,obs_poor]</strong>, are now available for making science
+forecasts.  We use the ngEHTforecast data visualization to look at the data and
+then generate a triangle plot of the two generated data sets:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">display_baselines</span><span class="p">(</span><span class="n">obs_good</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="n">nf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">display_baselines</span><span class="p">(</span><span class="n">obs_poor</span><span class="p">,</span><span class="n">axes</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;ngehtsim_uv.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+
+<span class="n">_</span><span class="p">,</span><span class="n">axs</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">display_visibilities</span><span class="p">(</span><span class="n">obs_good</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="n">nf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">display_visibilities</span><span class="p">(</span><span class="n">obs_poor</span><span class="p">,</span><span class="n">axs</span><span class="o">=</span><span class="n">axs</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;ngehtsim_vis.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+
+<span class="n">ff</span><span class="o">.</span><span class="n">plot_triangle_forecast</span><span class="p">([</span><span class="n">obs_good</span><span class="p">,</span><span class="n">obs_poor</span><span class="p">],</span><span class="n">p</span><span class="p">,</span><span class="n">axis_location</span><span class="o">=</span><span class="p">[</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.75</span><span class="p">,</span><span class="mf">0.75</span><span class="p">],</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="sa">r</span><span class="s1">&#39;Good weather&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;Poor weather&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;ngehtsim_tri.png&#39;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which generates the following plots:</p>
+<div class="figure align-default" id="id10">
+<a class="reference internal image-reference" href="../../_images/tutorial_ngehtsim.png"><img alt="../../_images/tutorial_ngehtsim.png" src="../../_images/tutorial_ngehtsim.png" style="width: 3127.5px; height: 1170.0px;" /></a>
+<p class="caption"><span class="caption-text">Visibilities and uncertainties (left), baseline map (center), and joing
+posterior (right) for the good and poor weather data sets.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+</div>
+<p>Examples of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script
+<strong>tutorials/ngehtsim_example.py</strong>.</p>
+</div>
 <div class="section" id="exploring-parallelization">
 <h2>Exploring &amp; Parallelization<a class="headerlink" href="#exploring-parallelization" title="Permalink to this headline">¶</a></h2>
 <p>A key question for many science cases will be how the uncertainties depends on
@@ -690,10 +763,10 @@ in a loop which varies the “truth” parameters:</p>
 </div>
 <p>The remainder of the code makes a <a class="reference external" href="https://matplotlib.org">Matplotlib</a> plot, specifies the scales, adds
 labels and other accoutrements, and saves the following plot to a file.</p>
-<div class="figure align-default" id="id10">
+<div class="figure align-default" id="id11">
 <a class="reference internal image-reference" href="../../_images/tutorial_sep.png"><img alt="../../_images/tutorial_sep.png" src="../../_images/tutorial_sep.png" style="width: 480.0px; height: 360.0px;" /></a>
 <p class="caption"><span class="caption-text">Uncertainty on the separation in RA as a function of the total flux of the
-secondary in the binary model.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+secondary in the binary model.</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
 </div>
 <p>All of the above may be found in the <a class="reference external" href="https://www.python.org/">Python</a> script <strong>tutorials/binary_separation.py</strong>.</p>
 <p>While the above code completes in approximately 1 minute on a single modern core,
@@ -804,7 +877,7 @@ of the binary separation may be found in the <a class="reference external" href=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.0+3.g1ee81c3.dirty',
+            VERSION:'1.0+8.g6a96889',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
