@@ -48,12 +48,14 @@ def preprocess_obsdata(obs,ff=None,p=None,snr_cut=None,sys_err=None,const_err=No
 
     if (not snr_cut is None) :
         if (ff is None) :
-            raise(Warning("SNR cut is being applied without FisherForecast object."))
+            # raise(Warning("SNR cut is being applied without FisherForecast object."))
+            print("WARNING: SNR cut is being applied without FisherForecast object.")
         obs_new = obs_new.flag_low_snr(snr_cut)
         
     if (not sys_err is None) :
         if (ff is None) :
-            raise(Warning("Systematic error is being applied without FisherForecast object."))
+            # raise(Warning("Systematic error is being applied without FisherForecast object."))
+            print("WARNING: Systematic error is being applied without FisherForecast object.")
         obs_new = obs_new.add_fractional_noise(frac_noise=0.01*sys_err)
 
     if (not const_err is None) :
