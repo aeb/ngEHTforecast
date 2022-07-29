@@ -616,9 +616,95 @@ Examples of the above may be found in the Python_ script
 
 
 
+Data Generation
+--------------------------------------------------------------------------------
+Simulated data sets can be generated from
+:class:`fisher.fisher_forecast.FisherForercast` objects using the with ngehtsim_
+package.  While examples exist within the ngehtsim_ repository, here we review
+some basic functionality, though see the ngehtsim_ documentation for detailed
+information.
 
+We begin by importing the ngehtsim_ observation generation functionality.  This
+presumes that ngehtsim_ is installed (see the ngehtsim_ documentation).
 
+.. code-block:: python
+   :emphasize-lines: 1   
 
+   import ngehtsim.obs.obs_generator as og
+   import ngEHTforecast as nf
+   import matplotlib.pyplot as plt
+
+We then construct a :class:`fisher.fisher_forecast.FisherForercast` object and
+set of parameters from which visibilities will be constructed:
+
+.. code-block:: python
+
+   ff = nf.fisher.FF_symmetric_gaussian()
+   p = [0.05,20.0]
+
+We then specify various setting options for the observation generator. Reasonable
+defaults exist for each setting, and these may be specified separately in a
+state file (see the ngehtsim_ documentation).  A subset of potential options are
+listed here, including setting the weather profile (here 'poor'), source name,
+source position, observation frequency, and array choice.
+
+.. code-block:: python
+
+   settings = {}
+   settings['weather'] = 'poor'
+   settings['source'] = 'Test'
+   settings['RA'] = 12.4852 # 12h 29m 06.7s
+   settings['DEC'] = 2.0525 # +02° 03′ 09″
+   settings['frequency'] = '230' # GHz
+   settings['array'] = 'ngEHTphase1'
+
+An observation generator object is created and an observation generated.
+
+.. code-block:: python
+
+   obsgen = og.obs_generator(settings)
+   obs_poor = obsgen.make_obs(ff,p=p,addnoise=False,addgains=False)
+
+Note that we have turned off the additions of noise and gains as we are
+interested in typical array performance.  However, neither is manditory.  We
+make a second data set after modifying the settings, in this instance changing
+the weather:
+
+.. code-block:: python
+
+   settings['weather'] = 'good'
+   obsgen = og.obs_generator(settings)
+   obs_good = obsgen.make_obs(ff,p=p,addnoise=False,addgains=False)
+
+The two data sets, **[obs_good,obs_poor]**, are now available for making science
+forecasts.  We use the ngEHTforecast data visualization to look at the data and
+then generate a triangle plot of the two generated data sets:
+
+.. code-block:: python
+
+   _,ax = nf.data.display_baselines(obs_good,color='b')
+   nf.data.display_baselines(obs_poor,axes=ax,color='r')
+   plt.savefig('ngehtsim_uv.png',dpi=300)
+
+   _,axs = nf.data.display_visibilities(obs_good,color='b')
+   nf.data.display_visibilities(obs_poor,axs=axs,color='r')
+   plt.savefig('ngehtsim_vis.png',dpi=300)
+
+   ff.plot_triangle_forecast([obs_good,obs_poor],p,axis_location=[0.2,0.2,0.75,0.75],labels=[r'Good weather',r'Poor weather'])
+   plt.savefig('ngehtsim_tri.png',dpi=300)
+
+which generates the following plots:
+
+.. figure:: ./tutorials_figures/tutorial_ngehtsim.png
+   :scale: 75%
+
+   Visibilities and uncertainties (left), baseline map (center), and joing
+   posterior (right) for the good and poor weather data sets.
+
+Examples of the above may be found in the Python_ script
+**tutorials/ngehtsim_example.py**.   
+
+   
 
 
 Exploring & Parallelization
@@ -753,3 +839,5 @@ of the binary separation may be found in the Python_ script
 .. _Matplotlib: https://matplotlib.org
 .. _Joblib: https://joblib.readthedocs.io
 .. _multiprocessing: https://docs.python.org/3/library/multiprocessing.html
+.. _ngehtsim: https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html
+
