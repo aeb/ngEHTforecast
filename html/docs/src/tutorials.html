@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorials &mdash; ngEHTforecast 1.0+8.g6a96889 documentation</title>
+  <title>Tutorials &mdash; ngEHTforecast 1.0+8.g6a96889.dirty documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 1.0+8.g6a96889 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 1.0+8.g6a96889.dirty documentation" href="../../index.html"/>
         <link rel="next" title="Validation" href="validation.html"/>
         <link rel="prev" title="Examples" href="examples.html"/> 
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                1.0+8.g6a96889
+                1.0+8.g6a96889.dirty
               </div>
             
           
@@ -454,7 +454,7 @@ generated in <a class="reference internal" href="#creating-an-obsdata-object"><s
 <div class="section" id="splined-raster-models">
 <h2>Splined Raster Models<a class="headerlink" href="#splined-raster-models" title="Permalink to this headline">¶</a></h2>
 <p>A splined-raster model, i.e., “themage”, is available in the
-<code class="xref py py-class docutils literal notranslate"><span class="pre">ff_models.FF_splined_raster</span></code> class.  This provides a flexible image
+<a class="reference internal" href="fisher.html#fisher.ff_models.FF_splined_raster" title="fisher.ff_models.FF_splined_raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.ff_models.FF_splined_raster</span></code></a> class.  This provides a flexible image
 model that can assess imaging performance and hybrid imaging-modeling
 performance.  However, the large number of parameters can make it difficult to
 sensibly specify an image.  Therefore, a number of special ways to construct a
@@ -658,7 +658,7 @@ with <a class="reference internal" href="data.html#data.processing.display_trivi
 <div class="section" id="data-generation">
 <h2>Data Generation<a class="headerlink" href="#data-generation" title="Permalink to this headline">¶</a></h2>
 <p>Simulated data sets can be generated from
-<code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForercast</span></code> objects using the with <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a>
+<a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> objects using the with <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a>
 package.  While examples exist within the <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a> repository, here we review
 some basic functionality, though see the <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a> documentation for detailed
 information.</p>
@@ -669,7 +669,7 @@ presumes that <a class="reference external" href="https://smithsonian.github.io/
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
 </div>
-<p>We then construct a <code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForercast</span></code> object and
+<p>We then construct a <a class="reference internal" href="fisher.html#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><code class="xref py py-class docutils literal notranslate"><span class="pre">fisher.fisher_forecast.FisherForecast</span></code></a> object and
 set of parameters from which visibilities will be constructed:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ff</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">fisher</span><span class="o">.</span><span class="n">FF_symmetric_gaussian</span><span class="p">()</span>
 <span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">20.0</span><span class="p">]</span>
@@ -689,7 +689,8 @@ source position, observation frequency, and array choice.</p>
 <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;array&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ngEHTphase1&#39;</span>
 </pre></div>
 </div>
-<p>An observation generator object is created and an observation generated.</p>
+<p>An <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/metrics.html">ngehtsim</a> <a class="reference external" href="https://smithsonian.github.io/ngehtsim/html/docs/source/obsgen.html#obs.obs_generator.obs_generator" title="(in ngehtsim v0+untagged.67.gde694d9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obs.obs_generator.obs_generator</span></code></a> object is created and an
+observation generated, packaged as an <a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ehtim.obsdata.Obsdata</span></code></a> object.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">obsgen</span> <span class="o">=</span> <span class="n">og</span><span class="o">.</span><span class="n">obs_generator</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
 <span class="n">obs_poor</span> <span class="o">=</span> <span class="n">obsgen</span><span class="o">.</span><span class="n">make_obs</span><span class="p">(</span><span class="n">ff</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span><span class="n">addnoise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">addgains</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
@@ -703,7 +704,7 @@ the weather:</p>
 <span class="n">obs_good</span> <span class="o">=</span> <span class="n">obsgen</span><span class="o">.</span><span class="n">make_obs</span><span class="p">(</span><span class="n">ff</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span><span class="n">addnoise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">addgains</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The two data sets, <strong>[obs_good,obs_poor]</strong>, are now available for making science
+<p>The two data sets, <strong>[obs_good, obs_poor]</strong>, are now available for making science
 forecasts.  We use the ngEHTforecast data visualization to look at the data and
 then generate a triangle plot of the two generated data sets:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">nf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">display_baselines</span><span class="p">(</span><span class="n">obs_good</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
@@ -877,7 +878,7 @@ of the binary separation may be found in the <a class="reference external" href=
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.0+8.g6a96889',
+            VERSION:'1.0+8.g6a96889.dirty',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
