@@ -365,7 +365,7 @@ All of the above may be found in the Python_ script **tutorials/forecasting.py**
 Splined Raster Models
 --------------------------------------------------------------------------------
 A splined-raster model, i.e., "themage", is available in the
-:class:`ff_models.FF_splined_raster` class.  This provides a flexible image
+:class:`fisher.ff_models.FF_splined_raster` class.  This provides a flexible image
 model that can assess imaging performance and hybrid imaging-modeling
 performance.  However, the large number of parameters can make it difficult to
 sensibly specify an image.  Therefore, a number of special ways to construct a
@@ -619,7 +619,7 @@ Examples of the above may be found in the Python_ script
 Data Generation
 --------------------------------------------------------------------------------
 Simulated data sets can be generated from
-:class:`fisher.fisher_forecast.FisherForercast` objects using the with ngehtsim_
+:class:`fisher.fisher_forecast.FisherForecast` objects using the with ngehtsim_
 package.  While examples exist within the ngehtsim_ repository, here we review
 some basic functionality, though see the ngehtsim_ documentation for detailed
 information.
@@ -634,7 +634,7 @@ presumes that ngehtsim_ is installed (see the ngehtsim_ documentation).
    import ngEHTforecast as nf
    import matplotlib.pyplot as plt
 
-We then construct a :class:`fisher.fisher_forecast.FisherForercast` object and
+We then construct a :class:`fisher.fisher_forecast.FisherForecast` object and
 set of parameters from which visibilities will be constructed:
 
 .. code-block:: python
@@ -658,7 +658,8 @@ source position, observation frequency, and array choice.
    settings['frequency'] = '230' # GHz
    settings['array'] = 'ngEHTphase1'
 
-An observation generator object is created and an observation generated.
+An ngehtsim_ :class:`obs.obs_generator.obs_generator` object is created and an
+observation generated, packaged as an :class:`ehtim.obsdata.Obsdata` object.
 
 .. code-block:: python
 
@@ -676,7 +677,7 @@ the weather:
    obsgen = og.obs_generator(settings)
    obs_good = obsgen.make_obs(ff,p=p,addnoise=False,addgains=False)
 
-The two data sets, **[obs_good,obs_poor]**, are now available for making science
+The two data sets, **[obs_good, obs_poor]**, are now available for making science
 forecasts.  We use the ngEHTforecast data visualization to look at the data and
 then generate a triangle plot of the two generated data sets:
 
