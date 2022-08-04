@@ -633,6 +633,41 @@ class FisherForecast :
         
         return Sig_uni, Sig_marg
 
+
+    def sample_posterior(self, obs, p, N, ilist=None, verbosity=0, **kwargs) :
+        """
+        Generates a chain of samples appropriate for post-processing as done in MCMC
+        analyses.  Such chains may be useful for computing the posterior on complicated
+        non-linear quantities.
+
+        Args:
+          obs (ehtim.obsdata.Obsdata): An Obsdata object containing the observation particulars.
+          p (list): List of parameter values at which to compute uncertainties.
+          N (int): Number of samples to generate.
+          ilist (list): List of parameters to sample, marginalizing over all others. If None, all parameters are sampled. Default: None.
+
+        Returns:
+          (numpy.ndarray): Two-dimensional array containing chain of parameter samples.
+        """
+
+        mC = self.marginalized_covariance(obs,p,ilist)
+
+        l,e = np.linalg.eigh(mC)
+
+        if (verbosity>0) :
+            print("Eigenvalues ---")
+            _print_vector(l)
+
+        Sig = np.sqrt(2.0/l)
+
+        chain = np.random.normal(size=(N,len(Sig))) * Sig
+        print(chain.shape)
+
+        chain = np.matmul(chain,e.T)
+
+        return chain
+        
+    
     
     def joint_biparameter_chisq(self,obs,p,i1,i2,kind='marginalized',verbosity=0,**kwargs) :
         """
