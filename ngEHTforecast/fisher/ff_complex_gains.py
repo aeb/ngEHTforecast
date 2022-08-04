@@ -439,6 +439,7 @@ class FF_complex_gains(ff.FisherForecast) :
 
     Args:
       ff (FisherForecast): A FisherForecast object to which we wish to add gains.
+      marg_method (str): Method used for intermediate marginalization. Options are 'covar' and 'vMv'. Default: 'covar'.
 
     Attributes:
       ff (FisherForecast): The FisherForecast object before gain reconstruction.
@@ -447,9 +448,10 @@ class FF_complex_gains(ff.FisherForecast) :
       gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 30.
       gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.
       gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.
+      marg_method (str): Method used for intermediate marginalization. Options are 'covar' and 'vMv'. Based on preliminary tests, 'covar' is faster and more accurate, though this may not be the case for models with very many parameters.
     """
 
-    def __init__(self,ff) :
+    def __init__(self,ff,marg_method='covar') :
         super().__init__()
         self.ff = ff
         self.stokes = self.ff.stokes
@@ -463,6 +465,7 @@ class FF_complex_gains(ff.FisherForecast) :
         self.ff_cgse = FF_complex_gains_single_epoch(ff)
         self.size = self.ff.size
         self.covar = np.zeros((self.ff.size,self.ff.size))
+        self.marg_method = marg_method
         
     def set_gain_epochs(self,scans=False,gain_epochs=None) :
         """
@@ -574,13 +577,17 @@ class FF_complex_gains(ff.FisherForecast) :
                         if (not self.ff_cgse.prior_sigma_list[i] is None) :
                             covar_wgs[i][i] += 2.0/self.ff_cgse.prior_sigma_list[i]**2
                             
-                    n = covar_wgs[:self.ff.size,:self.ff.size]
-                    r = covar_wgs[self.ff.size:,:self.ff.size]
-                    m = covar_wgs[self.ff.size:,self.ff.size:]
-                    r,m = self._condition_vM(r,m)
-                    # mn = n - np.matmul(r.T,np.matmul(ff._invert_matrix(m),r))
-                    mn = n - ff._vMv(r,ff._invert_matrix(m))
-                    
+                    if (self.marg_method == 'covar'):
+                        mn = ff._invert_matrix(ff._invert_matrix(covar_wgs)[:self.ff.size,:self.ff.size])
+                    elif (self.marg_method == 'vMv'):
+                        n = covar_wgs[:self.ff.size,:self.ff.size]
+                        r = covar_wgs[self.ff.size:,:self.ff.size]
+                        m = covar_wgs[self.ff.size:,self.ff.size:]
+                        r,m = self._condition_vM(r,m)
+                        mn = n - ff._vMv(r,ff._invert_matrix(m))
+                    else :
+                        raise(RuntimeError("Received unexpected intermediate margnilazation method, %s. Allowed values are 'covar' and 'vMv'."%(self.marg_method)))
+
                     if (verbosity>1) :
                         print("gain epoch %g of %g ----------------------"%(ige,self.gain_epochs.shape[0]))
                         print("obs stations:",np.unique(list(obs_ge.data['t1'])+list(obs_ge.data['t2'])))
