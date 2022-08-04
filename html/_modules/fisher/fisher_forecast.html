@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>fisher.fisher_forecast &mdash; ngEHTforecast 1.1+1.g2564130 documentation</title>
+  <title>fisher.fisher_forecast &mdash; ngEHTforecast 1.2 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 1.1+1.g2564130 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 1.2 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                1.1+1.g2564130
+                1.2
               </div>
             
           
@@ -790,6 +790,41 @@
         
         <span class="k">return</span> <span class="n">Sig_uni</span><span class="p">,</span> <span class="n">Sig_marg</span></div>
 
+
+<div class="viewcode-block" id="FisherForecast.sample_posterior"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.fisher_forecast.FisherForecast.sample_posterior">[docs]</a>    <span class="k">def</span> <span class="nf">sample_posterior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">ilist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a chain of samples appropriate for post-processing as done in MCMC</span>
+<span class="sd">        analyses.  Such chains may be useful for computing the posterior on complicated</span>
+<span class="sd">        non-linear quantities.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          obs (ehtim.obsdata.Obsdata): An Obsdata object containing the observation particulars.</span>
+<span class="sd">          p (list): List of parameter values at which to compute uncertainties.</span>
+<span class="sd">          N (int): Number of samples to generate.</span>
+<span class="sd">          ilist (list): List of parameters to sample, marginalizing over all others. If None, all parameters are sampled. Default: None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (numpy.ndarray): Two-dimensional array containing chain of parameter samples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">mC</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">marginalized_covariance</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="p">)</span>
+
+        <span class="n">l</span><span class="p">,</span><span class="n">e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">mC</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Eigenvalues ---&quot;</span><span class="p">)</span>
+            <span class="n">_print_vector</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+
+        <span class="n">Sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">/</span><span class="n">l</span><span class="p">)</span>
+
+        <span class="n">chain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">Sig</span><span class="p">)))</span> <span class="o">*</span> <span class="n">Sig</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">chain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">chain</span><span class="p">,</span><span class="n">e</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">chain</span></div>
+        
+    
     
 <div class="viewcode-block" id="FisherForecast.joint_biparameter_chisq"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.fisher_forecast.FisherForecast.joint_biparameter_chisq">[docs]</a>    <span class="k">def</span> <span class="nf">joint_biparameter_chisq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">i1</span><span class="p">,</span><span class="n">i2</span><span class="p">,</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;marginalized&#39;</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1383,7 +1418,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.1+1.g2564130',
+            VERSION:'1.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
