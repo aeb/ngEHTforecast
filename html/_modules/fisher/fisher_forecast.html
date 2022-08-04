@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>fisher.fisher_forecast &mdash; ngEHTforecast 1.1 documentation</title>
+  <title>fisher.fisher_forecast &mdash; ngEHTforecast 1.1+1.g2564130 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 1.1 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 1.1+1.g2564130 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                1.1
+                1.1+1.g2564130
               </div>
             
           
@@ -214,9 +214,11 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">argument_hash</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inv_argument_hash</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stokes</span> <span class="o">=</span> <span class="s1">&#39;I&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">covar</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">invcovar</span><span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">default_color_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="s1">&#39;g&#39;</span><span class="p">,</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span><span class="s1">&#39;purple&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">default_cmap_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Reds_r&#39;</span><span class="p">,</span><span class="s1">&#39;Blues_r&#39;</span><span class="p">,</span><span class="s1">&#39;Greens_r&#39;</span><span class="p">,</span><span class="s1">&#39;Oranges_r&#39;</span><span class="p">,</span><span class="s1">&#39;Purples_r&#39;</span><span class="p">]</span>
@@ -563,10 +565,33 @@
             <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FisherCovar priors:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dimensions:&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">covar</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
                 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">covar</span></div>
 
+<div class="viewcode-block" id="FisherForecast.inverse_fisher_covar"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.fisher_forecast.FisherForecast.inverse_fisher_covar">[docs]</a>    <span class="k">def</span> <span class="nf">inverse_fisher_covar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the inverse of the Fisher matrix as defined in the accompanying </span>
+<span class="sd">        documentation. Intelligently avoids recomputation if the observation and </span>
+<span class="sd">        parameters are unchanged.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          obs (ehtim.obsdata.Obsdata): An Obsdata object containing the observation particulars.</span>
+<span class="sd">          p (list): List of model parameters at which to compute the Fisher matrix.</span>
+<span class="sd">          verbosity (int): Verbosity level. Default: 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          (numpy.ndarray): The inverse of the Fisher matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">new_inv_argument_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">),</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span> <span class="n">new_inv_argument_hash</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_argument_hash</span> <span class="p">)</span> <span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">invcovar</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inv_argument_hash</span> <span class="o">=</span> <span class="n">new_inv_argument_hash</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">invcovar</span> <span class="o">=</span> <span class="n">_invert_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fisher_covar</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">invcovar</span></div>
+    
     
 <div class="viewcode-block" id="FisherForecast.uniparameter_uncertainties"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.fisher_forecast.FisherForecast.uniparameter_uncertainties">[docs]</a>    <span class="k">def</span> <span class="nf">uniparameter_uncertainties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -625,46 +650,36 @@
 
         <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ilist</span><span class="p">,</span><span class="nb">int</span><span class="p">))</span> <span class="p">:</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">ilist</span>
-            <span class="n">ilist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-            <span class="n">ini</span> <span class="o">=</span> <span class="n">ilist</span><span class="p">[</span><span class="n">ilist</span><span class="o">!=</span><span class="n">i</span><span class="p">]</span>
-            <span class="c1"># for j2,j in enumerate(ini) :</span>
-            <span class="c1">#     for k2,k in enumerate(ini) :</span>
-            <span class="c1">#         M[j2,k2] = C[j][k]</span>
-            <span class="c1">#     v[j2] = C[i][j]</span>
-            <span class="n">M</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">ini</span><span class="p">,:][:,</span><span class="n">ini</span><span class="p">]</span>
-            <span class="n">v</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">ini</span><span class="p">]</span>
-            <span class="n">N</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="n">Cinv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_fisher_covar</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">mN</span> <span class="o">=</span> <span class="n">_invert_matrix</span><span class="p">(</span><span class="n">Cinv</span><span class="p">[[</span><span class="n">ilist</span><span class="p">],:][:,[</span><span class="n">ilist</span><span class="p">]])</span>
+            <span class="n">Sig_marg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">/</span><span class="n">mN</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            
+            <span class="c1"># ilist = np.arange(self.size)</span>
+            <span class="c1"># ini = ilist[ilist!=i]</span>
+            <span class="c1"># M = C[ini,:][:,ini]</span>
+            <span class="c1"># v = C[i,ini]</span>
+            <span class="c1"># N = C[i][i]</span>
+            <span class="c1"># v,M = self._condition_vM(v,M)</span>
             <span class="c1"># Minv = _invert_matrix(M)</span>
-            <span class="c1"># mN = N - np.matmul(v,np.matmul(Minv,v))</span>
-            <span class="c1"># print(&quot;Before mN:&quot;,mN)</span>
-            <span class="n">v</span><span class="p">,</span><span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_vM</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">M</span><span class="p">)</span>
-            <span class="n">Minv</span> <span class="o">=</span> <span class="n">_invert_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
-            <span class="c1"># mN = (N - np.matmul(v,np.matmul(Minv,v)))</span>
-            <span class="n">mN</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">_vMv</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">Minv</span><span class="p">))</span>
-            <span class="c1"># print(&quot;After mN:&quot;,mN)</span>
-            <span class="n">Sig_marg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">/</span><span class="n">mN</span><span class="p">)</span>
+            <span class="c1"># mN = (N - _vMv(v,Minv))</span>
+            <span class="c1"># Sig_marg = np.sqrt(2.0/mN)</span>
 
         <span class="k">else</span> <span class="p">:</span>
-            <span class="n">Sig_marg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ilist</span><span class="p">))</span>
-            <span class="n">iall</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ilist</span><span class="p">)</span> <span class="p">:</span>
-                <span class="n">ini</span> <span class="o">=</span> <span class="n">iall</span><span class="p">[</span><span class="n">iall</span><span class="o">!=</span><span class="n">i</span><span class="p">]</span>
-                <span class="c1"># for j2,j in enumerate(ini) :</span>
-                <span class="c1">#     for k2,k in enumerate(ini) :</span>
-                <span class="c1">#         M[j2,k2] = C[j][k]</span>
-                <span class="c1">#     v[j2] = C[i][j]</span>
-                <span class="n">M</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">ini</span><span class="p">,:][:,</span><span class="n">ini</span><span class="p">]</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">ini</span><span class="p">,</span><span class="n">i</span><span class="p">]</span>
-                <span class="n">N</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-                <span class="c1"># Minv = _invert_matrix(M)</span>
-                <span class="c1"># mN = N - np.matmul(v,np.matmul(Minv,v))</span>
-                <span class="c1"># print(&quot;Before mN:&quot;,mN)</span>
-                <span class="n">v</span><span class="p">,</span><span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_vM</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">M</span><span class="p">)</span>
-                <span class="n">Minv</span> <span class="o">=</span> <span class="n">_invert_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
-                <span class="c1"># mN = N - np.matmul(v,np.matmul(Minv,v))</span>
-                <span class="n">mN</span> <span class="o">=</span> <span class="n">N</span> <span class="o">-</span> <span class="n">_vMv</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">Minv</span><span class="p">)</span>
-                <span class="c1"># print(&quot;After mN:&quot;,mN)</span>
-                <span class="n">Sig_marg</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">/</span><span class="n">mN</span><span class="p">)</span>
+            <span class="n">Cinv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_fisher_covar</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">Sig_marg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">Cinv</span><span class="p">[</span><span class="n">ilist</span><span class="p">,</span><span class="n">ilist</span><span class="p">])</span>
+            
+            <span class="c1"># Sig_marg = np.zeros(len(ilist))</span>
+            <span class="c1"># iall = np.arange(self.size)</span>
+            <span class="c1"># for k,i in enumerate(ilist) :</span>
+            <span class="c1">#     ini = iall[iall!=i]</span>
+            <span class="c1">#     M = C[ini,:][:,ini]</span>
+            <span class="c1">#     v = C[ini,i]</span>
+            <span class="c1">#     N = C[i][i]</span>
+            <span class="c1">#     v,M = self._condition_vM(v,M)</span>
+            <span class="c1">#     Minv = _invert_matrix(M)</span>
+            <span class="c1">#     mN = N - _vMv(v,Minv)</span>
+            <span class="c1">#     Sig_marg[k] = np.sqrt(2.0/mN)</span>
                 
         <span class="k">return</span> <span class="n">Sig_marg</span></div>
 
@@ -690,20 +705,21 @@
         <span class="k">elif</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ilist</span><span class="p">,</span><span class="nb">int</span><span class="p">))</span> <span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="n">ilist</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span> <span class="p">:</span>
-            <span class="n">iall</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-            <span class="n">isni</span> <span class="o">=</span> <span class="p">(</span><span class="n">iall</span><span class="o">!=</span><span class="n">ilist</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ilist</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="p">:</span>
-                <span class="n">isni</span> <span class="o">=</span> <span class="n">isni</span><span class="o">*</span><span class="p">(</span><span class="n">iall</span><span class="o">!=</span><span class="n">i</span><span class="p">)</span>
-            <span class="n">ini</span> <span class="o">=</span> <span class="n">iall</span><span class="p">[</span><span class="n">isni</span><span class="p">]</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">ilist</span><span class="p">,:][:,</span><span class="n">ilist</span><span class="p">]</span>
-            <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">ini</span><span class="p">,:][:,</span><span class="n">ilist</span><span class="p">]</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">ini</span><span class="p">,:][:,</span><span class="n">ini</span><span class="p">]</span>
-            <span class="c1"># print(&quot;Before mN:&quot;,n - np.matmul(r.T,np.matmul(_invert_matrix(m),r)))</span>
-            <span class="n">r</span><span class="p">,</span><span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_vM</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">m</span><span class="p">)</span>
-            <span class="c1"># print(&quot;After mN:&quot;,n - np.matmul(r.T,np.matmul(_invert_matrix(m),r)))</span>
-            <span class="c1"># print(&quot;Shapes:&quot;,n.shape,r.shape,m.shape)</span>
-            <span class="c1"># return n - np.matmul(r.T,np.matmul(_invert_matrix(m),r))</span>
-            <span class="k">return</span> <span class="n">n</span> <span class="o">-</span> <span class="n">_vMv</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">_invert_matrix</span><span class="p">(</span><span class="n">m</span><span class="p">))</span></div>
+            <span class="n">Cinv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_fisher_covar</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span> <span class="n">_invert_matrix</span><span class="p">(</span><span class="n">Cinv</span><span class="p">[</span><span class="n">ilist</span><span class="p">,:][:,</span><span class="n">ilist</span><span class="p">])</span> <span class="p">)</span></div>
+
+            
+            <span class="c1"># iall = np.arange(self.size)</span>
+            <span class="c1"># isni = (iall!=ilist[0])</span>
+            <span class="c1"># for i in ilist[1:] :</span>
+            <span class="c1">#     isni = isni*(iall!=i)</span>
+            <span class="c1"># ini = iall[isni]</span>
+            <span class="c1"># n = C[ilist,:][:,ilist]</span>
+            <span class="c1"># r = C[ini,:][:,ilist]</span>
+            <span class="c1"># m = C[ini,:][:,ini]</span>
+            <span class="c1"># r,m = self._condition_vM(r,m)</span>
+
+            <span class="c1"># return n - _vMv(r,_invert_matrix(m))</span>
             
     
 <div class="viewcode-block" id="FisherForecast.uncertainties"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.fisher_forecast.FisherForecast.uncertainties">[docs]</a>    <span class="k">def</span> <span class="nf">uncertainties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
@@ -721,62 +737,58 @@
 <span class="sd">          (float/list,float/list): Parameter uncertainty or list of marginalized uncertainties of desired parameters, marginalized parameter uncertainty or list of marginalized uncertainties of desired parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fisher_covar</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">Cinv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_fisher_covar</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fisher Matrix:&quot;</span><span class="p">)</span>
             <span class="n">_print_matrix</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
-        
-        <span class="k">if</span> <span class="p">(</span><span class="n">ilist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="p">:</span>
-            <span class="n">ilist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">ilist</span><span class="p">,</span><span class="nb">int</span><span class="p">))</span> <span class="p">:</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="n">ilist</span>
-            <span class="n">ilist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-            <span class="n">ini</span> <span class="o">=</span> <span class="n">ilist</span><span class="p">[</span><span class="n">ilist</span><span class="o">!=</span><span class="n">i</span><span class="p">]</span>
-            <span class="c1"># for j2,j in enumerate(ini) :</span>
-            <span class="c1">#     for k2,k in enumerate(ini) :</span>
-            <span class="c1">#         M[j2,k2] = C[j][k]</span>
-            <span class="c1">#     v[j2] = C[i][j]</span>
-            <span class="n">M</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">ini</span><span class="p">,:][:,</span><span class="n">ini</span><span class="p">]</span>
-            <span class="n">v</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">ini</span><span class="p">]</span>
-            <span class="n">N</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">v</span><span class="p">,</span><span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_vM</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">M</span><span class="p">)</span>
-            <span class="n">Minv</span> <span class="o">=</span> <span class="n">_invert_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
-            <span class="c1"># mN = N - np.matmul(v,np.matmul(Minv,v))</span>
-            <span class="n">mN</span> <span class="o">=</span> <span class="n">N</span> <span class="o">-</span> <span class="n">_vMv</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">Minv</span><span class="p">)</span>
-            <span class="n">Sig_uni</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">/</span><span class="n">N</span><span class="p">)</span>
-            <span class="n">Sig_marg</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">/</span><span class="n">mN</span><span class="p">)</span>
-        <span class="k">else</span> <span class="p">:</span>            
-            <span class="n">Sig_uni</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-            <span class="n">Sig_marg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-            <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-            <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">ilist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ilist</span> <span class="p">:</span>
-                <span class="n">ini</span> <span class="o">=</span> <span class="n">ilist</span><span class="p">[</span><span class="n">ilist</span><span class="o">!=</span><span class="n">i</span><span class="p">]</span>
-                <span class="c1"># for j2,j in enumerate(ini) :</span>
-                <span class="c1">#     for k2,k in enumerate(ini) :</span>
-                <span class="c1">#         M[j2,k2] = C[j][k]</span>
-                <span class="c1">#     v[j2] = C[i][j]</span>
-                <span class="n">M</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">ini</span><span class="p">,:][:,</span><span class="n">ini</span><span class="p">]</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">ini</span><span class="p">]</span>
-                <span class="n">N</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-                <span class="n">v</span><span class="p">,</span><span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_vM</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">M</span><span class="p">)</span>
-                <span class="n">Minv</span> <span class="o">=</span> <span class="n">_invert_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
-                <span class="c1"># mN = N - np.matmul(v,np.matmul(Minv,v))</span>
-                <span class="n">mN</span> <span class="o">=</span> <span class="n">N</span> <span class="o">-</span> <span class="n">_vMv</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">Minv</span><span class="p">)</span>
-                <span class="n">Sig_uni</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">/</span><span class="n">N</span><span class="p">)</span>
-                <span class="n">Sig_marg</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">/</span><span class="n">mN</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Submatrix (</span><span class="si">%i</span><span class="s2">):&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-                    <span class="n">_print_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Submatrix inverse (</span><span class="si">%i</span><span class="s2">):&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>                
-                    <span class="n">_print_matrix</span><span class="p">(</span><span class="n">Minv</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subvectors v1 (</span><span class="si">%i</span><span class="s2">):&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-                    <span class="n">_print_vector</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;N,mN (</span><span class="si">%i</span><span class="s2">):&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="n">N</span><span class="p">,</span><span class="n">mN</span><span class="p">)</span>
+        <span class="n">Sig_uni</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uniparameter_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">Sig_marg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">marginalized_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwarg</span><span class="p">)</span>
             
-        <span class="k">return</span> <span class="n">Sig_uni</span><span class="p">,</span><span class="n">Sig_marg</span></div>
+        <span class="c1"># if (ilist is None) :</span>
+        <span class="c1">#     ilist = np.arange(self.size)</span>
+
+        <span class="c1"># if (isinstance(ilist,int)) :</span>
+        <span class="c1">#     i = ilist</span>
+        <span class="c1">#     ilist = np.arange(self.size)</span>
+        <span class="c1">#     ini = ilist[ilist!=i]</span>
+        <span class="c1">#     M = C[ini,:][:,ini]</span>
+        <span class="c1">#     v = C[i,ini]</span>
+        <span class="c1">#     N = C[i][i]</span>
+        <span class="c1">#     v,M = self._condition_vM(v,M)</span>
+        <span class="c1">#     Minv = _invert_matrix(M)</span>
+        <span class="c1">#     mN = N - _vMv(v,Minv)</span>
+        <span class="c1">#     Sig_uni[i] = np.sqrt(2.0/N)</span>
+        <span class="c1">#     Sig_marg[i] = np.sqrt(2.0/mN)</span>
+        <span class="c1"># else :            </span>
+        <span class="c1">#     Sig_uni = np.zeros(self.size)</span>
+        <span class="c1">#     Sig_marg = np.zeros(self.size)</span>
+        <span class="c1">#     M = np.zeros((self.size-1,self.size-1))</span>
+        <span class="c1">#     v = np.zeros(self.size-1)</span>
+        <span class="c1">#     ilist = np.arange(self.size)</span>
+        <span class="c1">#     for i in ilist :</span>
+        <span class="c1">#         ini = ilist[ilist!=i]</span>
+        <span class="c1">#         M = C[ini,:][:,ini]</span>
+        <span class="c1">#         v = C[i,ini]</span>
+        <span class="c1">#         N = C[i][i]</span>
+        <span class="c1">#         v,M = self._condition_vM(v,M)</span>
+        <span class="c1">#         Minv = _invert_matrix(M)</span>
+        <span class="c1">#         mN = N - _vMv(v,Minv)</span>
+        <span class="c1">#         Sig_uni[i] = np.sqrt(2.0/N)</span>
+        <span class="c1">#         Sig_marg[i] = np.sqrt(2.0/mN)</span>
+
+        <span class="c1">#         if (verbosity&gt;1) :</span>
+        <span class="c1">#             print(&quot;Submatrix (%i):&quot;%(i))</span>
+        <span class="c1">#             _print_matrix(M)</span>
+        <span class="c1">#             print(&quot;Submatrix inverse (%i):&quot;%(i))                </span>
+        <span class="c1">#             _print_matrix(Minv)</span>
+        <span class="c1">#             print(&quot;Subvectors v1 (%i):&quot;%(i))</span>
+        <span class="c1">#             _print_vector(v)</span>
+        <span class="c1">#             print(&quot;N,mN (%i):&quot;%(i),N,mN)</span>
+        
+        <span class="k">return</span> <span class="n">Sig_uni</span><span class="p">,</span> <span class="n">Sig_marg</span></div>
 
     
 <div class="viewcode-block" id="FisherForecast.joint_biparameter_chisq"><a class="viewcode-back" href="../../docs/src/fisher.html#fisher.fisher_forecast.FisherForecast.joint_biparameter_chisq">[docs]</a>    <span class="k">def</span> <span class="nf">joint_biparameter_chisq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">i1</span><span class="p">,</span><span class="n">i2</span><span class="p">,</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;marginalized&#39;</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="p">:</span>
@@ -795,61 +807,62 @@
 <span class="sd">        Returns:</span>
 <span class="sd">          (numpy.ndarray,numpy.ndarray,numpy.ndarray): :math:`p_{i1}`, :math:`p_{i2}`, and :math:`\\chi^2` on a grid of points that covers the inner :math:`4.5\\Sigma` region.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fisher_covar</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">2</span><span class="p">))</span>
-        <span class="n">v1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">v2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">ilist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="c1"># C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)        </span>
+        <span class="c1"># M = np.zeros((self.size-2,self.size-2))</span>
+        <span class="c1"># v1 = np.zeros(self.size-2)</span>
+        <span class="c1"># v2 = np.zeros(self.size-2)</span>
+        <span class="c1"># ilist = np.arange(self.size)</span>
         
-        <span class="n">ini12</span> <span class="o">=</span> <span class="n">ilist</span><span class="p">[(</span><span class="n">ilist</span><span class="o">!=</span><span class="n">i1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">ilist</span><span class="o">!=</span><span class="n">i2</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">j2</span><span class="p">,</span><span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ini12</span><span class="p">)</span> <span class="p">:</span>
-            <span class="k">for</span> <span class="n">k2</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ini12</span><span class="p">)</span> <span class="p">:</span>
-                <span class="n">M</span><span class="p">[</span><span class="n">j2</span><span class="p">,</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
-            <span class="n">v1</span><span class="p">[</span><span class="n">j2</span><span class="p">]</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
-            <span class="n">v2</span><span class="p">[</span><span class="n">j2</span><span class="p">]</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i2</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
-        <span class="n">N1</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i1</span><span class="p">][</span><span class="n">i1</span><span class="p">]</span>
-        <span class="n">N2</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i2</span><span class="p">][</span><span class="n">i2</span><span class="p">]</span>
-        <span class="n">C12</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">i1</span><span class="p">][</span><span class="n">i2</span><span class="p">]</span>
+        <span class="c1"># ini12 = ilist[(ilist!=i1)*(ilist!=i2)]</span>
+        <span class="c1"># for j2,j in enumerate(ini12) :</span>
+        <span class="c1">#     for k2,k in enumerate(ini12) :</span>
+        <span class="c1">#         M[j2,k2] = C[j][k]</span>
+        <span class="c1">#     v1[j2] = C[i1][j]</span>
+        <span class="c1">#     v2[j2] = C[i2][j]</span>
+        <span class="c1"># N1 = C[i1][i1]</span>
+        <span class="c1"># N2 = C[i2][i2]</span>
+        <span class="c1"># C12 = C[i1][i2]</span>
 
+
+        <span class="n">ilist</span> <span class="o">=</span> <span class="p">[</span><span class="n">i1</span><span class="p">,</span><span class="n">i2</span><span class="p">]</span>
+            
         <span class="k">if</span> <span class="p">(</span><span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">==</span><span class="s1">&#39;fixed&#39;</span><span class="p">)</span> <span class="p">:</span>
-            <span class="k">pass</span>
+            <span class="c1"># pass</span>
+            <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_fisher_covar</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">Ci1i2</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="n">ilist</span><span class="p">,:][:,</span><span class="n">ilist</span><span class="p">]</span>
         
         <span class="k">elif</span> <span class="p">(</span><span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">==</span><span class="s1">&#39;marginalized&#39;</span><span class="p">)</span> <span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fisher Matrix:&quot;</span><span class="p">)</span>
-                <span class="n">_print_matrix</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Submatrix (</span><span class="si">%i</span><span class="s2">,</span><span class="si">%i</span><span class="s2">):&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span><span class="n">i2</span><span class="p">))</span>
-                <span class="n">_print_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subvectors v1:&quot;</span><span class="p">)</span>
-                <span class="n">_print_vector</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Subvectors v2:&quot;</span><span class="p">)</span>
-                <span class="n">_print_vector</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span>
-
-            <span class="c1"># print(&quot;i1,i2:&quot;,i1,i2)</span>
-            <span class="c1"># print(v1.shape,v2.shape)</span>
-            <span class="c1"># print(v1)</span>
-            <span class="c1"># print(v2)</span>
-            <span class="n">vv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">v1</span><span class="p">,</span><span class="n">v2</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
-            <span class="c1"># print(vv.shape)</span>
-            <span class="c1"># print(vv)</span>
-            <span class="c1"># print(vv[:,0],v1)</span>
-            <span class="c1"># print(vv[:,1],v2)</span>
-            <span class="c1"># print(&quot;  =================&quot;)</span>
-            <span class="n">vv</span><span class="p">,</span><span class="n">M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_vM</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span><span class="n">M</span><span class="p">)</span>
-            <span class="c1"># print(&quot;  =================&quot;)</span>
-            <span class="n">v1</span> <span class="o">=</span> <span class="n">vv</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">v2</span> <span class="o">=</span> <span class="n">vv</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
-            <span class="c1"># print(v1.shape,v2.shape)</span>
+            <span class="n">Cinv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_fisher_covar</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">Ci1i2</span> <span class="o">=</span> <span class="n">_invert_matrix</span><span class="p">(</span><span class="n">Cinv</span><span class="p">[</span><span class="n">ilist</span><span class="p">,:][:,</span><span class="n">ilist</span><span class="p">])</span>
             
-            <span class="n">Minv</span> <span class="o">=</span> <span class="n">_invert_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
-            <span class="c1"># N1 = N1 - np.matmul(v1.T,np.matmul(Minv,v1))</span>
-            <span class="c1"># N2 = N2 - np.matmul(v2.T,np.matmul(Minv,v2))</span>
-            <span class="n">N1</span> <span class="o">=</span> <span class="n">N1</span> <span class="o">-</span> <span class="n">_vMv</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span><span class="n">Minv</span><span class="p">)</span>
-            <span class="n">N2</span> <span class="o">=</span> <span class="n">N2</span> <span class="o">-</span> <span class="n">_vMv</span><span class="p">(</span><span class="n">v2</span><span class="p">,</span><span class="n">Minv</span><span class="p">)</span>
-            <span class="n">C12</span> <span class="o">=</span> <span class="n">C12</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">v1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">Minv</span><span class="p">,</span><span class="n">v2</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">v2</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">Minv</span><span class="p">,</span><span class="n">v1</span><span class="p">)))</span>
+            <span class="c1"># if (verbosity&gt;1) :</span>
+            <span class="c1">#     print(&quot;Fisher Matrix:&quot;)</span>
+            <span class="c1">#     _print_matrix(C)</span>
+            <span class="c1">#     print(&quot;Submatrix (%i,%i):&quot;%(i1,i2))</span>
+            <span class="c1">#     _print_matrix(M)</span>
+            <span class="c1">#     print(&quot;Subvectors v1:&quot;)</span>
+            <span class="c1">#     _print_vector(v1)</span>
+            <span class="c1">#     print(&quot;Subvectors v2:&quot;)</span>
+            <span class="c1">#     _print_vector(v2)</span>
+
+            <span class="c1"># vv = np.vstack([v1,v2]).T</span>
+            <span class="c1"># vv,M = self._condition_vM(vv,M)</span>
+            <span class="c1"># v1 = vv[:,0]</span>
+            <span class="c1"># v2 = vv[:,1]</span>
+            
+            <span class="c1"># Minv = _invert_matrix(M)</span>
+            <span class="c1"># N1 = N1 - _vMv(v1,Minv)</span>
+            <span class="c1"># N2 = N2 - _vMv(v2,Minv)</span>
+            <span class="c1"># C12 = C12 - 0.5*(np.matmul(v1.T,np.matmul(Minv,v2)) + np.matmul(v2.T,np.matmul(Minv,v1)))</span>
 
         <span class="k">else</span> <span class="p">:</span>
-            <span class="k">raise</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Received unexpected value for kind, </span><span class="si">%s</span><span class="s2">. Allowed values are &#39;fixed&#39; and &#39;marginalized&#39;.&quot;</span><span class="p">))</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Received unexpected value for kind, </span><span class="si">%s</span><span class="s2">. Allowed values are &#39;fixed&#39; and &#39;marginalized&#39;.&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">kind</span><span class="p">)))</span>
+
+
+        <span class="c1"># Set some names</span>
+        <span class="n">N1</span> <span class="o">=</span> <span class="n">Ci1i2</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">N2</span> <span class="o">=</span> <span class="n">Ci1i2</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">C12</span> <span class="o">=</span> <span class="n">Ci1i2</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
         
                     
         <span class="c1"># Find range with eigenvectors/values</span>
@@ -951,7 +964,7 @@
             <span class="k">elif</span> <span class="p">(</span><span class="n">kind</span><span class="o">==</span><span class="s1">&#39;fixed&#39;</span><span class="p">)</span> <span class="p">:</span>
                 <span class="n">Sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uniparameter_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">ilist</span><span class="o">=</span><span class="n">i1</span><span class="p">)</span>
             <span class="k">else</span> <span class="p">:</span>
-                <span class="k">raise</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Received unexpected value for kind, </span><span class="si">%s</span><span class="s2">. Allowed values are &#39;fixed&#39; and &#39;marginalized&#39;.&quot;</span><span class="p">))</span>
+                <span class="k">raise</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Received unexpected value for kind, </span><span class="si">%s</span><span class="s2">. Allowed values are &#39;fixed&#39; and &#39;marginalized&#39;.&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">kind</span><span class="p">)))</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="o">*</span><span class="n">Sigma</span><span class="p">,</span><span class="mi">5</span><span class="o">*</span><span class="n">Sigma</span><span class="p">,</span><span class="mi">256</span><span class="p">)</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">Sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">Sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">y2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_choose_from_list</span><span class="p">(</span><span class="n">alphas</span><span class="p">,</span><span class="n">k</span><span class="p">),</span><span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_choose_from_list</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span><span class="n">k</span><span class="p">))</span>
@@ -1149,7 +1162,7 @@
             <span class="k">elif</span> <span class="p">(</span><span class="n">kind</span><span class="o">==</span><span class="s1">&#39;fixed&#39;</span><span class="p">)</span> <span class="p">:</span>
                 <span class="n">Sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uniparameter_uncertainties</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
             <span class="k">else</span> <span class="p">:</span>
-                <span class="k">raise</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Received unexpected value for kind, </span><span class="si">%s</span><span class="s2">. Allowed values are &#39;fixed&#39; and &#39;marginalized&#39;.&quot;</span><span class="p">))</span>
+                <span class="k">raise</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Received unexpected value for kind, </span><span class="si">%s</span><span class="s2">. Allowed values are &#39;fixed&#39; and &#39;marginalized&#39;.&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">kind</span><span class="p">)))</span>
 
             <span class="c1"># print(&quot;Sigma before:&quot;,Sigma)</span>
             <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Sigma</span><span class="p">))</span> <span class="p">:</span>
@@ -1370,7 +1383,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.1',
+            VERSION:'1.1+1.g2564130',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 

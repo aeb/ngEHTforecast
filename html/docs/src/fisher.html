@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fisher &mdash; ngEHTforecast 1.1 documentation</title>
+  <title>Fisher &mdash; ngEHTforecast 1.1+1.g2564130 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 1.1 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 1.1+1.g2564130 documentation" href="../../index.html"/>
         <link rel="up" title="User’s Guide" href="userguide.html"/>
         <link rel="next" title="Data" href="data.html"/>
         <link rel="prev" title="User’s Guide" href="userguide.html"/> 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                1.1
+                1.1+1.g2564130
               </div>
             
           
@@ -364,6 +364,29 @@ resolve model image features.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="fisher.fisher_forecast.FisherForecast.inverse_fisher_covar">
+<code class="sig-name descname">inverse_fisher_covar</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.inverse_fisher_covar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.inverse_fisher_covar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the inverse of the Fisher matrix as defined in the accompanying
+documentation. Intelligently avoids recomputation if the observation and
+parameters are unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> (<a class="reference external" href="https://achael.github.io/eht-imaging/obsdata.html#ehtim.obsdata.Obsdata" title="(in ehtim v1.2)"><em>ehtim.obsdata.Obsdata</em></a>) – An Obsdata object containing the observation particulars.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of model parameters at which to compute the Fisher matrix.</p></li>
+<li><p><strong>verbosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Verbosity level. Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The inverse of the Fisher matrix.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.23)">numpy.ndarray</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="fisher.fisher_forecast.FisherForecast.joint_biparameter_chisq">
 <code class="sig-name descname">joint_biparameter_chisq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obs</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">i1</span></em>, <em class="sig-param"><span class="n">i2</span></em>, <em class="sig-param"><span class="n">kind</span><span class="o">=</span><span class="default_value">'marginalized'</span></em>, <em class="sig-param"><span class="n">verbosity</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/fisher_forecast.html#FisherForecast.joint_biparameter_chisq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.fisher_forecast.FisherForecast.joint_biparameter_chisq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the ensemble-averaged 2nd-order contribution to the chi-square
@@ -642,13 +665,16 @@ associated with a given model image object.</p>
 <p>A set of FisherForecast childe classes that facilitate including gain uncertainties.</p>
 <span class="target" id="module-fisher.ff_complex_gains"></span><dl class="py class">
 <dt id="fisher.ff_complex_gains.FF_complex_gains">
-<em class="property">class </em><code class="sig-prename descclassname">fisher.ff_complex_gains.</code><code class="sig-name descname">FF_complex_gains</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ff</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/ff_complex_gains.html#FF_complex_gains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.ff_complex_gains.FF_complex_gains" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fisher.ff_complex_gains.</code><code class="sig-name descname">FF_complex_gains</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ff</span></em>, <em class="sig-param"><span class="n">marg_method</span><span class="o">=</span><span class="default_value">'covar'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/ff_complex_gains.html#FF_complex_gains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.ff_complex_gains.FF_complex_gains" title="Permalink to this definition">¶</a></dt>
 <dd><p>FisherForecast with complex gain reconstruction with multiple epochs.
 This is usually the FisherForecast object that should be used to investigate
 the impact of uncertain station gains.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>ff</strong> (<a class="reference internal" href="#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><em>FisherForecast</em></a>) – A FisherForecast object to which we wish to add gains.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ff</strong> (<a class="reference internal" href="#fisher.fisher_forecast.FisherForecast" title="fisher.fisher_forecast.FisherForecast"><em>FisherForecast</em></a>) – A FisherForecast object to which we wish to add gains.</p></li>
+<li><p><strong>marg_method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Method used for intermediate marginalization. Options are ‘covar’ and ‘vMv’. Default: ‘covar’.</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -713,6 +739,17 @@ the impact of uncertain station gains.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="fisher.ff_complex_gains.FF_complex_gains.marg_method">
+<code class="sig-name descname">marg_method</code><a class="headerlink" href="#fisher.ff_complex_gains.FF_complex_gains.marg_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method used for intermediate marginalization. Options are ‘covar’ and ‘vMv’. Based on preliminary tests, ‘covar’ is faster and more accurate, though this may not be the case for models with very many parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2097,7 +2134,7 @@ gaining a pair of offset parameters.  That is:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.1',
+            VERSION:'1.1+1.g2564130',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
