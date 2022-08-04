@@ -46,12 +46,24 @@ Sigma_obs2 = ffg.marginalized_uncertainties(obs2,p,ilist=[0,2,6,7])
 print("Sigma's for obs:",Sigma_obs)
 print("Sigma's for obs2:",Sigma_obs2)
 
-ffg.plot_1d_forecast([obs2,obs],p,6,labels=['ngEHT','Reduced ngEHT'])
+ffg.plot_1d_forecast([obs2,obs],p,6,labels=['Reduced ngEHT','ngEHT'])
 plt.savefig('tutorial_1d.png',dpi=300)
 
-ffg.plot_2d_forecast([obs2,obs],p,6,7,labels=['ngEHT','Reduced ngEHT'])
+ffg.plot_2d_forecast([obs2,obs],p,6,7,labels=['Reduced ngEHT','ngEHT'])
 plt.savefig('tutorial_2d.png',dpi=300)
 
-ffg.plot_triangle_forecast([obs2,obs],p,labels=['ngEHT','Reduced ngEHT'],axis_location=[0.075,0.075,0.9,0.9])
+ffg.plot_triangle_forecast([obs2,obs],p,labels=['Reduced ngEHT','ngEHT'],axis_location=[0.075,0.075,0.9,0.9])
 plt.savefig('tutorial_tri.png',dpi=300)
+
+
+#################################################
+## Create a chain for fun
+##
+chain = ffg.sample_posterior(obs,p,100,ilist=[6,7])
+ffg.plot_2d_forecast([obs2,obs],p,6,7,labels=['Reduced ngEHT','ngEHT'])
+plt.plot(chain[:,0],chain[:,1],'.b')
+plt.savefig('tutorial_2d_wsamples.png',dpi=300)
+
+
+
 

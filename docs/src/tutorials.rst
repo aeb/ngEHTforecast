@@ -359,6 +359,35 @@ labels are visible.
    function.  The two sets of contours correspond to the different observations
    generated in :ref:`Creating an Obsdata object`.
 
+Chains of samples of the posterior forecasts can be produced via the
+:meth:`fisher.fisher_forecast.FisherForecast.sample_posterior` function.
+These chains can be generated for a subset of the parameter space, marginalizing
+the posterior analytically over the remaining parameters.  For example, to add
+samples to the joint parameter plot made above:
+
+.. code-block:: python
+   :emphasize-lines: 1
+
+   chain = ffg.sample_posterior(obs,p,100,ilist=[6,7])
+   ffg.plot_2d_forecast([obs2,obs],p,6,7,labels=['ngEHT','Reduced ngEHT'])
+   plt.plot(chain[:,0],chain[:,1],'.b')
+   plt.savefig('tutorial_2d_wsamples.png',dpi=300)
+
+Chains can be used to assess the implications for quantities that are functions
+of the underlying model parameters in a fashion similar to those employed in
+typical sampling methods.  While for many such cases, applying standard error
+propagation formulae will be more efficient, when the function is complicated or
+nonlinear, sampling can be conceptually more simple and practically more useful.
+
+.. figure:: ./tutorials_figures/tutorial_2d_wsamples.png
+   :scale: 25%
+
+   Marginalized joint posterior on the shift in RA and Dec between the two
+   binary components made using
+   :meth:`fisher.fisher_forecast.FisherForecast.plot_2d_forecast`
+   function together with 100 samples drawn from the "ngEHT" posterior using
+   the :meth:`fisher.fisher_forecast.FisherForecast.sample_posterior`.
+
 All of the above may be found in the Python_ script **tutorials/forecasting.py**.
 
 
