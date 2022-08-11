@@ -368,7 +368,7 @@ class FisherForecast :
           (numpy.ndarray): The Fisher matrix.
         """
         # Get the fisher covariance 
-        new_argument_hash = hashlib.md5(bytes(str(obs)+str(p),'utf-8')).hexdigest()
+        new_argument_hash = hashlib.md5(bytes(str(obs)+str(p)+str(self.prior_sigma_list),'utf-8')).hexdigest()
         if ( new_argument_hash == self.argument_hash ) :
             return self.covar
         else :
@@ -426,7 +426,7 @@ class FisherForecast :
           (numpy.ndarray): The inverse of the Fisher matrix.
         """
 
-        new_inv_argument_hash = hashlib.md5(bytes(str(obs)+str(p),'utf-8')).hexdigest()
+        new_inv_argument_hash = hashlib.md5(bytes(str(obs)+str(p)+str(self.prior_sigma_list),'utf-8')).hexdigest()
         if ( new_inv_argument_hash == self.inv_argument_hash ) :
             return self.invcovar
         else :
@@ -661,8 +661,6 @@ class FisherForecast :
         Sig = np.sqrt(2.0/l)
 
         chain = np.random.normal(size=(N,len(Sig))) * Sig
-        print(chain.shape)
-
         chain = np.matmul(chain,e.T)
 
         return chain
@@ -685,22 +683,6 @@ class FisherForecast :
         Returns:
           (numpy.ndarray,numpy.ndarray,numpy.ndarray): :math:`p_{i1}`, :math:`p_{i2}`, and :math:`\\chi^2` on a grid of points that covers the inner :math:`4.5\\Sigma` region.
         """
-        # C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)        
-        # M = np.zeros((self.size-2,self.size-2))
-        # v1 = np.zeros(self.size-2)
-        # v2 = np.zeros(self.size-2)
-        # ilist = np.arange(self.size)
-        
-        # ini12 = ilist[(ilist!=i1)*(ilist!=i2)]
-        # for j2,j in enumerate(ini12) :
-        #     for k2,k in enumerate(ini12) :
-        #         M[j2,k2] = C[j][k]
-        #     v1[j2] = C[i1][j]
-        #     v2[j2] = C[i2][j]
-        # N1 = C[i1][i1]
-        # N2 = C[i2][i2]
-        # C12 = C[i1][i2]
-
 
         ilist = [i1,i2]
             
@@ -710,8 +692,8 @@ class FisherForecast :
             Ci1i2 = C[ilist,:][:,ilist]
         
         elif (kind.lower()=='marginalized') :
-            Cinv = self.inverse_fisher_covar(obs,p,verbosity=verbosity,**kwargs)
-            Ci1i2 = _invert_matrix(Cinv[ilist,:][:,ilist])
+            # Cinv = self.inverse_fisher_covar(obs,p,verbosity=verbosity,**kwargs)
+            # Ci1i2 = _invert_matrix(Cinv[ilist,:][:,ilist])
             
             # if (verbosity>1) :
             #     print("Fisher Matrix:")
@@ -723,16 +705,34 @@ class FisherForecast :
             #     print("Subvectors v2:")
             #     _print_vector(v2)
 
-            # vv = np.vstack([v1,v2]).T
-            # vv,M = self._condition_vM(vv,M)
-            # v1 = vv[:,0]
-            # v2 = vv[:,1]
-            
-            # Minv = _invert_matrix(M)
-            # N1 = N1 - _vMv(v1,Minv)
-            # N2 = N2 - _vMv(v2,Minv)
-            # C12 = C12 - 0.5*(np.matmul(v1.T,np.matmul(Minv,v2)) + np.matmul(v2.T,np.matmul(Minv,v1)))
+            C = self.fisher_covar(obs,p,verbosity=verbosity,**kwargs)        
+            M = np.zeros((self.size-2,self.size-2))
+            v1 = np.zeros(self.size-2)
+            v2 = np.zeros(self.size-2)
+            ilist = np.arange(self.size)
 
+            ini12 = ilist[(ilist!=i1)*(ilist!=i2)]
+            for j2,j in enumerate(ini12) :
+                for k2,k in enumerate(ini12) :
+                    M[j2,k2] = C[j][k]
+                v1[j2] = C[i1][j]
+                v2[j2] = C[i2][j]
+            N1 = C[i1][i1]
+            N2 = C[i2][i2]
+            C12 = C[i1][i2]
+
+            vv = np.vstack([v1,v2]).T
+            vv,M = self._condition_vM(vv,M)
+            v1 = vv[:,0]
+            v2 = vv[:,1]
+            
+            Minv = _invert_matrix(M)
+            N1 = N1 - _vMv(v1,Minv)
+            N2 = N2 - _vMv(v2,Minv)
+            C12 = C12 - 0.5*(np.matmul(v1.T,np.matmul(Minv,v2)) + np.matmul(v2.T,np.matmul(Minv,v1)))
+
+            Ci1i2 = np.array([[N1, C12],[C12, N2]])
+            
         else :
             raise(RuntimeError("Received unexpected value for kind, %s. Allowed values are 'fixed' and 'marginalized'."%(kind)))
 
@@ -740,7 +740,7 @@ class FisherForecast :
         # Set some names
         N1 = Ci1i2[0,0]
         N2 = Ci1i2[1,1]
-        C12 = Ci1i2[0,1]
+        C12 = 0.5*(Ci1i2[0,1]+Ci1i2[1,0])
         
                     
         # Find range with eigenvectors/values
@@ -758,8 +758,11 @@ class FisherForecast :
             print(l1,l2)
             print(N1,N2,C12)
             # print(mN1,mN2,mC12)
-            print(C)
-
+            # print(C)
+            print("--- covar i1,i2 ---")
+            _print_matrix(Ci1i2)
+            print("Eigenvalues:",np.linalg.eigvalsh(Ci1i2))
+            
             l1 = max(1e-10,l1)
             l2 = max(1e-10,l2)
 
@@ -1036,9 +1039,9 @@ class FisherForecast :
         xlim_dict = {}
         for k,obs in enumerate(obslist) :
             if (kind=='marginalized') :
-                Sigma = self.marginalized_uncertainties(obs,p)
+                Sigma = self.marginalized_uncertainties(obs,p,verbosity=verbosity,**kwargs)
             elif (kind=='fixed') :
-                Sigma = self.uniparameter_uncertainties(obs,p)
+                Sigma = self.uniparameter_uncertainties(obs,p,verbosity=verbosity,**kwargs)
             else :
                 raise(RuntimeError("Received unexpected value for kind, %s. Allowed values are 'fixed' and 'marginalized'."%(kind)))
 
