@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fisher &mdash; ngEHTforecast 1.2 documentation</title>
+  <title>Fisher &mdash; ngEHTforecast 1.1+5.g45f74af documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 1.2 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 1.1+5.g45f74af documentation" href="../../index.html"/>
         <link rel="up" title="User’s Guide" href="userguide.html"/>
         <link rel="next" title="Data" href="data.html"/>
         <link rel="prev" title="User’s Guide" href="userguide.html"/> 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                1.2
+                1.1+5.g45f74af
               </div>
             
           
@@ -689,7 +689,7 @@ associated with a given model image object.</p>
 <p>A set of FisherForecast childe classes that facilitate including gain uncertainties.</p>
 <span class="target" id="module-fisher.ff_complex_gains"></span><dl class="py class">
 <dt id="fisher.ff_complex_gains.FF_complex_gains">
-<em class="property">class </em><code class="sig-prename descclassname">fisher.ff_complex_gains.</code><code class="sig-name descname">FF_complex_gains</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ff</span></em>, <em class="sig-param"><span class="n">marg_method</span><span class="o">=</span><span class="default_value">'covar'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/ff_complex_gains.html#FF_complex_gains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.ff_complex_gains.FF_complex_gains" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">fisher.ff_complex_gains.</code><code class="sig-name descname">FF_complex_gains</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ff</span></em>, <em class="sig-param"><span class="n">marg_method</span><span class="o">=</span><span class="default_value">'vMv'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fisher/ff_complex_gains.html#FF_complex_gains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fisher.ff_complex_gains.FF_complex_gains" title="Permalink to this definition">¶</a></dt>
 <dd><p>FisherForecast with complex gain reconstruction with multiple epochs.
 This is usually the FisherForecast object that should be used to investigate
 the impact of uncertain station gains.</p>
@@ -770,7 +770,7 @@ the impact of uncertain station gains.</p>
 <dl class="py attribute">
 <dt id="fisher.ff_complex_gains.FF_complex_gains.marg_method">
 <code class="sig-name descname">marg_method</code><a class="headerlink" href="#fisher.ff_complex_gains.FF_complex_gains.marg_method" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method used for intermediate marginalization. Options are ‘covar’ and ‘vMv’. Based on preliminary tests, ‘covar’ is faster and more accurate, though this may not be the case for models with very many parameters.</p>
+<dd><p>Method used for intermediate marginalization. Options are ‘covar’ and ‘vMv’. Based on preliminary tests, ‘vMv’ is more accurate for the gain marginalization, though this may not be the case for models with very many parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
@@ -2158,7 +2158,7 @@ gaining a pair of offset parameters.  That is:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.2',
+            VERSION:'1.1+5.g45f74af',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 

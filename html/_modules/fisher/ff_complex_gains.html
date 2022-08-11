@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>fisher.ff_complex_gains &mdash; ngEHTforecast 1.2 documentation</title>
+  <title>fisher.ff_complex_gains &mdash; ngEHTforecast 1.1+5.g45f74af documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="ngEHTforecast 1.2 documentation" href="../../index.html"/>
+    <link rel="top" title="ngEHTforecast 1.1+5.g45f74af documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                1.2
+                1.1+5.g45f74af
               </div>
             
           
@@ -605,10 +605,10 @@
 <span class="sd">      gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 30.</span>
 <span class="sd">      gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.</span>
 <span class="sd">      gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.</span>
-<span class="sd">      marg_method (str): Method used for intermediate marginalization. Options are &#39;covar&#39; and &#39;vMv&#39;. Based on preliminary tests, &#39;covar&#39; is faster and more accurate, though this may not be the case for models with very many parameters.</span>
+<span class="sd">      marg_method (str): Method used for intermediate marginalization. Options are &#39;covar&#39; and &#39;vMv&#39;. Based on preliminary tests, &#39;vMv&#39; is more accurate for the gain marginalization, though this may not be the case for models with very many parameters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ff</span><span class="p">,</span><span class="n">marg_method</span><span class="o">=</span><span class="s1">&#39;covar&#39;</span><span class="p">)</span> <span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ff</span><span class="p">,</span><span class="n">marg_method</span><span class="o">=</span><span class="s1">&#39;vMv&#39;</span><span class="p">)</span> <span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ff</span> <span class="o">=</span> <span class="n">ff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stokes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">stokes</span>
@@ -735,7 +735,8 @@
                             <span class="n">covar_wgs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">2.0</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_cgse</span><span class="o">.</span><span class="n">prior_sigma_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
                             
                     <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">marg_method</span> <span class="o">==</span> <span class="s1">&#39;covar&#39;</span><span class="p">):</span>
-                        <span class="n">mn</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">_invert_matrix</span><span class="p">(</span><span class="n">ff</span><span class="o">.</span><span class="n">_invert_matrix</span><span class="p">(</span><span class="n">covar_wgs</span><span class="p">)[:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">,:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
+                        <span class="c1"># mn = ff._invert_matrix(ff._invert_matrix(covar_wgs)[:self.ff.size,:self.ff.size])</span>
+                        <span class="n">mn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">covar_wgs</span><span class="p">)[:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">,:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
                     <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">marg_method</span> <span class="o">==</span> <span class="s1">&#39;vMv&#39;</span><span class="p">):</span>
                         <span class="n">n</span> <span class="o">=</span> <span class="n">covar_wgs</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">,:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
                         <span class="n">r</span> <span class="o">=</span> <span class="n">covar_wgs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
@@ -956,7 +957,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.2',
+            VERSION:'1.1+5.g45f74af',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             LINK_SUFFIX:'.html', 
