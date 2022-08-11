@@ -448,10 +448,10 @@ class FF_complex_gains(ff.FisherForecast) :
       gain_phase_priors (list): list of standard deviations on the normal priors on the gain phases. Default: 30.
       gain_ratio_amplitude_priors (list): For polarized gains, list of the log-normal priors on the gain amplitude ratios.  Default: 1e-10.
       gain_ratio_phase_priors (list): For polarized gains, list of the normal priors on the gain phase differences.  Default: 1e-10.
-      marg_method (str): Method used for intermediate marginalization. Options are 'covar' and 'vMv'. Based on preliminary tests, 'covar' is faster and more accurate, though this may not be the case for models with very many parameters.
+      marg_method (str): Method used for intermediate marginalization. Options are 'covar' and 'vMv'. Based on preliminary tests, 'vMv' is more accurate for the gain marginalization, though this may not be the case for models with very many parameters.
     """
 
-    def __init__(self,ff,marg_method='covar') :
+    def __init__(self,ff,marg_method='vMv') :
         super().__init__()
         self.ff = ff
         self.stokes = self.ff.stokes
@@ -578,7 +578,8 @@ class FF_complex_gains(ff.FisherForecast) :
                             covar_wgs[i][i] += 2.0/self.ff_cgse.prior_sigma_list[i]**2
                             
                     if (self.marg_method == 'covar'):
-                        mn = ff._invert_matrix(ff._invert_matrix(covar_wgs)[:self.ff.size,:self.ff.size])
+                        # mn = ff._invert_matrix(ff._invert_matrix(covar_wgs)[:self.ff.size,:self.ff.size])
+                        mn = np.linalg.inv(np.linalg.inv(covar_wgs)[:self.ff.size,:self.ff.size])
                     elif (self.marg_method == 'vMv'):
                         n = covar_wgs[:self.ff.size,:self.ff.size]
                         r = covar_wgs[self.ff.size:,:self.ff.size]
