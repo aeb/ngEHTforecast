@@ -1379,4 +1379,267 @@ class FF_thick_mring(ff.FisherForecast):
                     labels.append(r'$\delta {\rm arg}\beta_{mc=' + str(i + 1) + r'}$')
 
         return labels
+
+class FF_stretched_thick_mring(ff.FisherForecast):
+    """
+    FisherForecast object for an stretched m-ring model (based on ehtim).
+    Parameter vector is:
+
+    # p[0] = F               : Total Flux of mRing (Jy)
+    # p[1] = d               : diameter of the mRing (uas), d = \sqrt(a*b), a,b = major and minor axis
+    # p[2] = alpha           : thickness of the mring (uas)
+    # p[3] = stretch         : stretch = 1.0-tau where tau = ellipticity
+    # p[4] = stretch_PA      : PA of the ellipse in rad, measured E of N
+    # p[...] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
+    #          Negative indices are determined by the condition beta_{-m} = beta_m*.
+    #          Indices are all scaled by F0 = beta_0, so they are dimensionless.
+    # p[...] ... beta list for linear polarization (if present)
+    #          list of complex Fourier coefficients, [beta_{-mp}, beta_{-mp+1}, ..., beta_{mp-1}, beta_{mp}]
+    # p[...] ... beta list for circular polarization (if present)
+    #          list of complex Fourier coefficients, [beta_{-mc}, beta_{-mc+1}, ..., beta_{mc-1}, beta_{mc}]
+
     
+    Args:
+      m (int): Stokes I azimuthal Fourier series order.
+      stretch (float): The stretch to apply (1.0 = no stretch)
+      stretch_PA (float): Position angle of the stretch, east of north (radians)
+      mp (int): Linear polarization azimuthal Fourier series order. Only used if stokes=='full'. Default: None.
+      mc (int): Circular polarization azimuthal Fourier series order. Only used if stokes=='full'. Default: None.
+      stokes (str): Indicates if this is limited to Stokes I ('I') or include full polarization ('full'). Default: 'I'.
+
+    Attributes:
+      m (int): Stokes I azimuthal Fourier series order.
+      mp (int): Linear polarization azimuthal Fourier series order. Only used if stokes=='full'.
+      mc (int): Circular polarization azimuthal Fourier series order. Only used if stokes=='full'.
+
+    """
+
+    def __init__(self,m,stretch=1.0,stretch_PA=0.0,mp=None,mc=None,stokes='I'):
+        super().__init__()
+        self.m = m
+        self.stretch = stretch 
+        self.stretch_PA = stretch_PA 
+        self.mp = mp
+        self.mc = mc
+        self.stokes = stokes
+        self.size = 5 + 2*m
+        if self.stokes != 'I':
+            if (self.mp > 0):
+                self.size += 4 + 4*self.mp
+            if (self.mc > 0):
+                self.size += 4 + 4*self.mc
+                
+
+    def param_wrapper(self,p):
+        """
+        Converts parameters from a flattened list to an ehtim-style dictionary.
+        
+        Args:
+          p (float): Parameter list as used by FisherForecast.
+        
+        Returns:
+          (dict): Dictionary containing parameter values as used by ehtim.
+        """
+        
+        # convert unwrapped parameter list to ehtim-readable version
+
+        params = {}
+        params['F0'] = p[0]
+        params['d'] = p[1] * eh.RADPERUAS
+        params['alpha'] = p[2] * eh.RADPERUAS
+        params['stretch'] = p[3] # 1-e: e=ellipticity
+        params['stretch_PA'] = p[4]  + np.pi/2 # extra 90 required because it actually compresses y, instead of stretching x
+        params['x0'] = 0.0
+        params['y0'] = 0.0
+        beta_list = np.zeros(self.m, dtype="complex")
+        ind_start = 5
+        for i in range(self.m):
+            beta_list[i] = p[ind_start+(2*i)]*np.exp((1j)*p[ind_start+1+(2*i)])
+        params['beta_list'] = beta_list
+
+        if self.stokes != 'I':
+            if self.mp > 0:
+                beta_list_pol = np.zeros(1 + 2*self.mp, dtype="complex")
+                ind_start += 2*len(beta_list)
+                for i in range(1+2*self.mp):
+                    beta_list_pol[i] = p[ind_start+(2*i)]*np.exp((1j)*p[ind_start+1+(2*i)])
+                params['beta_list_pol'] = beta_list_pol
+            else:
+                params['beta_list_pol'] = np.zeros(0, dtype="complex")
+
+            if self.mc > 0:
+                beta_list_cpol = np.zeros(1 + 2*self.mc, dtype="complex")
+                ind_start += 2*len(beta_list_pol)
+                for i in range(1+2*self.mc):
+                    beta_list_cpol[i] = p[ind_start+(2*i)]*np.exp((-1j)*p[ind_start+1+(2*i)])
+                params['beta_list_cpol'] = beta_list_cpol
+            else:
+                params['beta_list_cpol'] = np.zeros(0, dtype="complex")
+
+        return params
+
+
+    def visibilities(self,obs,p,verbosity=0):
+        """
+        Generates visibilities associated with stretched thick m-ring model.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (numpy.ndarray): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          (numpy.ndarray): List of complex visibilities computed at observations.
+        """
+
+        # Takes:
+        # p[0] ... total flux of the ring (Jy), which is also beta_0.
+        # p[1] ... ring diameter (radians)
+        # p[2] ... ring thickness (FWHM of Gaussian convolution) (radians)
+        # p[...] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
+        #          Negative indices are determined by the condition beta_{-m} = beta_m*.
+        #          Indices are all scaled by F0 = beta_0, so they are dimensionless.
+        # p[...] ... beta list for linear polarization (if present)
+        #          list of complex Fourier coefficients, [beta_{-mp}, beta_{-mp+1}, ..., beta_{mp-1}, beta_{mp}]
+        # p[...] ... beta list for circular polarization (if present)
+        #          list of complex Fourier coefficients, [beta_{-mc}, beta_{-mc+1}, ..., beta_{mc-1}, beta_{mc}]
+
+        # set up parameter dictionary for ehtim
+        params = self.param_wrapper(p)
+
+        # read (u,v)-coordinates
+        u = obs.data['u']
+        v = obs.data['v']
+
+        # compute model visibilities
+        if self.stokes == 'I':
+            vis = eh.model.sample_1model_uv(u,v,'stretched_thick_mring',params,pol='I')
+            return vis
+        else:
+            vis_RR = eh.model.sample_1model_uv(u,v,'stretched_thick_mring',params,pol='RR')
+            vis_LL = eh.model.sample_1model_uv(u,v,'stretched_thick_mring',params,pol='LL')
+            vis_RL = eh.model.sample_1model_uv(u,v,'stretched_thick_mring',params,pol='RL')
+            vis_LR = eh.model.sample_1model_uv(u,v,'stretched_thick_mring',params,pol='LR')
+            return vis_RR, vis_LL, vis_RL, vis_LR
+
+        
+    def visibility_gradients(self,obs,p,verbosity=0):
+        """
+        Generates visibility gradients associated with m-ring model.
+
+        Args:
+          obs (ehtim.Obsdata): ehtim data object
+          p (numpy.ndarray): list of parameters for the model image used to create object.
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          (numpy.ndarray): List of complex visibilities computed at observations.
+        """
+        
+        # Takes:
+        # p[0] ... total flux of the ring (Jy), which is also beta_0.
+        # p[1] ... ring diameter (radians)
+        # p[2] ... ring thickness (FWHM of Gaussian convolution) (radians)
+        # p[...] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
+        #          Negative indices are determined by the condition beta_{-m} = beta_m*.
+        #          Indices are all scaled by F0 = beta_0, so they are dimensionless.
+        # p[...] ... beta list for linear polarization (if present)
+        #          list of complex Fourier coefficients, [beta_{-mp}, beta_{-mp+1}, ..., beta_{mp-1}, beta_{mp}]
+        # p[...] ... beta list for circular polarization (if present)
+        #          list of complex Fourier coefficients, [beta_{-mc}, beta_{-mc+1}, ..., beta_{mc-1}, beta_{mc}]
+
+        # set up parameter dictionary for ehtim
+        params = self.param_wrapper(p)
+
+        # read (u,v)-coordinates
+        u = obs.data['u']
+        v = obs.data['v']
+
+        # compute model gradients
+        if self.stokes == 'I':
+            grad = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='I',fit_pol=False,fit_cpol=False)
+            
+            # unit conversion
+            grad[1,:] *= eh.RADPERUAS
+            grad[2,:] *= eh.RADPERUAS
+
+            # remove (x0,y0) parameters
+            grad = np.concatenate((grad[:3, :], grad[5:, :]))
+            
+            return grad.T
+
+        else:
+            grad_RR = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='RR',fit_pol=True,fit_cpol=True)
+            grad_LL = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='LL',fit_pol=True,fit_cpol=True)
+            grad_RL = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='RL',fit_pol=True,fit_cpol=True)
+            grad_LR = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='LR',fit_pol=True,fit_cpol=True)
+            
+            # unit conversion
+            grad_RR[1,:] *= eh.RADPERUAS
+            grad_RR[2,:] *= eh.RADPERUAS
+
+            grad_LL[1,:] *= eh.RADPERUAS
+            grad_LL[2,:] *= eh.RADPERUAS
+
+            grad_RL[1,:] *= eh.RADPERUAS
+            grad_RL[2,:] *= eh.RADPERUAS
+
+            grad_LR[1,:] *= eh.RADPERUAS
+            grad_LR[2,:] *= eh.RADPERUAS
+
+            # remove (x0,y0) parameters
+            grad_RR = np.concatenate((grad_RR[:3, :], grad_RR[5:, :]))
+            grad_LL = np.concatenate((grad_LL[:3, :], grad_LL[5:, :]))
+            grad_RL = np.concatenate((grad_RL[:3, :], grad_RL[5:, :]))
+            grad_LR = np.concatenate((grad_LR[:3, :], grad_LR[5:, :]))
+
+            return grad_RR.T, grad_LL.T, grad_RL.T, grad_LR.T
+
+
+    def parameter_labels(self,verbosity=0):
+        """
+        Parameter labels to be used in plotting.
+
+        Args:
+          verbosity (int): Verbosity level. Default: 0.
+
+        Returns:
+          (list): List of strings with parameter labels.
+        """        
+        labels = list()
+        labels.append(r'$\delta F~({\rm Jy})$')
+        labels.append(r'$\delta d~(\mu{\rm as})$')
+        labels.append(r'$\delta \alpha~(\mu{\rm as})$')
+        labels.append(r'$\delta (1-\tau)$')
+        labels.append(r'$\delta \xi_{\tau}({\rm rad})$')
+        
+        # labels.append(r'$\delta x_0~(\mu{\rm as})$')
+        # labels.append(r'$\delta y_0~(\mu{\rm as})$')
+        
+        for i in range(self.m):
+            labels.append(r'$\delta |\beta_{m=' + str(i+1) + r'}|$')
+            labels.append(r'$\delta {\rm arg}\beta_{m=' + str(i+1) + r'}$')
+
+        if self.stokes != 'I':
+            
+            if self.mp > 0:
+                for i in range(self.mp):
+                    labels.append(r'$\delta |\beta_{mp=-' + str(self.mp - i) + r'}|$')
+                    labels.append(r'$\delta {\rm arg}\beta_{mp=-' + str(self.mp - i) + r'}$')
+                labels.append(r'$\delta |\beta_{mp=0}|$')
+                labels.append(r'$\delta {\rm arg}\beta_{mp=0}$')
+                for i in range(self.mp):
+                    labels.append(r'$\delta |\beta_{mp=' + str(i + 1) + r'}|$')
+                    labels.append(r'$\delta {\rm arg}\beta_{mp=' + str(i + 1) + r'}$')
+            if self.mc > 0:
+                for i in range(self.mc):
+                    labels.append(r'$\delta |\beta_{mc=-' + str(self.mc - i) + r'}|$')
+                    labels.append(r'$\delta {\rm arg}\beta_{mc=-' + str(self.mc - i) + r'}$')
+                labels.append(r'$\delta |\beta_{mc=0}|$')
+                labels.append(r'$\delta {\rm arg}\beta_{mc=0}$')
+                for i in range(self.mc):
+                    labels.append(r'$\delta |\beta_{mc=' + str(i + 1) + r'}|$')
+                    labels.append(r'$\delta {\rm arg}\beta_{mc=' + str(i + 1) + r'}$')
+
+        return labels
+
