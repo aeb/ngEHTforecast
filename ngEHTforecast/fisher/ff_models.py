@@ -1385,16 +1385,19 @@ class FF_stretched_thick_mring(ff.FisherForecast):
     FisherForecast object for an stretched m-ring model (based on ehtim).
     Parameter vector is:
 
-    * p[0] = F               : Total Flux of mRing (Jy)
-    * p[1] = d               : diameter of the mRing (uas), d = \sqrt(a*b), a,b = major and minor axis
-    * p[2] = alpha           : width of the mring (uas)
-    * p[3] = stretch         : stretch = 1.0-tau where tau = ellipticity
-    * p[4] = stretch_PA      : PA of the ellipse in rad, measured E of N
-    * p[5] = |beta_{m=1}|    : magniture of second Stokes I azimuthal Fourier component
-    * p[6] = arg(beta_{m=1}) : arg of second Stokes I azimuthal Fourier series order, measured W of N
-    * p[7] = |beta_{m=2}|    : magniture of third Stokes I azimuthal Fourier component
-    * p[8] = arg(beta_{m=2}) : arg of third Stokes I azimuthal Fourier series order, measured W of N
-    * p[9] = .......         : .......
+    # p[0] = F               : Total Flux of mRing (Jy)
+    # p[1] = d               : diameter of the mRing (uas), d = \sqrt(a*b), a,b = major and minor axis
+    # p[2] = alpha           : thickness of the mring (uas)
+    # p[3] = stretch         : stretch = 1.0-tau where tau = ellipticity
+    # p[4] = stretch_PA      : PA of the ellipse in rad, measured E of N
+    # p[...] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
+    #          Negative indices are determined by the condition beta_{-m} = beta_m*.
+    #          Indices are all scaled by F0 = beta_0, so they are dimensionless.
+    # p[...] ... beta list for linear polarization (if present)
+    #          list of complex Fourier coefficients, [beta_{-mp}, beta_{-mp+1}, ..., beta_{mp-1}, beta_{mp}]
+    # p[...] ... beta list for circular polarization (if present)
+    #          list of complex Fourier coefficients, [beta_{-mc}, beta_{-mc+1}, ..., beta_{mc-1}, beta_{mc}]
+
     
     Args:
       m (int): Stokes I azimuthal Fourier series order.
