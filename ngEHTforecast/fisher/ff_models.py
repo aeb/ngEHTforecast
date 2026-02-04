@@ -1146,8 +1146,17 @@ class FF_thick_mring(ff.FisherForecast):
     """
     FisherForecast object for an m-ring model (based on ehtim).
     Parameter vector is:
-
-    * p[0] ... DOM, PLEASE FILL THIS IN.
+    
+    # p[0] ... total flux of the ring (Jy), which is also beta_0.
+    # p[1] ... ring diameter (radians)
+    # p[2] ... ring thickness (FWHM of Gaussian convolution) (radians)
+    # p[...] ... beta list; list of complex Fourier coefficients, [beta_1, beta_2, ..., beta_m]
+    #          Negative indices are determined by the condition beta_{-m} = beta_m*.
+    #          Indices are all scaled by F0 = beta_0, so they are dimensionless.
+    # p[...] ... beta list for linear polarization (if present)
+    #          list of complex Fourier coefficients, [beta_{-mp}, beta_{-mp+1}, ..., beta_{mp-1}, beta_{mp}]
+    # p[...] ... beta list for circular polarization (if present)
+    #          list of complex Fourier coefficients, [beta_{-mc}, beta_{-mc+1}, ..., beta_{mc-1}, beta_{mc}]
 
     Args:
       m (int): Stokes I azimuthal Fourier series order.
@@ -1310,10 +1319,18 @@ class FF_thick_mring(ff.FisherForecast):
             return grad.T
 
         else:
-            grad_RR = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='RR',fit_pol=True,fit_cpol=True)
-            grad_LL = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='LL',fit_pol=True,fit_cpol=True)
-            grad_RL = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='RL',fit_pol=True,fit_cpol=True)
-            grad_LR = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='LR',fit_pol=True,fit_cpol=True)
+
+            fit_pol = False
+            fit_cpol = False
+            if self.mp > 0:
+                fit_pol = True
+            if self.mc > 0:
+                fit_cpol = True
+
+            grad_RR = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='RR',fit_pol=fit_pol,fit_cpol=fit_cpol)
+            grad_LL = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='LL',fit_pol=fit_pol,fit_cpol=fit_cpol)
+            grad_RL = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='RL',fit_pol=fit_pol,fit_cpol=fit_cpol)
+            grad_LR = eh.model.sample_1model_grad_uv(u,v,'thick_mring',params,pol='LR',fit_pol=fit_pol,fit_cpol=fit_cpol)
             
             # unit conversion
             grad_RR[1,:] *= eh.RADPERUAS
@@ -1569,10 +1586,18 @@ class FF_stretched_thick_mring(ff.FisherForecast):
             return grad.T
 
         else:
-            grad_RR = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='RR',fit_pol=True,fit_cpol=True)
-            grad_LL = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='LL',fit_pol=True,fit_cpol=True)
-            grad_RL = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='RL',fit_pol=True,fit_cpol=True)
-            grad_LR = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='LR',fit_pol=True,fit_cpol=True)
+
+            fit_pol = False
+            fit_cpol = False
+            if self.mp > 0:
+                fit_pol = True
+            if self.mc > 0:
+                fit_cpol = True
+
+            grad_RR = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='RR',fit_pol=fit_pol,fit_cpol=fit_cpol)
+            grad_LL = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='LL',fit_pol=fit_pol,fit_cpol=fit_cpol)
+            grad_RL = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='RL',fit_pol=fit_pol,fit_cpol=fit_cpol)
+            grad_LR = eh.model.sample_1model_grad_uv(u,v,'stretched_thick_mring',params,pol='LR',fit_pol=fit_pol,fit_cpol=fit_cpol)
             
             # unit conversion
             grad_RR[1,:] *= eh.RADPERUAS
