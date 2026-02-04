@@ -588,7 +588,7 @@ class FisherForecast :
 
 
         Sig_uni = self.uniparameter_uncertainties(obs,p,ilist,verbosity=verbosity,**kwargs)
-        Sig_marg = self.marginalized_uncertainties(obs,p,ilist,verbosity=verbosity,**kwarg)
+        Sig_marg = self.marginalized_uncertainties(obs,p,ilist,verbosity=verbosity,**kwargs)
             
         # if (ilist is None) :
         #     ilist = np.arange(self.size)
